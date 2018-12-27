@@ -44,6 +44,7 @@ class WPGH_DB_Calendar_Meta extends WPGH_DB  {
         $this->primary_key = 'meta_id';
         $this->version     = '1.0';
 
+        add_action( 'plugins_loaded', array( $this, 'register_table' ), 11 );
         add_action( 'wpgh_delete_calendar', array( $this, 'delete_calendar_meta' ) );
     }
 

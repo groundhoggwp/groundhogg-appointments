@@ -31,6 +31,8 @@ class WPGH_DB_Appointment_Meta extends WPGH_DB  {
         $this->primary_key = 'meta_id';
         $this->version     = '1.0';
 
+        add_action( 'plugins_loaded', array( $this, 'register_table' ), 11 );
+
         add_action( 'wpgh_delete_appointment', array( $this, 'delete_appointment_meta' ) );
     }
 
@@ -56,7 +58,7 @@ class WPGH_DB_Appointment_Meta extends WPGH_DB  {
             return false;
         }
 
-        return get_metadata( 'calendar', $appointment_id, $meta_key, $single );
+        return get_metadata( 'appointment', $appointment_id, $meta_key, $single );
     }
 
     public function add_meta( $appointment_id = 0, $meta_key = '', $meta_value, $unique = false ) {
@@ -64,7 +66,7 @@ class WPGH_DB_Appointment_Meta extends WPGH_DB  {
         if ( false === $appointment_id ) {
             return false;
         }
-        return add_metadata( 'calendar', $appointment_id, $meta_key, $meta_value, $unique );
+        return add_metadata( 'appointment', $appointment_id, $meta_key, $meta_value, $unique );
     }
 
     public function update_meta( $appointment_id = 0, $meta_key = '', $meta_value, $prev_value = '' ) {
@@ -73,11 +75,11 @@ class WPGH_DB_Appointment_Meta extends WPGH_DB  {
             return false;
         }
 
-        return update_metadata( 'calendar', $appointment_id, $meta_key, $meta_value, $prev_value );
+        return update_metadata( 'appointment', $appointment_id, $meta_key, $meta_value, $prev_value );
     }
 
     public function delete_meta( $appointment_id = 0, $meta_key = '', $meta_value = '' ) {
-        return delete_metadata( 'calendar', $appointment_id, $meta_key, $meta_value );
+        return delete_metadata( 'appointment', $appointment_id, $meta_key, $meta_value );
     }
 
     public function delete_appointment_meta( $id ){
