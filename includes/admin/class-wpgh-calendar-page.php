@@ -222,6 +222,9 @@ class WPGH_Calendar_Page
     private function add_calendar()
     {
 
+
+
+
         // add calendar operation
 
         if ( ! isset( $_POST['owner_id'] ) ||  $_POST['owner_id'] == 0 ){
@@ -250,6 +253,7 @@ class WPGH_Calendar_Page
             $args['description']  =  sanitize_text_field( $_POST['description'] );
         }
 
+
         // ADD OPERATION
         $calendar_id = WPGH_APPOINTMENTS()->calendar->add( $args ) ;
         //META OPERATION
@@ -258,84 +262,24 @@ class WPGH_Calendar_Page
             wp_die( 'Something went wrong' );
         }
 
+        // Enter metadata of calendar
+
+        // days
+        if(isset( $_POST['checkbox'] ) ){
+            WPGH_APPOINTMENTS()->calendarmeta->add_meta($calendar_id,'dow',$_POST['checkbox']) ;
+        }
+        // start time
+        if(isset( $_POST['starttime'] ) ) {
+            WPGH_APPOINTMENTS()->calendarmeta->add_meta($calendar_id, 'start_time', sanitize_text_field($_POST['starttime']));
+        }
+        //end time
+        if(isset( $_POST['endtime'] ) ) {
+            WPGH_APPOINTMENTS()->calendarmeta->add_meta($calendar_id, 'end_time', sanitize_text_field($_POST['endtime']));
+        }
 
 
 
 
-
-
-
-//
-//        $email = isset( $_POST['contact_id'] )? intval( $_POST[ 'contact_id' ] ) : null;
-//
-//        $tags = isset( $_POST[ 'tags' ] )? WPGH()->tags->validate( $_POST['tags'] ): array();
-//
-//        if ( empty( $tags ) || ! is_array( $tags ) ) {
-//            wp_die( __( 'Please select one or more tags to send this calendar to.', 'groundhogg' ) );
-//        }
-//
-//        $exclude_tags = isset( $_POST[ 'exclude_tags' ] )? WPGH()->tags->validate( $_POST['exclude_tags'] ): array();
-//
-//        $contact_sum = 0;
-//
-//        foreach ( $tags as $tag ){
-//            $tag = WPGH()->tags->get_tag( intval( $tag ) );
-//            if ( $tag ){
-//                $contact_sum += $tag->contact_count;
-//            }
-//        }
-//
-//        if ( $contact_sum === 0 ){
-//            wp_die( __( 'Please select a tag with one or more associated contacts.' ) );
-//        }
-//
-//        $send_date = isset( $_POST['date'] )? $_POST['date'] : date( 'Y/m/d', strtotime( 'tomorrow' ) );
-//        $send_time = isset( $_POST['time'] )? $_POST['time'] : '09:30';
-//
-//        $time_string = $send_date . ' ' . $send_time;
-//
-//        /* convert to UTC */
-//        $send_time = strtotime( $time_string ) - ( wpgh_get_option( 'gmt_offset' ) * HOUR_IN_SECONDS );
-//
-//        if ( $send_time < time() )
-//            wp_die( __( 'Please send at a time in the future!' ) );
-//
-//        $args = array(
-//            'email_id'  => $email,
-//            'tags'      => $tags,
-//            'send_time' => $send_time,
-//            'scheduled_by' => get_current_user_id(),
-//            'status'    => 'scheduled'
-//        );
-//
-//        $calendar_id = WPGH()->calendars->add( $args );
-//
-//        if ( ! $calendar_id ){
-//            wp_die( 'Something went wrong' );
-//        }
-//
-//        $query = new WPGH_Contact_Query();
-//
-//        $args = array(
-//            'tags_include' => $tags,
-//            'tag_exclude' => $exclude_tags
-//        );
-//
-//        $contacts = $query->query( $args );
-//
-//        foreach ( $contacts as $i => $contact ) {
-//
-//            $args = array(
-//                'time'          => $send_time,
-//                'contact_id'    => $contact->ID,
-//                'funnel_id'     => WPGH_BROADCAST,
-//                'step_id'       => $calendar_id,
-//                'status'        => 'waiting'
-//            );
-//
-//            WPGH()->events->add( $args );
-//        }
-//
         $this->notices->add( 'success', __( 'New calendar added!', 'groundhogg' ), 'success' ); // not working
         wp_redirect( admin_url( 'admin.php?page=gh_calendar&action=edit&calendar=' . $calendar_id ) );
         die();
