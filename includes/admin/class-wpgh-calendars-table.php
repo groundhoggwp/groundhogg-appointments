@@ -90,13 +90,15 @@ class WPGH_Calendars_Table extends WP_List_Table {
         }
 
         $actions = array();
+        $actions['edit'] = "<span class='edit'><a href='" . admin_url('admin.php?page=gh_emails&action=edit&email=' . $calendar->email->ID ) . "'>" . __('Edit Email') . "</a></span>";
 
-        if ( $this->get_view() !== 'cancelled' ) {
-            $actions['edit'] = "<span class='edit'><a href='" . admin_url('admin.php?page=gh_emails&action=edit&email=' . $calendar->email->ID ) . "'>" . __('Edit Email') . "</a></span>";
-            if ( intval( $calendar->send_time ) > time() ){
-                $actions['trash'] = "<span class='delete'><a class='submitdelete' href='" . wp_nonce_url(admin_url('admin.php?page=gh_calendars&view=all&action=cancel&calendar=' . $calendar->ID ), 'cancel') . "'>" . __('Cancel') . "</a></span>";
-            }
-        }
+        $actions['delete'] = sprintf(
+            '<a href="%s" class="submitdelete" aria-label="%s">%s</a>',
+            wp_nonce_url(admin_url('admin.php?page=gh_calendar&calendar='. $calendar->ID .'&action=delete')),
+            /* translators: %s: title */
+            esc_attr( sprintf( __( 'Delete &#8220;%s&#8221; permanently' ), $calendar->ID ) ),
+            __( 'Delete Permanently' )
+        );
 
         return $this->row_actions( apply_filters( 'wpgh_calendar_row_actions', $actions, $calendar, $column_name ) );
     }

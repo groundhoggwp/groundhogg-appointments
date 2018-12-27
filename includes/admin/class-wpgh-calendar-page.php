@@ -144,14 +144,18 @@ class WPGH_Calendar_Page
 //                if ( ! current_user_can( 'schedule_calendars' ) ){
 //                    wp_die( WPGH()->roles->error( 'schedule_calendars' ) );
 //                }
-//
-//                var_dump( $_POST );
-//                die();
-
                 if ( isset( $_POST[ 'add' ] ) ) {
                     $this->add_calendar();
                 }
 
+                break;
+
+            case 'delete':
+
+//                if ( ! current_user_can( 'schedule_calendars' ) ){
+//                    wp_die( WPGH()->roles->error( 'schedule_calendars' ) );
+//                }
+                $this->delete_calendar();
                 break;
             case 'view':
 
@@ -190,6 +194,26 @@ class WPGH_Calendar_Page
 
         wp_redirect( $base_url );
         die();
+    }
+
+    private function delete_calendar()
+    {
+        //todo delete the calendar
+
+
+        //get the ID of the calendar
+
+        if ( isset( $_GET[ 'calendar' ] ) ){
+            $calendar = intval( $_GET[ 'calendar' ] );
+        }
+
+        if ( ! isset( $calendar ) ){
+            wp_die( __( "Please select a calendar to delete.", 'groundhogg' ) );
+        }
+
+        WPGH_APPOINTMENTS()->calendar->delete( $calendar );
+
+
     }
 
     /**

@@ -25,12 +25,13 @@ class WPGH_DB_Appointment_Meta extends WPGH_DB  {
      */
     public $cache_group = 'appointment_meta';
 
-
     public function __construct() {
         global $wpdb;
         $this->table_name  = $wpdb->prefix . 'gh_appointmentmeta';
         $this->primary_key = 'meta_id';
         $this->version     = '1.0';
+
+        add_action( 'wpgh_delete_appointment', array( $this, 'delete_appointment_meta' ) );
     }
 
     public function get_columns() {
@@ -79,7 +80,11 @@ class WPGH_DB_Appointment_Meta extends WPGH_DB  {
         return delete_metadata( 'calendar', $appointment_id, $meta_key, $meta_value );
     }
 
-
+    public function delete_appointment_meta( $id ){
+        global $wpdb;
+        $result = $wpdb->delete( $this->table_name, array( 'appointment_id' => $id ), array( '%d' ) );
+        return $result;
+    }
 
     private function sanitize_appointment_id( $appointment_id ) {
         if ( ! is_numeric( $appointment_id ) ) {

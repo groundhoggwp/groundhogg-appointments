@@ -43,6 +43,8 @@ class WPGH_DB_Calendar_Meta extends WPGH_DB  {
 
         $this->primary_key = 'meta_id';
         $this->version     = '1.0';
+
+        add_action( 'wpgh_delete_calendar', array( $this, 'delete_calendar_meta' ) );
     }
 
     /**
@@ -109,6 +111,13 @@ class WPGH_DB_Calendar_Meta extends WPGH_DB  {
 
     public function delete_meta( $calendar_id = 0, $meta_key = '', $meta_value = '' ) {
         return delete_metadata( 'calendar', $calendar_id, $meta_key, $meta_value );
+    }
+
+    public function delete_calendar_meta( $id )
+    {
+        global $wpdb;
+        $result = $wpdb->delete( $this->table_name, array( 'calendar_id' => $id ), array( '%d' ) );
+        return $result;
     }
 
 

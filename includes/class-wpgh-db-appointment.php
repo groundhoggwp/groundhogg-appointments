@@ -37,6 +37,9 @@ class WPGH_DB_Appointments extends WPGH_DB
         $this->table_name  = $wpdb->prefix . 'gh_appointments';
         $this->primary_key = 'ID';
         $this->version     = '1.0';
+
+        //todo delete appointments associated with a calendar
+        add_action( 'wpgh_delete_calendar', array( $this, 'delete_appointments' ) );
     }
 
     /**
@@ -149,13 +152,32 @@ class WPGH_DB_Appointments extends WPGH_DB
 
             if ( $result ) {
                 $this->set_last_changed();
-                do_action( 'wpgh_delete_appoinment', $appointment->ID );
+                do_action( 'wpgh_delete_appointment', $appointment->ID );
             }
             return $result;
         } else {
             return false;
         }
     }
+
+    /**
+     * Delete appointments associated with the calendars...
+     *
+     * @param $id int Calendar ID
+     * @return mixed
+     */
+    public function delete_appointments( $id )
+    {
+        global $wpdb;
+        $IDS = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $this->table_name WHERE calendar_id = %d", $id ) );
+        $result = false;
+        foreach ( $IDS as $id ){
+           // $id = array_shift( $id );
+            $result = $this->delete( $id->ID );
+        }
+        return $result;
+    }
+
 
     /**
      * Checks if a calendar exists
