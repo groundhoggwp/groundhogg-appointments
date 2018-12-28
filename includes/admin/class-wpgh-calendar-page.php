@@ -121,9 +121,18 @@ class WPGH_Calendar_Page
         switch ( $this->get_action() ){
             case 'add':
                 _e( 'Add Calendar' , 'groundhogg' );
+                ?>
+                <a class="page-title-action aria-button-if-js" href="<?php echo admin_url( 'admin.php?page=gh_calendar&action=add' ); ?>"><?php _e( 'Add New' ); ?></a>
+                <?php
+                break;
+            case 'view_appointment':
+                _e( 'Appointment' , 'groundhogg' );
                 break;
             default:
                 _e( 'Calendars', 'groundhogg' );
+                ?>
+                <a class="page-title-action aria-button-if-js" href="<?php echo admin_url( 'admin.php?page=gh_calendar&action=add' ); ?>"><?php _e( 'Add New' ); ?></a>
+                <?php
         }
     }
 
@@ -168,26 +177,75 @@ class WPGH_Calendar_Page
                 $this->delete_calendar();
                 break;
             case 'view':
-
                 if( isset( $_GET['calendar_id'] ) )
                 {
                     $this->view_appointments();
                 }
                 break;
-            case 'manage':
 
-                echo  'hello';
+            case 'approve' :
+                // manage operation of appointment
+                if ( isset( $_GET[ 'appointment' ] ) ) {
 
-//                if ( ! current_user_can( 'cancel_calendars' ) ){
-//                    wp_die( WPGH()->roles->error( 'cancel_calendars' ) );
-//                }
-//
-//                foreach ( $this->get_calendars() as $id ){
-//                    $calendar = new WPGH_Broadcast( $id );
-//                    $calendar->cancel();
-//                }
-//
-//                $this->notices->add( 'cancelled', __( count( $this->get_calendars() ) . ' Broadcast(s) Cancelled.', 'groundhogg' ) );
+                    $appointment_id = intval( $_GET[ 'appointment' ] );
+                    //get appointment
+                    $appointment = WPGH_APPOINTMENTS()->appointments->get($appointment_id);
+                    if($appointment == null) {
+                        $this->notices->add( 'NO_APPOINTMENT', __( "Appointment not found!", 'groundhogg' ), 'error' );
+                        return;
+                    }
+                    //update status
+
+                    $status = WPGH_APPOINTMENTS()->appointments->update($appointment_id,array('status'=>'booked'));
+                    if ( ! $status ){
+                        wp_die( 'Something went wrong' );
+                    }
+                    $this->notices->add( 'success', __( 'Appointment updated successfully !', 'groundhogg' ), 'success' );
+                    wp_redirect( admin_url( 'admin.php?page=gh_calendar&action=view&calendar=' . $appointment->calendar_id ) );
+                    die();
+                }
+                break;
+            case 'delete_appointment':
+                if ( isset( $_GET[ 'appointment' ] ) ) {
+
+                    $appointment_id = intval( $_GET[ 'appointment' ] );
+                    //get appointment
+                    $appointment = WPGH_APPOINTMENTS()->appointments->get($appointment_id);
+                    if($appointment == null) {
+                        $this->notices->add( 'NO_APPOINTMENT', __( "Appointment not found!", 'groundhogg' ), 'error' );
+                        return;
+                    }
+                    //update status
+
+                    $status = WPGH_APPOINTMENTS()->appointments->delete($appointment_id) ;
+                    if ( ! $status ){
+                        wp_die( 'Something went wrong' );
+                    }
+                    $this->notices->add( 'success', __( 'Appointment deleted successfully !', 'groundhogg' ), 'success' );
+                    wp_redirect( admin_url( 'admin.php?page=gh_calendar&action=view&calendar=' . $appointment->calendar_id ) );
+                    die();
+                }
+                break;
+            case 'cancel':
+                if ( isset( $_GET[ 'appointment' ] ) ) {
+
+                    $appointment_id = intval( $_GET[ 'appointment' ] );
+                    //get appointment
+                    $appointment = WPGH_APPOINTMENTS()->appointments->get($appointment_id);
+                    if($appointment == null) {
+                        $this->notices->add( 'NO_APPOINTMENT', __( "Appointment not found!", 'groundhogg' ), 'error' );
+                        return;
+                    }
+                    //update status
+
+                    $status = WPGH_APPOINTMENTS()->appointments->update($appointment_id,array('status'=>'cancel'));
+                    if ( ! $status ){
+                        wp_die( 'Something went wrong' );
+                    }
+                    $this->notices->add( 'success', __( 'Appointment updated successfully !', 'groundhogg' ), 'success' );
+                    wp_redirect( admin_url( 'admin.php?page=gh_calendar&action=view&calendar=' . $appointment->calendar_id ) );
+                    die();
+                }
 
                 break;
         }
@@ -374,21 +432,17 @@ class WPGH_Calendar_Page
         if ( ! class_exists( 'WPGH_Calendars_Table' ) ){
             include dirname(__FILE__) . '/class-wpgh-calendars-table.php';
         }
-
         $calendars_table = new WPGH_Calendars_Table();
          ?>
-
             <?php $calendars_table->prepare_items(); ?>
             <?php $calendars_table->display(); ?>
-
-
         <?php
     }
 
-    public  function view_appointments()
+    public  function view_calendar()
     {
-        if ( isset($_GET['calendar_id'] ) ) {
-            include dirname(__FILE__) . '/view-appointments.php';
+        if ( isset($_GET['calendar'] ) ) {
+            include dirname(__FILE__) . '/view-calendar.php';
         } else {
             $this->table();
         }
@@ -405,6 +459,21 @@ class WPGH_Calendar_Page
 
         include dirname(__FILE__) . '/add-calendar.php';
     }
+
+    /**
+     * Display the reporting page
+     */
+    public function view_appointment()
+    {
+
+
+//        if ( ! current_user_can( 'view_calendars' ) ){
+//            wp_die( WPGH()->roles->error( 'view_calendars' ) );
+//        }
+
+        include dirname( __FILE__ ) . '/view-appointmnent.php';
+    }
+
 
     /**
      * Display the reporting page
@@ -427,7 +496,7 @@ class WPGH_Calendar_Page
     {
         ?>
         <div class="wrap">
-            <h1 class="wp-heading-inline"><?php $this->get_title(); ?></h1><a class="page-title-action aria-button-if-js" href="<?php echo admin_url( 'admin.php?page=gh_calendar&action=add' ); ?>"><?php _e( 'Add New' ); ?></a>
+            <h1 class="wp-heading-inline"><?php $this->get_title(); ?></h1>
             <?php $this->notices->notices(); ?>
             <hr class="wp-header-end">
             <?php switch ( $this->get_action() ){
@@ -439,7 +508,10 @@ class WPGH_Calendar_Page
                     break;
                 case 'view':
                     //calendar page with appointments in it.
-                    $this->view_appointments();
+                    $this->view_calendar();
+                    break;
+                case 'view_appointment':
+                    $this->view_appointment();
                     break;
                 default:
                     $this->table();

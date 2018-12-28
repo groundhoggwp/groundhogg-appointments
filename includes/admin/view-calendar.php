@@ -12,16 +12,16 @@ display_calendar();
 function display_calendar ()
 {
 //get list of appointment
-    $calendar_id = $_GET['calendar_id'];
+    $calendar_id = $_GET['calendar'];
 // get all the appointment
 
     $appointments = WPGH_APPOINTMENTS()->appointments->get_appointments_by_args(array( 'calendar_id' => $calendar_id ));
     $display_data = array();
     foreach($appointments as $appointment)
     {
-        if($appointment->status == 'pending' ) {
-            $color = '#dc3545' ;
-        } else {
+        if($appointment->status == 'cancel' ) {
+            $color = '#ffc107' ;
+        } else if ($appointment->status == 'booked' ){
             $color= '#28a745' ;
         }
 
@@ -33,7 +33,7 @@ function display_calendar ()
             'constraint' => 'businessHours',
             'editable'   => false,
             'allDay'     => false,
-            'url'        => admin_url( 'admin.php?page=gh_calendar&action=manage&appointment=' . $appointment->ID ),// link to view appointment page
+            'url'        => admin_url( 'admin.php?page=gh_calendar&action=view_appointment&appointment=' . $appointment->ID ),// link to view appointment page
             'color'      => $color
         );
     }
