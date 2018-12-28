@@ -14,8 +14,8 @@ function display_calendar ()
 //get list of appointment
     $calendar_id = $_GET['calendar_id'];
 // get all the appointment
-    $obj = new WPGH_DB_Appointments();
-    $appointments = $obj->get_appointments_by_args(array( 'calendar_id' => $calendar_id ));
+
+    $appointments = WPGH_APPOINTMENTS()->appointments->get_appointments_by_args(array( 'calendar_id' => $calendar_id ));
     $display_data = array();
     foreach($appointments as $appointment)
     {
@@ -38,6 +38,11 @@ function display_calendar ()
         );
     }
     $json =  json_encode($display_data);
+
+    $dow        = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'dow',true);
+    $start_time = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'start_time', true);
+    $end_time   = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'end_time', true);
+
 ?>
 <script type="text/javascript">
 
@@ -60,15 +65,15 @@ function display_calendar ()
             },
             businessHours: {
                 // days of week. an array of zero-based day of week integers (0=Sunday)
-                dow: [ 1, 2, 3, 4 , 5 ], // Monday - Thursday
-                start: '9:00', // a start time (10am in this example)
-                end: '17:00', // an end time (6pm in this example)
+                dow: <?php echo json_encode($dow); ?>, // Monday - Thursday
+                start: '<?php echo $start_time;  ?>', // a start time (10am in this example)
+                end: '<?php echo $end_time; ?>', // an end time (6pm in this example)
             },
             editable: true,
             eventLimit: true, // allow "more" link when too many events
             selectable :false,
-            minTime : '8:00',
-            maxTime : '18:00',
+            minTime : '<?php echo $start_time;  ?>',
+            maxTime : '<?php echo $end_time; ?>',
             navLinks: true,
             droppable: true,
             dayRender: function (date, cell) {
