@@ -90,7 +90,7 @@ class WPGH_Calendars_Table extends WP_List_Table {
         }
 
         $actions = array();
-        $actions['edit'] = "<span class='edit'><a href='" . admin_url('admin.php?page=gh_emails&action=edit&email=' . $calendar->email->ID ) . "'>" . __('Edit Email') . "</a></span>";
+        $actions['edit'] = "<span class='edit'><a href='" . admin_url('admin.php?page=gh_calendar&action=edit&calendar=' . $calendar->ID ) . "'>" . __('Edit') . "</a></span>";
 
         $actions['delete'] = sprintf(
             '<a href="%s" class="submitdelete" aria-label="%s">%s</a>',

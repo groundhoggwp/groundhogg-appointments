@@ -36,7 +36,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
         <tbody>
         <tr class="form-field term-contact-wrap">
             <th scope="row">
-                <label for="date"><?php _e( 'Select work days' ); ?></label>
+                <label for="date"><?php _e( 'Select working days' ); ?></label>
             </th>
             <td>
                 <ul>
@@ -57,7 +57,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
             </th>
             <td>
                 <input type="time" id="starttime" name="starttime" value="09:00" autocomplete="off" >
-                <p class="description"><?php _e( 'The day the broadcast will be sent.', 'groundhogg' ); ?></p>
+                <p class="description"><?php _e( 'Start time of working hours.', 'groundhogg' ); ?></p>
             </td>
         </tr>
         <tr class="form-field term-contact-wrap">
@@ -66,7 +66,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
             </th>
             <td>
                 <input type="time" id="endtime" name="endtime" value="17:00" autocomplete="off" >
-                <p class="description"><?php _e( 'The day the broadcast will be sent.', 'groundhogg' ); ?></p>
+                <p class="description"><?php _e( 'End time of working hours.', 'groundhogg' ); ?></p>
             </td>
         </tr>
         </tbody>

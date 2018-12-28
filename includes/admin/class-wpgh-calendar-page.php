@@ -149,6 +149,16 @@ class WPGH_Calendar_Page
                 }
 
                 break;
+            case 'edit':
+
+//                if ( ! current_user_can( 'schedule_calendars' ) ){
+//                    wp_die( WPGH()->roles->error( 'schedule_calendars' ) );
+//                }
+                if ( isset( $_POST[ 'update' ] ) ) {
+                    $this->update_calendar();
+                }
+
+                break;
 
             case 'delete':
 
@@ -216,15 +226,76 @@ class WPGH_Calendar_Page
 
     }
 
+    private function update_calendar()
+    {
+        if ( ! isset( $_POST['owner_id'] ) ||  $_POST['owner_id'] == 0 ){
+            $this->notices->add( 'NO_OWNER', __( "Please select a valid user.", 'groundhogg' ), 'error' );
+            return;
+        }
+
+        if ( ! isset( $_POST['name'] ) || $_POST['name'] == '' ){
+            $this->notices->add( 'NO_NAME', __( "Please enter name of calendar.", 'groundhogg' ), 'error' );
+            return;
+        }
+
+        if ( ! isset( $_POST['calendar'] ) || $_POST['calendar'] == '' ){
+            $this->notices->add( 'NO_NAME', __( "Calendar not found.", 'groundhogg' ), 'error' );
+            return;
+        }
+
+        // ADD CALENDAR in DATABASE
+
+//        if ( ! current_user_can( 'schedule_calendars' ) ){
+//            wp_die( WPGH()->roles->error( 'schedule_calendars' ) );
+//        }
+
+
+        $calendar_id = intval($_POST[ 'calendar' ] );
+
+
+        $args =  array(
+            'user_id' =>  intval( $_POST['owner_id'] ),
+            'name'    => sanitize_text_field( $_POST['name'] ),
+        );
+
+        if ( isset( $_POST['description'] ) ) {
+            $args['description']  =  sanitize_text_field( $_POST['description'] );
+        }
+
+        //update operation
+
+        $status  = WPGH_APPOINTMENTS()->calendar->update( $calendar_id,$args );
+        //
+
+        if ( ! $status ){
+            wp_die( 'Something went wrong' );
+        }
+
+        //update meta
+
+        // days
+        if(isset( $_POST['checkbox'] ) ){
+            WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id,'dow',$_POST['checkbox']) ;
+        }
+        // start time
+        if(isset( $_POST['starttime'] ) ) {
+            WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'start_time', sanitize_text_field($_POST['starttime']));
+        }
+        //end time
+        if(isset( $_POST['endtime'] ) ) {
+            WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'end_time', sanitize_text_field($_POST['endtime']));
+        }
+
+        $this->notices->add( 'success', __( 'Calendar updated successfully !', 'groundhogg' ), 'success' ); 
+        wp_redirect( admin_url( 'admin.php?page=gh_calendar&action=edit&calendar=' . $calendar_id ) );
+        die();
+    }
+
     /**
      * Schedule a new calendar
      */
     private function add_calendar()
     {
-
-
-
-
         // add calendar operation
 
         if ( ! isset( $_POST['owner_id'] ) ||  $_POST['owner_id'] == 0 ){
@@ -245,7 +316,7 @@ class WPGH_Calendar_Page
 //        }
 
         $args =  array(
-          'user_id' =>  $_POST['owner_id'],
+          'user_id' =>  intval( $_POST['owner_id'] ),
           'name'    => sanitize_text_field( $_POST['name'] ),
         );
 
@@ -277,9 +348,6 @@ class WPGH_Calendar_Page
             WPGH_APPOINTMENTS()->calendarmeta->add_meta($calendar_id, 'end_time', sanitize_text_field($_POST['endtime']));
         }
 
-
-
-
         $this->notices->add( 'success', __( 'New calendar added!', 'groundhogg' ), 'success' ); // not working
         wp_redirect( admin_url( 'admin.php?page=gh_calendar&action=edit&calendar=' . $calendar_id ) );
         die();
@@ -309,16 +377,10 @@ class WPGH_Calendar_Page
 
         $calendars_table = new WPGH_Calendars_Table();
          ?>
-        <form method="post" class="search-form wp-clearfix" >
-            <!-- search form -->
-            <p class="search-box">
-                <label class="screen-reader-text" for="post-search-input"><?php _e( 'Search Broadcasts ', 'groundhogg'); ?>:</label>
-                <input type="search" id="post-search-input" name="s" value="">
-                <input type="submit" id="search-submit" class="button" value="<?php _e( 'Search Broadcasts ', 'groundhogg'); ?>">
-            </p>
+
             <?php $calendars_table->prepare_items(); ?>
             <?php $calendars_table->display(); ?>
-        </form>
+
 
         <?php
     }
