@@ -23,6 +23,7 @@ class WPGH_Calendar_Page
     {
 
         add_action( 'admin_menu', array( $this, 'register' ) );
+        add_action( 'wp_ajax_gh_add_appointment', array($this, 'gh_add_appointment'));
 
         if ( isset( $_GET['page'] ) && $_GET[ 'page' ] === 'gh_calendar' ){
             add_action( 'init' , array( $this, 'process_action' )  );
@@ -31,12 +32,90 @@ class WPGH_Calendar_Page
         }
     }
 
+    public function gh_add_appointment()
+    {
+        // ADD APPOINTMENTS using AJAX.
+
+        $start  = $_POST['start_time'] ;
+        $end    = $_POST['end_time']  ;
+
+        $email  = sanitize_email( $_POST['email'] );
+        $note   = sanitize_text_field( $_POST['note'] );
+        $appointment_name =  sanitize_text_field( $_POST [ 'appointment_name'] );
+        $calendar_id =  sanitize_text_field( $_POST [ 'calendar_id'] );
+
+
+        // get contact id form email -> if contact is not found generate contact
+
+        // check for contact
+        $contact_id = 0;
+
+        $contact = WPGH()->contacts->get_contacts( array( 'email' => $email ) );
+
+        if ( count($contact )  > 0 ){
+            // create new contact if contact not found
+            $contact_id = $contact[0]->ID;
+        } else {
+            $contact_id = WPGH()->contacts->add(array( 'email' =>$email ));
+        }
+
+//        var_dump( $contact_id );
+//        die();
+
+
+        // perform insert operation
+        $appointment_id  = WPGH_APPOINTMENTS()->appointments->add( array (
+            'contact_id'    => $contact_id,
+            'calendar_id'   => $calendar_id,
+            'name'          => $appointment_name,
+            'status'        => 'pending',
+            'start_time'    => strtotime($start),
+            'end_time'      => strtotime($end)
+            ));
+        // Insert meta
+
+        if ( $appointment_id === false ){
+
+            $response = array( 'msg' => $contact_id /*'Something went wrong!'*/ );
+            wp_die( json_encode( $response ) );
+        }
+
+        if ( $note != ''){
+            WPGH_APPOINTMENTS()->appointmentmeta->add_meta($appointment_id , 'note' , $note);
+        }
+
+        // genrate array for event
+
+        $response = array(
+                'msg' =>'Appointment booked successfully.',
+                'appointment' => array(
+                    'id'         => $appointment_id,
+                    'title'      => $appointment_name,
+                    'start'      => $start,
+                    'end'        => $end,
+                    'constraint' => 'businessHours',
+                    'editable'   => false,
+                    'allDay'     => false,
+                    'url'        => admin_url( 'admin.php?page=gh_calendar&action=view_appointment&appointment=' . $appointment_id ),// link to view appointment page
+
+                )
+            );
+        wp_die( json_encode( $response ) );
+
+
+
+
+    }
+
     /**
      * enqueue editor scripts
      */
     public function scripts()
     {
         // load calendar files
+
+        wp_enqueue_script( 'ajax-script', plugins_url( '../../assets/js/appointments.js', __FILE__ ), array('jquery'), filemtime( plugin_dir_path( __FILE__ ) . '../../assets/js/appointments.js' ) );
+        wp_localize_script( 'ajax-script', 'ajax_object',array( 'ajax_url' => admin_url( 'admin-ajax.php' ), 'we_value' => 1234 ) );
         wp_enqueue_style( 'calender-moment', plugins_url( '../../assets/lib/fullcalendar/fullcalendar.css', __FILE__ ), array(), filemtime( plugin_dir_path( __FILE__ ) . '../../assets/lib/fullcalendar/fullcalendar.css' ) );
         wp_enqueue_script( 'calender-moment', plugins_url( '../../assets/lib/fullcalendar/lib/moment.min.js', __FILE__ ), array(), filemtime( plugin_dir_path( __FILE__ ) . '../../assets/lib/fullcalendar/lib/moment.min.js' ) );
         wp_enqueue_script( 'calender-main', plugins_url( '../../assets/lib/fullcalendar/fullcalendar.js', __FILE__ ), array(), filemtime( plugin_dir_path( __FILE__ ) . '../../assets/lib/fullcalendar/fullcalendar.js' ) );

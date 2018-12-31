@@ -71,7 +71,7 @@ class WPGH_DB_Appointments extends WPGH_DB
             'ID'             => 0,
             'contact_id'     => 0,
             'calendar_id'    => 0,
-            'name'           => '%s',
+            'name'           => '',
             'status'         => 'pending',
             'start_time'     => 0,
             'end_time'       => 0,
@@ -362,8 +362,8 @@ class WPGH_DB_Appointments extends WPGH_DB
         calendar_id bigint(20) unsigned NOT NULL,
         name mediumtext NOT NULL,
         status VARCHAR(20) NOT NULL,
-        start_time datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
-        end_time datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,                
+        start_time bigint(20) unsigned NOT NULL,
+        end_time bigint(20) unsigned NOT NULL,                
         PRIMARY KEY (ID)
 		) CHARACTER SET utf8 COLLATE utf8_general_ci;";
 

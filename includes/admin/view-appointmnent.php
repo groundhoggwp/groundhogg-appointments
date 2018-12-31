@@ -69,13 +69,13 @@ if ($calendar == null) {
     <tr class="form-field term-calendar-description-wrap">
         <th scope="row"><label for="user_id"><?php _e( 'Owner Name' ,'groundhogg') ?></label></th>
         <td>
-            <?php _e( $appointment->start_time, 'groundhogg' ) ;  ?>
+            <?php _e(  date('Y-m-d H:i:s', $appointment->start_time ), 'groundhogg' ) ;  ?>
         </td>
     </tr>
     <tr class="form-field term-calendar-description-wrap">
         <th scope="row"><label for="user_id"><?php _e( 'Owner Name' ,'groundhogg') ?></label></th>
         <td>
-            <?php _e( $appointment->end_time , 'groundhogg' ); ?>
+            <?php _e(date('Y-m-d H:i:s', $appointment->end_time ) , 'groundhogg' ); ?>
         </td>
     </tr>
     <tr>

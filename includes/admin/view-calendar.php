@@ -3,29 +3,59 @@
 if ( ! defined( 'ABSPATH' ) ) exit;
 ?>
 
-
-<div id='wrap'>
-    <div id='external-events'>
-        <h4>Drag and Drop Appoinment in calendar and click on Book appointment</h4>
-        <div class='fc-event'>Appointment</div>
-    </div>
-    <input type="button" name="btndisplay" id ="btnalert" value="Book appointment"/>
-    <div id='calendar'></div>
-    <div style='clear:both'></div>
-
-</div>
-
-<div id='calendar'></div>
-
 <?php
 
 display_calendar();
 
 function display_calendar ()
 {
+    ?>
+    <div style="width: 100%" id = "">
+
+        <div id='wrap' id = "add_appointment">
+            <div id='external-events'>
+                <h4>Drag and Drop Appoinment in calendar and click on Book appointment</h4>
+                <div class='fc-event'>Appointment</div>
+            </div>
+
+            <table class="form-table">
+                <tbody><tr class="form-field term-contact-wrap">
+                    <th scope="row"><label for="user_id"><?php _e( 'Enter Email' ) ?></label></th>
+                    <td>
+                        <input name="name" id="appointmentemail" type="email"  size="40" aria-required="true" placeholder="Calendar Name">
+                        <p class="description"><?php _e( 'Select owner for whom you are creating the calendar.', 'groundhogg' ) ?></p>
+                    </td>
+                </tr>
+                <tr class="form-field term-calendar-name-wrap">
+                    <th scope="row"><label for="name"><?php _e( 'Name' ) ?></label></th>
+                    <td>
+                        <input name="name" id="appointmentname"type="text"  size="40" aria-required="true" placeholder="Calendar Name">
+                        <p class="description"><?php _e( 'A name of a calendar.', 'groundhogg' ) ?>.</p>
+                    </td>
+                </tr>
+                <tr class="form-field term-calendar-description-wrap">
+                    <th scope="row"><label for="description"><?php _e( 'Note' ,'groundhogg'); ?></label></th>
+                    <td>
+                        <textarea name="description" id="appointmentnote" rows="5" cols="50" class="large-text" placeholder="Calendar Description"></textarea>
+                        <p class="description"><?php _e( 'Calendar descriptions are only visible to admins and will never be seen by contacts.', 'groundhogg' ) ?>.</p>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+            <input type="button" name="btndisplay" id ="btnalert" value="Book appointment"/>
+            <div id='calendar'></div>
+            <div style='clear:both'></div>
+        </div>
+
+        <div id='calendar' ></div>
+        <input type="hidden" id="calendar_id" value="<?php echo $_GET[ 'calendar' ]; ?>">
+    </div>
+    <?php
 //get list of appointment
     $calendar_id = $_GET['calendar'];
-// get all the appointment
+
+    // get all the appointment
 
     $appointments = WPGH_APPOINTMENTS()->appointments->get_appointments_by_args(array( 'calendar_id' => $calendar_id ));
     $display_data = array();
@@ -35,13 +65,15 @@ function display_calendar ()
             $color = '#ffc107' ;
         } else if ($appointment->status == 'booked' ){
             $color= '#28a745' ;
+        }else{
+            $color= '' ;
         }
 
         $display_data[] = array(
             'id'         => $appointment->ID,
             'title'      => $appointment->name,
-            'start'      => $appointment->start_time,
-            'end'        => $appointment->end_time,
+            'start'      => $appointment->start_time *1000,
+            'end'        => $appointment->end_time * 1000,
             'constraint' => 'businessHours',
             'editable'   => false,
             'allDay'     => false,
@@ -117,19 +149,21 @@ function display_calendar ()
                         $('#calendar').fullCalendar('changeView', 'agendaDay');
                         $('#calendar').fullCalendar('gotoDate', date);
                     } else {
-                        console.log(date.hours());
-                        console.log(date.minutes());
-
-                        $(this).remove();
-                        var newEvent = {
-                            title: 'My Appointment',
-                            start: date,
-                            end: moment(date).add(1, 'h'),
-                            id: 'booking_event',
-                            constraint: 'businessHours',
-                            editable: true,
-                        };
-                        $('#calendar').fullCalendar('renderEvent', newEvent, 'stick');
+                        // check for overlap
+                        if (!isOverlapping(moment(date).add(1,'minutes') , moment(date).add(1, 'h'))){
+                            $(this).remove();
+                            var newEvent = {
+                                title: 'My Appointment',
+                                start: date,
+                                end: moment(date).add(1, 'h'),
+                                id: 'booking_event',
+                                constraint: 'businessHours',
+                                editable: true,
+                            };
+                            $('#calendar').fullCalendar('renderEvent', newEvent, 'stick');
+                        } else {
+                            alert('time slot already booked!');
+                        }
                     }
                 } else {
                     alert('You can not book passed date.');
@@ -137,7 +171,19 @@ function display_calendar ()
             },
             events : <?php echo $json; ?>
         });
-        $( "#btnalert" ).click(function() {
+        function isOverlapping(start , end ) {
+            var arrCalEvents = $('#calendar').fullCalendar('clientEvents');
+            for (i in arrCalEvents) {
+                    if ((end >= arrCalEvents[i].start && start <= arrCalEvents[i].end) || (end == null && (event.start >= arrCalEvents[i].start && start <= arrCalEvents[i].end))) {//!(Date(arrCalEvents[i].start) >= Date(event.end) || Date(arrCalEvents[i].end) <= Date(event.start))
+                        return true;
+                    }
+            }
+            return false;
+        }
+
+
+
+     /*   $( "#btnalert" ).click(function() {
 
             // ajax call on button click
 
@@ -151,7 +197,7 @@ function display_calendar ()
             } else {
                 alert('Please Drag and Drop appointment.');
             }
-        });
+        });*/
 
     });
 </script>
