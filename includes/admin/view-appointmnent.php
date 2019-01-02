@@ -36,7 +36,7 @@ if ($calendar == null) {
 
 <table class="form-table">
     <tbody><tr class="form-field term-name-wrap">
-        <th scope="row"><label for="user_id"><?php _e( 'Appointment name' ,'groundhogg') ?></label></th>
+        <th scope="row"><label for="user_id"><?php _e( 'Appointment Name' ,'groundhogg') ?></label></th>
         <td>
             <?php _e( $appointment->name , 'groundhogg' ); ?>
         </td>
@@ -67,13 +67,13 @@ if ($calendar == null) {
         </td>
     </tr>
     <tr class="form-field term-calendar-description-wrap">
-        <th scope="row"><label for="user_id"><?php _e( 'Owner Name' ,'groundhogg') ?></label></th>
+        <th scope="row"><label for="user_id"><?php _e( 'Appointment Start Time' ,'groundhogg') ?></label></th>
         <td>
             <?php _e(  date('Y-m-d H:i:s', $appointment->start_time ), 'groundhogg' ) ;  ?>
         </td>
     </tr>
     <tr class="form-field term-calendar-description-wrap">
-        <th scope="row"><label for="user_id"><?php _e( 'Owner Name' ,'groundhogg') ?></label></th>
+        <th scope="row"><label for="user_id"><?php _e( 'Appointment End Time' ,'groundhogg') ?></label></th>
         <td>
             <?php _e(date('Y-m-d H:i:s', $appointment->end_time ) , 'groundhogg' ); ?>
         </td>
@@ -87,7 +87,7 @@ if ($calendar == null) {
     </tr>
     <tr>
         <td colspan="2">
-            <a class="page-title-action aria-button-if-js button" style="color: #fff;background-color: #28a745;border-color: #28a745;" href="<?php echo wp_nonce_url( admin_url( 'admin.php?page=gh_calendar&action=approve&appointment='.$appointment->ID ) ); ?>"><?php _e( 'Book' ); ?></a>
+            <a class="page-title-action aria-button-if-js button" style="color: #fff;background-color: #28a745;border-color: #28a745;" href="<?php echo wp_nonce_url( admin_url( 'admin.php?page=gh_calendar&action=approve&appointment='.$appointment->ID ) ); ?>"><?php _e( 'Approve' ); ?></a>
             <a class="page-title-action aria-button-if-js button" style="color: #212529;background-color: #ffc107;border-color: #ffc107;" href="<?php echo wp_nonce_url( admin_url( 'admin.php?page=gh_calendar&action=cancel&appointment='.$appointment->ID ) ); ?>"><?php _e( 'Cancel' ); ?></a>
             <a class="page-title-action aria-button-if-js button" style="color: #fff;background-color: #dc3545;border-color: #dc3545;" href="<?php echo wp_nonce_url( admin_url( 'admin.php?page=gh_calendar&action=delete_appointment&appointment='.$appointment->ID ) ); ?>"><?php _e( 'Delete' ); ?></a>
         </td>

@@ -19,11 +19,11 @@ function add_appointment()
     foreach($appointments as $appointment)
     {
         if($appointment->status == 'cancel' ) {
-            $color = '#ffc107' ;
+            $color = '#dc3545' ;
         } else if ($appointment->status == 'booked' ){
             $color= '#28a745' ;
         }else{
-            $color= '' ;
+            $color= '#0073aa' ;
         }
 
         $display_data[] = array(
@@ -80,12 +80,36 @@ function add_appointment()
                     </tr>
                     </tbody>
                 </table>
-                <input type="button" name="btndisplay" id ="btnalert" value="Book appointment"/>
+                <input type="button" name="btndisplay" id ="btnalert" value="Book appointment" class="button button-primary"/>
             </div>
         </div>
     </div>
     <div id="col-right">
         <div class="col-wrap">
+
+            <table style="margin-top: 5%">
+
+                <tr>
+                    <td style="background-color:#0073aa ;width: 50px; height: 10px ;">
+                    </td>
+                    <td>
+                        <b> <?php _e( 'Pending', 'groundhogg' ); ?></b>
+                    </td>
+
+                    <td style="background-color:#28a745 ;width: 50px; height: 30px ;">
+                    </td>
+                    <td>
+                        <b> <?php _e( 'Booked', 'groundhogg' ) ;?></b>
+                    </td>
+
+                    <td style="background-color:#dc3545 ;width: 50px; height: 30px ;">
+                    </td>
+                    <td>
+                        <b> <?php _e( 'Canceled', 'groundhogg' ) ; ?></b>
+                    </td>
+                </tr>
+
+            </table>
 
             <div id='calendar'></div>
             <input type="hidden" id="calendar_id" value="<?php echo $_GET[ 'calendar' ]; ?>">
