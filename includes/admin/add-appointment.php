@@ -87,7 +87,7 @@ function add_appointment()
     <div id="col-right">
         <div class="col-wrap">
 
-            <table style="margin-top: 5%">
+            <table>
 
                 <tr>
                     <td style="background-color:#0073aa ;width: 50px; height: 10px ;">
