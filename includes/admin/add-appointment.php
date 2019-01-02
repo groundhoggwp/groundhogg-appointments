@@ -57,7 +57,10 @@ function add_appointment()
                     <tbody><tr class="form-field term-contact-wrap">
                         <th scope="row"><label for="user_id"><?php _e( 'Enter Email' ) ?></label></th>
                         <td>
-                            <?php echo WPGH()->html->dropdown_owners(  array( 'selected' => ( $calendar->user_id )? $calendar->user_id : 0 ) ); ?>
+                            <?php echo WPGH()->html->dropdown_contacts( array(
+                                'name'   => 'contact_id',
+                                'id'     => 'contact_id',
+                            )); ?>
                             <p class="description"><?php _e( 'Enter Client email address.', 'groundhogg' ) ?></p>
                         </td>
                     </tr>
@@ -136,28 +139,31 @@ function add_appointment()
                     revertFunc();
                     alert('You can not book past Date.');
                 } else {
-                    // make AJAX request to handle reschedule
-                    $.ajax({
-                        type: "post",
-                        url: ajax_object.ajax_url,
-                        dataType: 'json',
-                        data: {
-                            action: 'gh_update_appointment',
-                            start_time: moment(event.start).format('YYYY-MM-DD HH:mm:00') ,
-                            end_time: moment(event.end).format('YYYY-MM-DD HH:mm:00'),
-                            id: event.id ,
-                        },
-                        success: function (response) {
+                    if( event.id != 'booking_event' ){
+                        // make a cll if event is not a booking event
+                        // make AJAX request to handle reschedule
+                        $.ajax({
+                            type: "post",
+                            url: ajax_object.ajax_url,
+                            dataType: 'json',
+                            data: {
+                                action: 'gh_update_appointment',
+                                start_time: moment(event.start).format('YYYY-MM-DD HH:mm:00'),
+                                end_time: moment(event.end).format('YYYY-MM-DD HH:mm:00'),
+                                id: event.id,
+                            },
+                            success: function (response) {
 
-                            if(response.status == 'success') {
-                                alert(response.msg);
+                                if (response.status == 'success') {
+                                    alert(response.msg);
 
-                            } else {
-                                alert(response.msg);
-                                revertFunc();
+                                } else {
+                                    alert(response.msg);
+                                    revertFunc();
+                                }
                             }
-                        }
-                    });
+                        });
+                    }
                 }
             },
             dayClick: function(date) {

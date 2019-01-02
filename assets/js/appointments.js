@@ -19,21 +19,20 @@ var appointment;
         addAppointment: function(){
             var event = $("#calendar").fullCalendar( 'clientEvents','booking_event' );
             if( !( event[0] == null ) ) {
-
                 var start_time  = moment(event[0].start).format('YYYY-MM-DD HH:mm:00');
                 var end_time    = moment(event[0].end).format('YYYY-MM-DD HH:mm:00') ;
-                var email       = $('#appointmentemail').val();
+                var id       = $('#contact_id').val();
                 var note        = $('#appointmentnote').val();
                 var appointment_name  = $('#appointmentname').val();
                 var calendar_id  = $('#calendar_id').val();
 
-                if (appointment_name != '') {
-                    // validate email address
-                    if (!validateEmail(email)) {
+                if ( id == null ) {
+                    // check for contact id
+                    alert('Please select contact.');
+                } else {
 
-                        alert('Please Enter valid email address');
+                    if (appointment_name != '') {
 
-                    } else {
                         //AJAX Call to add appointment
                         $.ajax({
                             type: "post",
@@ -43,7 +42,7 @@ var appointment;
                                 action: 'gh_add_appointment',
                                 start_time: start_time,
                                 end_time: end_time,
-                                email: email,
+                                id: id,
                                 note: note,
                                 calendar_id : calendar_id,
                                 appointment_name: appointment_name
@@ -54,19 +53,23 @@ var appointment;
                                 $('#calendar').fullCalendar('removeEvents', 'booking_event');
                                 // add new ly added event
                                 $('#calendar').fullCalendar('renderEvent', response.appointment, 'stick');
+
+                                // set value to null
+                                $('#contact_id').val(null).trigger('change');
+                                $('#appointmentnote').val('');
+                                $('#appointmentname').val('');
+
+
                             }
                         });
-                    }
 
-                    function validateEmail($email) {
-                        var emailReg = /^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$/;
-                        return emailReg.test($email);
+                    } else {
+                        alert('Please enter appointment name');
                     }
-                } else {
-                    alert('Please enter appointment name');
                 }
+
             } else {
-                alert('Please Drag and Drop appointment.');
+                alert('Please create appointment by clicking time slot.');
             }
         },
     };

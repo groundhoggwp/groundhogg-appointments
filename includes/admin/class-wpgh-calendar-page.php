@@ -74,28 +74,24 @@ class WPGH_Calendar_Page
         $start  = $_POST['start_time'] ;
         $end    = $_POST['end_time']  ;
 
-        $email  = sanitize_email( $_POST['email'] );
+        $contact_id  = intval( $_POST['id'] );
         $note   = sanitize_text_field( $_POST['note'] );
         $appointment_name =  sanitize_text_field( $_POST [ 'appointment_name'] );
         $calendar_id =  sanitize_text_field( $_POST [ 'calendar_id'] );
 
 
-        // get contact id form email -> if contact is not found generate contact
-
-        // check for contact
+        /*
         $contact_id = 0;
-
+        // get contact id form email -> if contact is not found generate contact
+        // check for contact
         $contact = WPGH()->contacts->get_contacts( array( 'email' => $email ) );
-
         if ( count($contact )  > 0 ){
             // create new contact if contact not found
             $contact_id = $contact[0]->ID;
         } else {
             $contact_id = WPGH()->contacts->add(array( 'email' =>$email ));
-        }
+        }*/
 
-//        var_dump( $contact_id );
-//        die();
 
 
         // perform insert operation
@@ -111,7 +107,7 @@ class WPGH_Calendar_Page
 
         if ( $appointment_id === false ){
 
-            $response = array( 'msg' => $contact_id /*'Something went wrong!'*/ );
+            $response = array( 'msg' => 'Something went wrong. Appointment not created !' );
             wp_die( json_encode( $response ) );
         }
 
@@ -129,7 +125,7 @@ class WPGH_Calendar_Page
                     'start'      => $start,
                     'end'        => $end,
                     'constraint' => 'businessHours',
-                    'editable'   => false,
+                    'editable'   => true,
                     'allDay'     => false,
                     'url'        => admin_url( 'admin.php?page=gh_calendar&action=view_appointment&appointment=' . $appointment_id ),// link to view appointment page
 
