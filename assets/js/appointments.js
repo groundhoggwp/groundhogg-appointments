@@ -13,6 +13,7 @@ var appointment;
                 e.preventDefault();
                 appointment.addAppointment();
             } );
+
         },
 
         addAppointment: function(){
@@ -49,12 +50,10 @@ var appointment;
                             },
                             success: function (response) {
                                 alert(response.msg);
-
-                                $('#calendar').fullCalendar('removeEvent', 'booking_event');
-
+                                //delete appointment event
+                                $('#calendar').fullCalendar('removeEvents', 'booking_event');
+                                // add new ly added event
                                 $('#calendar').fullCalendar('renderEvent', response.appointment, 'stick');
-
-
                             }
                         });
                     }

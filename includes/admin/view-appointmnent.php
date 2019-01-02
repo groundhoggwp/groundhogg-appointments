@@ -78,6 +78,13 @@ if ($calendar == null) {
             <?php _e(date('Y-m-d H:i:s', $appointment->end_time ) , 'groundhogg' ); ?>
         </td>
     </tr>
+    <tr class="form-field term-calendar-description-wrap">
+        <th scope="row"><label for="user_id"><?php _e( 'Notes' ,'groundhogg') ?></label></th>
+        <td>
+            <?php  _e( WPGH_APPOINTMENTS()->appointmentmeta->get_meta($appointment_id,'note',true) , 'groundhogg' );
+            ?>
+        </td>
+    </tr>
     <tr>
         <td colspan="2">
             <a class="page-title-action aria-button-if-js button" style="color: #fff;background-color: #28a745;border-color: #28a745;" href="<?php echo wp_nonce_url( admin_url( 'admin.php?page=gh_calendar&action=approve&appointment='.$appointment->ID ) ); ?>"><?php _e( 'Book' ); ?></a>

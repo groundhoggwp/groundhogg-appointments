@@ -110,7 +110,7 @@ class WPGH_Calendars_Table extends WP_List_Table {
     protected function column_calendar_id( $calendar )
     {
         $name = ( ! $calendar->name  )? '(' . __( 'no email' ) . ')' : $calendar->name ;
-        $editUrl = admin_url( 'admin.php?page=gh_calendar&action=view&calendar=' . $calendar->ID );
+        $editUrl = admin_url( 'admin.php?page=gh_calendar&action=add_appointment&calendar=' . $calendar->ID );
         $html = "<strong>";
         $html .= "<a class='row-title' href='$editUrl'>{$name}</a>";
         $html .= "</strong>";

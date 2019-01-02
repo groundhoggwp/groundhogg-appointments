@@ -21,9 +21,9 @@ class WPGH_Calendar_Page
 
     public function __construct()
     {
-
         add_action( 'admin_menu', array( $this, 'register' ) );
         add_action( 'wp_ajax_gh_add_appointment', array($this, 'gh_add_appointment'));
+        add_action( 'wp_ajax_gh_update_appointment', array($this, 'gh_update_appointment'));
 
         if ( isset( $_GET['page'] ) && $_GET[ 'page' ] === 'gh_calendar' ){
             add_action( 'init' , array( $this, 'process_action' )  );
@@ -31,6 +31,41 @@ class WPGH_Calendar_Page
             $this->notices = WPGH()->notices;
         }
     }
+    public function gh_update_appointment()
+    {
+        // Handle update appointment
+        $appointment_id  = $_POST['id'];
+        $start_time      = strtotime( $_POST['start_time'] );
+        $end_time        = strtotime( $_POST['end_time'] );
+
+        // update appointment detail
+        $status = WPGH_APPOINTMENTS()->appointments->update($appointment_id ,array(
+            'start_time'    => $start_time,
+            'end_time'      => $end_time,
+        ));
+
+        if ($status){
+
+            wp_die( json_encode( array(
+                'status' => 'success',
+                'msg'    => 'Appointment reschedule successfully.'
+
+            ) ) );
+
+        } else {
+
+            wp_die( json_encode( array(
+                'status' => 'failed',
+                'msg'    => 'Something went wrong !'
+
+            ) ) );
+
+        }
+
+
+
+    }
+
 
     public function gh_add_appointment()
     {
@@ -101,10 +136,6 @@ class WPGH_Calendar_Page
                 )
             );
         wp_die( json_encode( $response ) );
-
-
-
-
     }
 
     /**
@@ -133,10 +164,7 @@ class WPGH_Calendar_Page
             'gh_calendar',
             array($this, 'page')
         );
-
         add_action("load-" . $page, array($this, 'help'));
-
-
     }
 
     public function help()
@@ -207,6 +235,13 @@ class WPGH_Calendar_Page
             case 'view_appointment':
                 _e( 'Appointment' , 'groundhogg' );
                 break;
+            case 'add_appointment':
+                _e( 'Add Appointment' , 'groundhogg' );
+                break;
+            case 'view':
+                _e( 'Calendar' , 'groundhogg' );
+                ?> <a class="page-title-action aria-button-if-js" href="<?php echo admin_url( 'admin.php?page=gh_calendar&action=add_appointment&calendar='.$_GET['calendar'] ); ?>"><?php _e( 'Add New Appointment' ); ?></a><?php
+                 break;
             default:
                 _e( 'Calendars', 'groundhogg' );
                 ?>
@@ -255,13 +290,16 @@ class WPGH_Calendar_Page
 //                }
                 $this->delete_calendar();
                 break;
+
+            case 'add_appointment':
+                break;
+
             case 'view':
                 if( isset( $_GET['calendar_id'] ) )
                 {
                     $this->view_appointments();
                 }
                 break;
-
             case 'approve' :
                 // manage operation of appointment
                 if ( isset( $_GET[ 'appointment' ] ) ) {
@@ -552,6 +590,17 @@ class WPGH_Calendar_Page
 
         include dirname( __FILE__ ) . '/view-appointmnent.php';
     }
+    public function add_appointment()
+    {
+
+
+//        if ( ! current_user_can( 'view_calendars' ) ){
+//            wp_die( WPGH()->roles->error( 'view_calendars' ) );
+//        }
+
+        include dirname( __FILE__ ) . '/add-appointment.php';
+    }
+
 
 
     /**
@@ -585,12 +634,15 @@ class WPGH_Calendar_Page
                 case 'edit':
                     $this->edit();
                     break;
-                case 'view':
-                    //calendar page with appointments in it.
-                    $this->view_calendar();
-                    break;
+//                case 'view':
+//                    //calendar page with appointments in it.
+//                    $this->view_calendar();
+//                    break;
                 case 'view_appointment':
                     $this->view_appointment();
+                    break;
+                case 'add_appointment':
+                    $this->add_appointment();
                     break;
                 default:
                     $this->table();
