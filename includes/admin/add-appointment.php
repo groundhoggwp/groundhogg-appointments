@@ -166,6 +166,38 @@ function add_appointment()
                     }
                 }
             },
+
+            eventResize: function(event, delta, revertFunc) {
+               // handle resizing of event
+
+                if( event.id != 'booking_event' ){
+                    // make a cll if event is not a booking event
+                    // make AJAX request to handle reschedule
+                    $.ajax({
+                        type: "post",
+                        url: ajax_object.ajax_url,
+                        dataType: 'json',
+                        data: {
+                            action: 'gh_update_appointment',
+                            start_time: moment(event.start).format('YYYY-MM-DD HH:mm:00'),
+                            end_time: moment(event.end).format('YYYY-MM-DD HH:mm:00'),
+                            id: event.id,
+                        },
+                        success: function (response) {
+
+                            if (response.status == 'success') {
+                                alert(response.msg);
+
+                            } else {
+                                alert(response.msg);
+                                revertFunc();
+                            }
+                        }
+                    });
+                }
+
+            },
+
             dayClick: function(date) {
                 var fetchevent = $('#calendar').fullCalendar('clientEvents','booking_event');
 
