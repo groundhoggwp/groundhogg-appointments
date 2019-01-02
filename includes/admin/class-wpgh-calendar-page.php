@@ -314,7 +314,7 @@ class WPGH_Calendar_Page
                         wp_die( 'Something went wrong' );
                     }
                     $this->notices->add( 'success', __( 'Appointment updated successfully !', 'groundhogg' ), 'success' );
-                    wp_redirect( admin_url( 'admin.php?page=gh_calendar&action=view&calendar=' . $appointment->calendar_id ) );
+                    wp_redirect( admin_url( 'admin.php?page=gh_calendar&action=add_appointment&calendar=' . $appointment->calendar_id ) );
                     die();
                 }
                 break;
@@ -335,7 +335,7 @@ class WPGH_Calendar_Page
                         wp_die( 'Something went wrong' );
                     }
                     $this->notices->add( 'success', __( 'Appointment deleted successfully !', 'groundhogg' ), 'success' );
-                    wp_redirect( admin_url( 'admin.php?page=gh_calendar&action=view&calendar=' . $appointment->calendar_id ) );
+                    wp_redirect( admin_url( 'admin.php?page=gh_calendar&action=add_appointment&calendar=' . $appointment->calendar_id ) );
                     die();
                 }
                 break;
@@ -356,7 +356,7 @@ class WPGH_Calendar_Page
                         wp_die( 'Something went wrong' );
                     }
                     $this->notices->add( 'success', __( 'Appointment updated successfully !', 'groundhogg' ), 'success' );
-                    wp_redirect( admin_url( 'admin.php?page=gh_calendar&action=view&calendar=' . $appointment->calendar_id ) );
+                    wp_redirect( admin_url( 'admin.php?page=gh_calendar&action=add_appointment&calendar=' . $appointment->calendar_id ) );
                     die();
                 }
 
