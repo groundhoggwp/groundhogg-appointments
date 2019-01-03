@@ -83,18 +83,9 @@ class GH_APPOINTMENTS
             $response = array(  'status'=>'failed', 'msg' => 'This date is out of business hours.' );
             wp_die( json_encode( $response ) );
         }
-
-
-
-
         //GET AVAILABLE TIME IN DAY
         $end_time   = strtotime( $date .' '.$end_time );
         $start_time = strtotime( $date .' '.$start_time );
-
-        // check start time is past time or not !
-
-
-
 
         // get appointments
 
@@ -130,7 +121,6 @@ class GH_APPOINTMENTS
             }
         }
 
-
         if ( $available_slots == null ) {
             $response = array(  'status'=>'failed', 'msg' => 'No Appointments available.' );
             wp_die( json_encode( $response ) );
@@ -138,6 +128,7 @@ class GH_APPOINTMENTS
         // operation on data
         $response = array(  'status'=>'success','data' => json_encode($available_slots) );
         wp_die( json_encode( $response ) );
+
     }
     public  function gh_calendar_shortcode()
     {
@@ -147,10 +138,16 @@ class GH_APPOINTMENTS
         ob_start();
         ?>
 
-        <input type="hidden" name="calendar_id" id="calendar_id" value="<?php echo $calendar_id; ?>"/>
-        <input  class="input" placeholder="Y-m-d" type="text" id="date" name="date" value="" autocomplete="off" required>
-        <select  name = "select_time" id="select_time" class="input" style="visibility: hidden"> </select>
-        <div name="times" id = "times"> </div>
+        <input type="hidden" name="calendar_id" id = "calendar_id" value="<?php echo $calendar_id; ?>"/>
+        <input type="hidden" name="hidden_data" id="hidden_data" data-start_date="" data-end_date="" data-control_id="">
+        <!--        <input  class="input" placeholder="Y-m-d" type="text" id="date" name="date" value="" autocomplete="off" required>-->
+        <div class="input" id="date"></div>
+
+        Time : <hr />
+        <div name = "select_time" id="select_time"  style="visibility: hidden"> </div>
+        <input type="button" name = "btnalert" id="btnalert" value="check"/>
+
+
         <?php
         $content = ob_get_clean();
         return $content;
