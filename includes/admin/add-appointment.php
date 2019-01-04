@@ -159,12 +159,10 @@ function add_appointment()
             eventOverlap : false,
             eventDrop: function(event, delta, revertFunc) {
               // disable booking previous date
-                var today = new Date();
-                if(event.start <= today) {
+
+                if( (event.start/1000) < <?php echo current_time('timestamp');?>   ) {
                     revertFunc();
                     alert('You can not book past Date.');
-
-
                 } else {
                     if( event.id != 'booking_event' ){
                         // make a cll if event is not a booking event
@@ -222,7 +220,6 @@ function add_appointment()
                         }
                     });
                 }
-
             },
 
             dayClick: function(date) {
