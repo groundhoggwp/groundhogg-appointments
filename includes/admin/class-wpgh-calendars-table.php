@@ -40,6 +40,7 @@ class WPGH_Calendars_Table extends WP_List_Table {
 	public function get_columns() {
 		$columns = array(
 			'calendar_id'     => _x( 'Calendar Name', 'Column label', 'groundhogg' ),
+            'short_code'       => _x( 'Calendar Short Code', 'Column label', 'groundhogg' ),
 			'user_id'         => _x( 'Calendar Owner', 'Column label', 'groundhogg' ),
 			'description'     => _x( 'Description', 'Column label', 'groundhogg' ),
 		);
@@ -125,6 +126,11 @@ class WPGH_Calendars_Table extends WP_List_Table {
     protected function column_description( $calendar )
     {
         return esc_html( $calendar->description );
+    }
+
+    protected function column_short_code( $calendar )
+    {
+        return '<input type="text" class="code" style="font-weight: bold;" onfocus="this.select()" value="[gh_calendar calendar_id ='. $calendar->ID .' appointment_name = \'Client Appointment\' ]" readonly> ';
     }
 
 
