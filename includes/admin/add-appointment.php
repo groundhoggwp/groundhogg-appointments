@@ -150,6 +150,7 @@ function add_appointment()
             navLinks: true,
             droppable: true,
             allDaySlot :false,
+            nowIndicator :true,
             dayRender: function (date, cell) {
                 if( date < new Date()) {
                     cell.css("background-color", "");
@@ -159,9 +160,11 @@ function add_appointment()
             eventDrop: function(event, delta, revertFunc) {
               // disable booking previous date
                 var today = new Date();
-                if(event.start < today) {
+                if(event.start <= today) {
                     revertFunc();
                     alert('You can not book past Date.');
+
+
                 } else {
                     if( event.id != 'booking_event' ){
                         // make a cll if event is not a booking event
@@ -224,9 +227,8 @@ function add_appointment()
 
             dayClick: function(date) {
                 var fetchevent = $('#calendar').fullCalendar('clientEvents','booking_event');
-
                 if ( fetchevent[0] == null){
-                    if( date  > new Date()) {
+                    if( date /1000 ><?php echo current_time('timestamp');?> ) {
                         var dow =  <?php echo json_encode($dow); ?>;
                         var isvalid = (dow.indexOf(date.day().toString()) > -1);
                         if (isvalid){
