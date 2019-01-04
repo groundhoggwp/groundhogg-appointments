@@ -139,15 +139,16 @@ class GH_APPOINTMENTS
             wp_die( json_encode( $response ) );
         }
 
+        $start_time = strtotime( $date .' '.$start_time );
         // check if current time is past time or not !
         if ($start_time < $time) {
             $d =  date('H:00' , $time);
-            $start_time = $d;
+            $start_time = strtotime( $d );
         }
 
         //GET AVAILABLE TIME IN DAY
         $end_time   = strtotime( $date .' '.$end_time );
-        $start_time = strtotime( $date .' '.$start_time );
+       // $start_time = strtotime( $date .' '.$start_time );
 
         // get appointments
 
