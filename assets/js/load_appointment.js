@@ -17,7 +17,7 @@ var appointment;
                     alert( 'Please select appointment.' );
                 } else {
                     //check all the fields entered or not !
-                    if ($('#first_name').val() == '' || $('#last_name').val() == '' || $('#email').val() == '' || $('#appointment_name').val() == '' ){
+                    if ($('#first_name').val() == '' || $('#last_name').val() == '' || $('#email').val() == '' ){
                         alert( 'Please enter your information.' );
                     } else {
                         //validate email address
@@ -81,7 +81,7 @@ var appointment;
                 if( !( id == '' ) ) {
                     //remove colour
                     $('#'+id).css( 'background-color' ,'#8fdf82' );
-                    console.log(id);
+                 
                 }
                 // set data inside hidden field
                 $(this).css( 'background-color' ,'#123456' );
