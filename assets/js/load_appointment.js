@@ -9,9 +9,6 @@ var appointment;
 
         init: function()
         {
-
-            $("<style type='text/css'> .ui-datepicker-current-day{  border-style: solid; font-weight:bold; color: #123456;} </style>").appendTo("head");
-            $("<style type='text/css'> .ui-datepicker-calendar{ text-align: center;} </style>").appendTo("head");
             $( '#book_appointment' ).on( 'click', function(e){
                 e.preventDefault();
 

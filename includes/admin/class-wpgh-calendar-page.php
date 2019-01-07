@@ -52,6 +52,10 @@ class WPGH_Calendar_Page
      */
     public function gh_update_appointment()
     {
+        if ( ! current_user_can( 'edit_appointment' ) ){
+            $response = array(   'status' => 'failed','msg' => 'Your user role does not have the required permissions to Edit appointment.' );
+            wp_die( json_encode($response) );
+        }
         // Handle update appointment
         $appointment_id  = $_POST['id'];
         $start_time      = strtotime( $_POST['start_time'] );
@@ -86,6 +90,11 @@ class WPGH_Calendar_Page
      */
     public function gh_add_appointment()
     {
+        if ( ! current_user_can( 'add_appointment' ) ){
+            $response = array( 'msg' => 'Your user role does not have the required permissions to add appointment.' );
+            wp_die( json_encode($response) );
+        }
+
         // ADD APPOINTMENTS using AJAX.
 
         $start              = $_POST['start_time'] ;
@@ -160,7 +169,7 @@ class WPGH_Calendar_Page
             'groundhogg',
             'Calendars',
             'Calendars',
-            'view_broadcasts',
+            'view_calendar',
             'gh_calendar',
             array($this, 'page')
         );
@@ -615,10 +624,6 @@ class WPGH_Calendar_Page
     }
     public function add_appointment()
     {
-        if ( ! current_user_can( 'add_appointment' ) ){
-            wp_die( WPGH()->roles->error( 'add_appointment' ) );
-        }
-
         include dirname( __FILE__ ) . '/add-appointment.php';
     }
 

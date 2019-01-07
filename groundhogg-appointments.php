@@ -58,6 +58,12 @@ class GH_APPOINTMENTS
      */
     public $page;
 
+
+    /**
+     * @var WPGH_Roles_Calendar
+     */
+    public $role_calendar;
+
     /**
      * @var bool
      */
@@ -82,6 +88,8 @@ class GH_APPOINTMENTS
             self::$instance->appointmentmeta  = new WPGH_DB_Appointment_Meta();
             self::$instance->calendar         = new WPGH_DB_Calendar();
             self::$instance->appointments     = new WPGH_DB_Appointments();
+            self::$instance->role_calendar    = new WPGH_Roles_Calendar();
+
 
             self::$instance->benchmark        = new WPGH_Appointment_Benchmark();
             self::$instance->page             = new WPGH_Calendar_Page();
@@ -138,13 +146,15 @@ class GH_APPOINTMENTS
             $this->version,
             $this->author,
             '',
-            'Run automation based on Groundhogg Appoinments.'
+            'Run automation based on Groundhogg Appointments.'
         );
     }
 
     public function includes()
     {
         require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/class-wpgh-db-appointmentmeta.php';
+        require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/install.php';
+        require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/class-wpgh-roles-calendar.php';
         require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/class-wpgh-db-calendarmeta.php';
         require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/class-wpgh-db-appointment.php';
         require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/class-wpgh-db-calendar.php';

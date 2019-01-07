@@ -1,0 +1,8 @@
+.ui-datepicker-current-day{
+    border-style: solid;
+    font-weight:bold; color: #123456;
+}
+
+.ui-datepicker-calendar{
+    text-align: center;
+}

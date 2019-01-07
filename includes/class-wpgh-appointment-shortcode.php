@@ -23,6 +23,7 @@ class WPGH_Appointment_Shortcode
         //wp_enqueue_script(  'jquery', plugins_url( 'assets/js/lib/fullcalendar/lib/jquery.min.js', __FILE__ ), array('jquery') );
         wp_enqueue_script(  'jquery-ui-datepicker' );
         wp_enqueue_script(  'jquery' );
+        wp_enqueue_style ( 'calender-css',   WPGH_APPOINTMENT_ASSETS_FOLDER . 'css/frontend.css',  array(), filemtime(WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/css/frontend.css') );
         wp_enqueue_script(  'ajax-script', WPGH_APPOINTMENT_ASSETS_FOLDER . '/js/load_appointment.js', array('jquery') , filemtime( WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/js/load_appointment.js' ) );
         wp_localize_script( 'ajax-script', 'ajax_object',array( 'ajax_url' => admin_url( 'admin-ajax.php' ), 'we_value' => 1234 ) );
     }
