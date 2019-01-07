@@ -96,6 +96,7 @@ var appointment;
                 changeMonth: true,
                 changeYear: true,
                 minDate:0,
+                firstDay: 0,
                 dateFormat:'yy-mm-dd',
                 onSelect: function(dateText) {
                     $('#select_time').children().remove();
