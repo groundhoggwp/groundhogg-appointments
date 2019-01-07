@@ -117,16 +117,27 @@ class WPGH_Calendars_Table extends WP_List_Table {
         $html .= "</strong>";
         return $html;
     }
+
+    /*
+     * Display calendar owner
+     */
     protected function column_user_id( $calendar )
     {
         $user_data     = get_userdata( $calendar->user_id );
         return esc_html( $user_data->user_login . ' (' . $user_data->user_email .')');
 
     }
+    /*
+     *  populate description column of table
+     */
     protected function column_description( $calendar )
     {
         return esc_html( $calendar->description );
     }
+
+    /*
+     * Populate short code column
+     */
 
     protected function column_short_code( $calendar )
     {

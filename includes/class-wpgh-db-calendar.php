@@ -20,7 +20,7 @@ class WPGH_DB_Calendar extends WPGH_DB
      * The name of the cache group.
      *
      * @access public
-     * @since  2.8
+     * @since  1.0
      * @var string
      */
     public $cache_group = 'calendar';
@@ -29,7 +29,7 @@ class WPGH_DB_Calendar extends WPGH_DB
      * Get things started
      *
      * @access  public
-     * @since   2.1
+     * @since   1.0
      */
     public function __construct() {
 
@@ -43,7 +43,7 @@ class WPGH_DB_Calendar extends WPGH_DB
      * Get columns and formats
      *
      * @access  public
-     * @since   2.1
+     * @since   1.0
      */
     public function get_columns() {
         return array(
@@ -58,7 +58,7 @@ class WPGH_DB_Calendar extends WPGH_DB
      * Get default column values
      *
      * @access  public
-     * @since   2.1
+     * @since   1.0
      */
     public function get_column_defaults() {
         return array(
@@ -74,7 +74,7 @@ class WPGH_DB_Calendar extends WPGH_DB
      * Add a calendar
      *
      * @access  public
-     * @since   2.1
+     * @since   1.0
      */
     public function add( $data = array() ) {
 
@@ -99,7 +99,7 @@ class WPGH_DB_Calendar extends WPGH_DB
      * Insert a new calendar
      *
      * @access  public
-     * @since   2.1
+     * @since   1.0
      * @return  int
      */
     public function insert( $data, $type = '' ) {
@@ -114,7 +114,7 @@ class WPGH_DB_Calendar extends WPGH_DB
      * Update a calendar
      *
      * @access  public
-     * @since   2.1
+     * @since   1.0
      * @return  bool
      */
     public function update( $row_id, $data = array(), $where = '' ) {
@@ -132,7 +132,7 @@ class WPGH_DB_Calendar extends WPGH_DB
      * Delete a calendar
      *
      * @access  public
-     * @since   2.3.1
+     * @since   1.0
      */
     public function delete( $id = false ) {
 
@@ -163,7 +163,7 @@ class WPGH_DB_Calendar extends WPGH_DB
      * Checks if a calendar exists
      *
      * @access  public
-     * @since   2.1
+     * @since   1.0
      */
     public function exists( $value = 0, $field = 'ID' ) {
 
@@ -191,7 +191,7 @@ class WPGH_DB_Calendar extends WPGH_DB
      * Retrieves a single calendar from the database
      *
      * @access public
-     * @since  2.3
+     * @since  1.0
      * @param  string $field id or email
      * @param  mixed  $value  The Customer ID or email to search
      * @return mixed          Upon success, an object of the calendar. Upon failure, NULL
@@ -238,7 +238,7 @@ class WPGH_DB_Calendar extends WPGH_DB
      * Retrieve calendars from the database
      *
      * @access  public
-     * @since   2.1
+     * @since   1.0
      */
     public function get_calendars() {
 
@@ -251,7 +251,7 @@ class WPGH_DB_Calendar extends WPGH_DB
      * Count the total number of calendar in the database
      *
      * @access  public
-     * @since   2.1
+     * @since   1.0
      */
     public function count( $args = array() ) {
         return count( $this->get_calendars() );
@@ -261,7 +261,7 @@ class WPGH_DB_Calendar extends WPGH_DB
      * Sets the last_changed cache key for calendars.
      *
      * @access public
-     * @since  2.8
+     * @since  1.0
      */
     public function set_last_changed() {
         wp_cache_set( 'last_changed', microtime(), $this->cache_group );
@@ -271,7 +271,7 @@ class WPGH_DB_Calendar extends WPGH_DB
      * Retrieves the value of the last_changed cache key for calendars.
      *
      * @access public
-     * @since  2.8
+     * @since  1.0
      */
     public function get_last_changed() {
         if ( function_exists( 'wp_cache_get_last_changed' ) ) {
@@ -291,7 +291,7 @@ class WPGH_DB_Calendar extends WPGH_DB
      * Create the table
      *
      * @access  public
-     * @since   2.1
+     * @since   1.0
      */
     public function create_table() {
 

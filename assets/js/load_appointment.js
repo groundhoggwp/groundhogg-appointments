@@ -44,7 +44,7 @@ var appointment;
 
                                 },
                                 success: function (response) {
-                                    alert(response.msg);
+
 
                                     if (response.status == 'failed') {
                                         alert(response.msg);

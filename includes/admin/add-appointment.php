@@ -1,15 +1,18 @@
 <?php
+
 if ( ! defined( 'ABSPATH' ) ) exit;
-?>
-<?php
 
 add_appointment();
 
+/*
+ *  Display Full calender.
+ *  Loads Data inside full calendar.
+ *  Handles all the calendar events.
+ */
 function add_appointment()
 {
 
-
-//get list of appointment
+    //get list of appointment
     $calendar_id = $_GET['calendar'];
 
     // get all the appointment
@@ -18,9 +21,9 @@ function add_appointment()
     $display_data = array();
     foreach($appointments as $appointment)
     {
-        if($appointment->status == 'cancel' ) {
+        if($appointment->status == 'cancelled' ) {
             $color = '#dc3545' ;
-        } else if ($appointment->status == 'booked' ){
+        } else if ($appointment->status == 'approved' ){
             $color= '#28a745' ;
         }else{
             $color= '#0073aa' ;

@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 /**
  * WPGH_DB_Calendar_Meta Class
  *
- * @since 2.1
+ * @since 1.0
  */
 class WPGH_DB_Calendar_Meta extends WPGH_DB  {
 
@@ -24,7 +24,7 @@ class WPGH_DB_Calendar_Meta extends WPGH_DB  {
      * The name of the cache group.
      *
      * @access public
-     * @since  2.8
+     * @since  1.0
      * @var string
      */
     public $cache_group = 'calendar_meta';
@@ -33,7 +33,7 @@ class WPGH_DB_Calendar_Meta extends WPGH_DB  {
      * Get things started
      *
      * @access  public
-     * @since   2.1
+     * @since   1.0
      */
     public function __construct() {
 
@@ -52,7 +52,7 @@ class WPGH_DB_Calendar_Meta extends WPGH_DB  {
      * Get columns and formats
      *
      * @access  public
-     * @since   2.1
+     * @since   1.0
      */
     public function get_columns() {
         return array(
@@ -72,17 +72,8 @@ class WPGH_DB_Calendar_Meta extends WPGH_DB  {
 
 
     /**
-     * Retrieve email meta field for a email.
+     * Retrieves calendar meta field.
      *
-     * For internal use only. Use EDD_Contact->get_meta() for public usage.
-     *
-     * @param   int    $email_id   Contact ID.
-     * @param   string $meta_key      The meta key to retrieve.
-     * @param   bool   $single        Whether to return a single value.
-     * @return  mixed                 Will be an array if $single is false. Will be value of meta data field if $single is true.
-     *
-     * @access  private
-     * @since   2.6
      */
     public function get_meta( $calendar_id = 0, $meta_key = '', $single = false ) {
         $calendar_id = $this->sanitize_calendar_id( $calendar_id );
@@ -93,6 +84,9 @@ class WPGH_DB_Calendar_Meta extends WPGH_DB  {
         return get_metadata( 'calendar', $calendar_id, $meta_key, $single );
     }
 
+    /*
+     * add calendar meta
+     */
     public function add_meta( $calendar_id = 0, $meta_key = '', $meta_value, $unique = false ) {
         $calendar_id = $this->sanitize_calendar_id( $calendar_id );
         if ( false === $calendar_id ) {
@@ -101,6 +95,9 @@ class WPGH_DB_Calendar_Meta extends WPGH_DB  {
         return add_metadata( 'calendar', $calendar_id, $meta_key, $meta_value, $unique );
     }
 
+    /*
+     * updates calendar meta
+     */
     public function update_meta( $calendar_id = 0, $meta_key = '', $meta_value, $prev_value = '' ) {
         $calendar_id = $this->sanitize_calendar_id( $calendar_id );
         if ( false === $calendar_id ) {
@@ -109,10 +106,16 @@ class WPGH_DB_Calendar_Meta extends WPGH_DB  {
 
         return update_metadata( 'calendar', $calendar_id, $meta_key, $meta_value, $prev_value );
     }
-
+    /*
+     * deletes calendar meta based on calendar id and key name
+     */
     public function delete_meta( $calendar_id = 0, $meta_key = '', $meta_value = '' ) {
         return delete_metadata( 'calendar', $calendar_id, $meta_key, $meta_value );
     }
+
+    /*
+     * delete calender meta based on meta ID
+     */
 
     public function delete_calendar_meta( $id )
     {
@@ -121,6 +124,9 @@ class WPGH_DB_Calendar_Meta extends WPGH_DB  {
         return $result;
     }
 
+    /*
+     * clean calendar id
+     */
 
     private function sanitize_calendar_id( $calendar_id ) {
         if ( ! is_numeric( $calendar_id ) ) {
@@ -148,7 +154,7 @@ class WPGH_DB_Calendar_Meta extends WPGH_DB  {
      * Create the table
      *
      * @access  public
-     * @since   2.1
+     * @since   1.0
      */
     public function create_table() {
         global $wpdb;
