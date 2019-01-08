@@ -69,6 +69,11 @@ class GH_APPOINTMENTS
      */
     public static $is_setup = false;
 
+    /**
+     * create object
+     *
+     * @return GH_APPOINTMENTS
+     */
     public static function instance()
     {
         if ( !self::$is_setup ) {
@@ -95,40 +100,33 @@ class GH_APPOINTMENTS
             self::$instance->page             = new WPGH_Calendar_Page();
             self::$instance->shortcode        = new WPGH_Appointment_Shortcode();
         }
-
         return self::$instance;
     }
 
     /**
      * Setup the constants
      */
+
     private function setup_constants()
     {
-
         if ( ! defined( 'WPGH_APPOINTMENT_ID' ) ) {
             define('WPGH_APPOINTMENT_ID', $this->ID);
         }
-
         if ( ! defined( 'WPGH_APPOINTMENT_NAME' ) ) {
             define( 'WPGH_APPOINTMENT_NAME', $this->name );
         }
-
         if ( ! defined( 'WPGH_APPOINTMENT_VERSION' ) ) {
             define( 'WPGH_APPOINTMENT_VERSION', $this->version );
         }
-
         if ( ! defined( 'WPGH_APPOINTMENT_PLUGIN_URI' ) ) {
             define( 'WPGH_APPOINTMENT_PLUGIN_URI', plugins_url( '/', __FILE__ ) );
         }
-
         if ( ! defined( 'WPGH_APPOINTMENT_PLUGIN_DIR' ) ) {
             define( 'WPGH_APPOINTMENT_PLUGIN_DIR', plugin_dir_path(__FILE__ ) );
         }
-
         if ( ! defined( 'WPGH_APPOINTMENT_PLUGIN_FILE' ) ){
             define( 'WPGH_APPOINTMENT_PLUGIN_FILE', __FILE__ );
         }
-
         if ( ! defined( 'WPGH_APPOINTMENT_ASSETS_FOLDER' ) ){
             define( 'WPGH_APPOINTMENT_ASSETS_FOLDER', plugin_dir_url( __FILE__ ) . 'assets/' );
         }
@@ -150,6 +148,9 @@ class GH_APPOINTMENTS
         );
     }
 
+    /**
+     * includes all  the essential files.
+     */
     public function includes()
     {
         require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/class-wpgh-db-appointmentmeta.php';
@@ -161,11 +162,9 @@ class GH_APPOINTMENTS
         require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/class-wpgh-appointment-shortcode.php';
         require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/admin/class-wpgh-calendar-page.php';
         require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/admin/class-wpgh-appointment-benchmark.php';
-
     }
 }
 endif;
-
 function WPGH_APPOINTMENTS()
 {
     return GH_APPOINTMENTS::instance();

@@ -2,7 +2,6 @@
 
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) exit;
-
 /**
  * Install
  *
@@ -12,11 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  * pages. After successful install, the user is redirected to the WPGH Welcome
  * screen.
  *
- * @since 1.0
- * @global $wpdb
- * @global $wpgh_options
- * @param  bool $network_wide If the plugin is being network-activated
- * @return void
+ * @param bool $network_wide
  */
 function wpgh_appt_install( $network_wide = false ) {
     global $wpdb;
@@ -41,21 +36,14 @@ register_activation_hook( WPGH_APPOINTMENT_PLUGIN_FILE, 'wpgh_appt_install' );
  */
 function wpgh_appt_activate()
 {
-
     //create database
-
     WPGH_APPOINTMENTS()->appointments->create_table();
     WPGH_APPOINTMENTS()->appointmentmeta->create_table();
     WPGH_APPOINTMENTS()->calendarmeta->create_table();
     WPGH_APPOINTMENTS()->calendar->create_table();
-
     //install stuff goes here.
-
     $roles = new WPGH_Roles_Calendar();
     $roles->add_caps();
-
-
-
 }
 
 

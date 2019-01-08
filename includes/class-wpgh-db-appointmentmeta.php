@@ -21,10 +21,14 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 class WPGH_DB_Appointment_Meta extends WPGH_DB  {
 
     /**
-     * The name of the cache group
+     *
+     * @var string
      */
     public $cache_group = 'appointment_meta';
 
+    /**
+     * WPGH_DB_Appointment_Meta constructor.
+     */
     public function __construct() {
         global $wpdb;
         $this->table_name  = $wpdb->prefix . 'gh_appointmentmeta';
@@ -36,8 +40,10 @@ class WPGH_DB_Appointment_Meta extends WPGH_DB  {
         add_action( 'wpgh_delete_appointment', array( $this, 'delete_appointment_meta' ) );
     }
 
-    /*
+    /**
      * returns list of column
+     *
+     * @return array
      */
     public function get_columns() {
         return array(
@@ -49,28 +55,38 @@ class WPGH_DB_Appointment_Meta extends WPGH_DB  {
         );
     }
 
-    /*
-     *  Register table in list of database table
+    /**
+     * Register table in list of database table
      */
     public function register_table() {
         global $wpdb;
         $wpdb->appointmentmeta = $this->table_name;
     }
 
-    /*
+    /**
      *  Retrieve meta data form database
+     *
+     * @param int $appointment_id
+     * @param string $meta_key
+     * @param bool $single
+     * @return bool|mixed
      */
     public function get_meta( $appointment_id = 0, $meta_key = '', $single = false ) {
         $appointment_id = $this->sanitize_appointment_id( $appointment_id );
         if ( false === $appointment_id ) {
             return false;
         }
-
         return get_metadata( 'appointment', $appointment_id, $meta_key, $single );
     }
 
-    /*
-     *  Adds meta data in database.
+    /**
+     * Adds meta data in database.
+     *
+     * @param int $appointment_id
+     * @param string $meta_key
+     * @param $meta_value
+     * @param bool $unique
+     * @return bool|false|int
      */
 
     public function add_meta( $appointment_id = 0, $meta_key = '', $meta_value, $unique = false ) {
@@ -81,10 +97,15 @@ class WPGH_DB_Appointment_Meta extends WPGH_DB  {
         return add_metadata( 'appointment', $appointment_id, $meta_key, $meta_value, $unique );
     }
 
-    /*
-     *  Update meta value in data base
+    /**
+     * Update meta value in data base
+     *
+     * @param int $appointment_id
+     * @param string $meta_key
+     * @param $meta_value
+     * @param string $prev_value
+     * @return bool|int
      */
-
     public function update_meta( $appointment_id = 0, $meta_key = '', $meta_value, $prev_value = '' ) {
         $appointment_id = $this->sanitize_appointment_id( $appointment_id );
         if ( false === $appointment_id ) {
@@ -94,16 +115,24 @@ class WPGH_DB_Appointment_Meta extends WPGH_DB  {
         return update_metadata( 'appointment', $appointment_id, $meta_key, $meta_value, $prev_value );
     }
 
-    /*
+    /**
      *  Delete meta data from database
+     *
+     * @param int $appointment_id
+     * @param string $meta_key
+     * @param string $meta_value
+     * @return bool
      */
-
     public function delete_meta( $appointment_id = 0, $meta_key = '', $meta_value = '' ) {
         return delete_metadata( 'appointment', $appointment_id, $meta_key, $meta_value );
     }
 
-    /*
-     *  delete appointment meta
+
+    /**
+     * Delete appointment meta
+     *
+     * @param $id
+     * @return false|int
      */
     public function delete_appointment_meta( $id ){
         global $wpdb;
@@ -111,10 +140,12 @@ class WPGH_DB_Appointment_Meta extends WPGH_DB  {
         return $result;
     }
 
-    /*
-     *  clean appointment field
+    /**
+     * clean appointment field
+     *
+     * @param $appointment_id
+     * @return bool|int
      */
-
     private function sanitize_appointment_id( $appointment_id ) {
         if ( ! is_numeric( $appointment_id ) ) {
             return false;

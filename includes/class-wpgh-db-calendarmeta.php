@@ -64,7 +64,9 @@ class WPGH_DB_Calendar_Meta extends WPGH_DB  {
         );
     }
 
-
+    /**
+     * register table
+     */
     public function register_table() {
         global $wpdb;
         $wpdb->calendarmeta = $this->table_name;
@@ -74,18 +76,27 @@ class WPGH_DB_Calendar_Meta extends WPGH_DB  {
     /**
      * Retrieves calendar meta field.
      *
+     * @param int $calendar_id
+     * @param string $meta_key
+     * @param bool $single
+     * @return bool|mixed
      */
     public function get_meta( $calendar_id = 0, $meta_key = '', $single = false ) {
         $calendar_id = $this->sanitize_calendar_id( $calendar_id );
         if ( false === $calendar_id ) {
             return false;
         }
-
         return get_metadata( 'calendar', $calendar_id, $meta_key, $single );
     }
 
-    /*
-     * add calendar meta
+    /**
+     *  add calendar meta
+     *
+     * @param int $calendar_id
+     * @param string $meta_key
+     * @param $meta_value
+     * @param bool $unique
+     * @return bool|false|int
      */
     public function add_meta( $calendar_id = 0, $meta_key = '', $meta_value, $unique = false ) {
         $calendar_id = $this->sanitize_calendar_id( $calendar_id );
@@ -95,8 +106,14 @@ class WPGH_DB_Calendar_Meta extends WPGH_DB  {
         return add_metadata( 'calendar', $calendar_id, $meta_key, $meta_value, $unique );
     }
 
-    /*
+    /**
      * updates calendar meta
+     *
+     * @param int $calendar_id
+     * @param string $meta_key
+     * @param $meta_value
+     * @param string $prev_value
+     * @return bool|int
      */
     public function update_meta( $calendar_id = 0, $meta_key = '', $meta_value, $prev_value = '' ) {
         $calendar_id = $this->sanitize_calendar_id( $calendar_id );
@@ -106,15 +123,25 @@ class WPGH_DB_Calendar_Meta extends WPGH_DB  {
 
         return update_metadata( 'calendar', $calendar_id, $meta_key, $meta_value, $prev_value );
     }
-    /*
-     * deletes calendar meta based on calendar id and key name
+
+    /**
+     *  deletes calendar meta based on calendar id and key name
+     *
+     * @param int $calendar_id
+     * @param string $meta_key
+     * @param string $meta_value
+     * @return bool
      */
     public function delete_meta( $calendar_id = 0, $meta_key = '', $meta_value = '' ) {
         return delete_metadata( 'calendar', $calendar_id, $meta_key, $meta_value );
     }
 
-    /*
+
+    /**
      * delete calender meta based on meta ID
+     *
+     * @param $id
+     * @return false|int
      */
 
     public function delete_calendar_meta( $id )
@@ -124,32 +151,26 @@ class WPGH_DB_Calendar_Meta extends WPGH_DB  {
         return $result;
     }
 
-    /*
+    /**
      * clean calendar id
+     *
+     * @param $calendar_id
+     * @return bool|int
      */
-
     private function sanitize_calendar_id( $calendar_id ) {
         if ( ! is_numeric( $calendar_id ) ) {
             return false;
         }
-
         $calendar_id = (int) $calendar_id;
-
         // We were given a non positive number
         if ( absint( $calendar_id ) !== $calendar_id ) {
             return false;
         }
-
         if ( empty( $calendar_id ) ) {
             return false;
         }
-
         return absint( $calendar_id );
-
     }
-
-
-
     /**
      * Create the table
      *
@@ -168,7 +189,6 @@ class WPGH_DB_Calendar_Meta extends WPGH_DB  {
         KEY calendar_id (calendar_id),
         KEY meta_key (meta_key)
 		) CHARACTER SET utf8 COLLATE utf8_general_ci;";
-
         dbDelta( $sql );
         update_option( $this->table_name . '_db_version', $this->version );
     }

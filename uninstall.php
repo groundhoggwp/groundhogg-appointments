@@ -22,14 +22,11 @@
 // Exit if accessed directly.
 if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) exit;
 
-
 include_once dirname( __FILE__ ) . '/groundhogg-appointments.php' ;
 
 if( wpgh_is_option_enabled( 'gh_uninstall_on_delete' ) ) {
-
     /* delete permissions */
     WPGH_APPOINTMENTS()->role_calendar->remove_caps();
-
     // Delete the databases
     WPGH_APPOINTMENTS()->calendar->drop();
     WPGH_APPOINTMENTS()->calendarmeta->drop();

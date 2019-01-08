@@ -122,7 +122,6 @@ class WPGH_DB_Appointments extends WPGH_DB
      * @return  bool
      */
     public function update( $row_id, $data = array(), $where = '' ) {
-
         $result = parent::update( $row_id, $data, $where );
 
         if ( $result ) {
@@ -139,7 +138,6 @@ class WPGH_DB_Appointments extends WPGH_DB
      * @since   1.0
      */
     public function delete( $id = false ) {
-
         if ( empty( $id ) ) {
             return false;
         }
@@ -220,32 +218,24 @@ class WPGH_DB_Appointments extends WPGH_DB
         if ( empty( $field ) || empty( $value ) ) {
             return NULL;
         }
-
         if ( 'ID' == $field ) {
             // Make sure the value is numeric to avoid casting objects, for example,
             // to int 1.
             if ( ! is_numeric( $value ) ) {
                 return false;
             }
-
             $value = intval( $value );
-
             if ( $value < 1 ) {
                 return false;
             }
-
         }
-
         if ( ! $value ) {
             return false;
         }
-
         $results = $this->get_by( $field, $value );
-
         if ( empty( $results ) ) {
             return false;
         }
-
         return $results;
     }
 
@@ -256,7 +246,6 @@ class WPGH_DB_Appointments extends WPGH_DB
      * @since   1.0
      */
     public function get_appointments() {
-
         global $wpdb;
         $results = $wpdb->get_results("SELECT * FROM $this->table_name ORDER BY $this->primary_key DESC" );
         return $results;
@@ -271,10 +260,6 @@ class WPGH_DB_Appointments extends WPGH_DB
     public function count( ) {
         return count( $this->get_appointments() );
     }
-
-
-
-
 
     /**
      * Sets the last_changed cache key for calendars.
@@ -296,53 +281,34 @@ class WPGH_DB_Appointments extends WPGH_DB
         if ( function_exists( 'wp_cache_get_last_changed' ) ) {
             return wp_cache_get_last_changed( $this->cache_group );
         }
-
         $last_changed = wp_cache_get( 'last_changed', $this->cache_group );
         if ( ! $last_changed ) {
             $last_changed = microtime();
             wp_cache_set( 'last_changed', $last_changed, $this->cache_group );
         }
-
         return $last_changed;
     }
 
     public function get_appointments_by_args( $data = array(), $order = 'ID' ) {
 
         global  $wpdb;
-
         if ( ! is_array( $data ) )
             return false;
-
         $data = (array) $data;
-
         $extra = '';
-
         // Initialise column format array
         $column_formats = $this->get_columns();
-
         // Force fields to lower case
         $data = array_change_key_case( $data );
-
         // White list columns
         $data = array_intersect_key( $data, $column_formats );
-
         $where = $this->generate_where( $data );
-
         if ( empty( $where ) ){
-
             $where = "1=1";
-
         }
-
         $results = $wpdb->get_results( "SELECT * FROM $this->table_name WHERE $where $extra ORDER BY `$order` ASC" );
-
         return $results;
     }
-
-
-
-
-
 
     /**
      * Create the table
@@ -351,11 +317,8 @@ class WPGH_DB_Appointments extends WPGH_DB
      * @since   1.0
      */
     public function create_table() {
-
         global $wpdb;
-
         require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-
         $sql = "CREATE TABLE " . $this->table_name . " (
         ID bigint(20) unsigned NOT NULL AUTO_INCREMENT,
         contact_id bigint(20) unsigned NOT NULL,
@@ -366,9 +329,7 @@ class WPGH_DB_Appointments extends WPGH_DB
         end_time bigint(20) unsigned NOT NULL,                
         PRIMARY KEY (ID)
 		) CHARACTER SET utf8 COLLATE utf8_general_ci;";
-
         dbDelta( $sql );
-
         update_option( $this->table_name . '_db_version', $this->version );
     }
 

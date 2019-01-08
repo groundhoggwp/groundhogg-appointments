@@ -11,7 +11,6 @@ var appointment;
         {
             $( '#book_appointment' ).on( 'click', function(e){
                 e.preventDefault();
-
                 //check for appointment
                 if ( $('#hidden_data').data('start_date') == ''  ||  $('#hidden_data').data('start_date') == '' ) {
                     alert( 'Please select appointment.' );
@@ -23,7 +22,6 @@ var appointment;
                         //validate email address
                         if(validateEmail($('#email').val())){
                             //AJAX REQUEST TO CREATE APPOINTMENT
-
                             // MAKE AJAX REQUEST TO ADD APPOINTMENT INSIDE DATA BASE
                             $.ajax({
                                 type: "post",
@@ -41,18 +39,14 @@ var appointment;
 
                                 },
                                 success: function (response) {
-
-
                                     if (response.status == 'failed') {
                                         alert(response.msg);
-
                                     } else {
                                        //clear all the data
                                         $('#email').val('');
                                         $('#first_name').val('');
                                         $('#last_name').val('');
                                         $('#appointment_name').val('');
-
                                         $('#hidden_data').data('start_date' , '');
                                         $('#hidden_data').data('end_date'   , '');
                                         $('#hidden_data').data('control_id' , '');
@@ -71,17 +65,13 @@ var appointment;
                 }
             } );
 
-
             $(document).on( 'click', '.gh_appointment_class', function(e){
                 e.preventDefault();
-
                 // get data from hidden field
                 var id =  $('#hidden_data').data('control_id');
-
                 if( !( id == '' ) ) {
                     //remove colour
                     $('#'+id).css( 'background-color' ,'#8fdf82' );
-                 
                 }
                 // set data inside hidden field
                 $(this).css( 'background-color' ,'#123456' );
@@ -91,7 +81,6 @@ var appointment;
 
             } );
 
-
             $('#date').datepicker({
                 changeMonth: true,
                 changeYear: true,
@@ -100,14 +89,10 @@ var appointment;
                 dateFormat:'yy-mm-dd',
                 onSelect: function(dateText) {
                     $('#select_time').children().remove();
-
                     //clear hidden field data on date change
-
                     $('#hidden_data').data('start_date' , '');
                     $('#hidden_data').data('end_date'   , '');
                     $('#hidden_data').data('control_id' , '');
-
-
                     // MAKE AJAX REQUEST TO GET ALL THE AVAILABLE TIME SLOTS..
                     $.ajax({
                         type: "post",
@@ -139,8 +124,7 @@ var appointment;
                 var filter = /^([\w-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([\w-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)$/;
                 if (filter.test(sEmail)) {
                     return true;
-                }
-                else {
+                } else {
                     return false;
                 }
             }

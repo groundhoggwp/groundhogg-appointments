@@ -1,21 +1,14 @@
-
 var appointment;
-
 (function ($) {
-
     appointment = {
-
         activeDomainBox: null,
-
         init: function()
         {
             $( '#btnalert' ).on( 'click', function(e){
                 e.preventDefault();
                 appointment.addAppointment();
             } );
-
         },
-
         addAppointment: function(){
             var event = $("#calendar").fullCalendar( 'clientEvents','booking_event' );
             if( !( event[0] == null ) ) {
@@ -25,14 +18,11 @@ var appointment;
                 var note        = $('#appointmentnote').val();
                 var appointment_name  = $('#appointmentname').val();
                 var calendar_id  = $('#calendar_id').val();
-
                 if ( id == null ) {
                     // check for contact id
                     alert('Please select contact.');
                 } else {
-
                     if (appointment_name != '') {
-
                         //AJAX Call to add appointment
                         $.ajax({
                             type: "post",
@@ -53,13 +43,10 @@ var appointment;
                                 $('#calendar').fullCalendar('removeEvents', 'booking_event');
                                 // add new ly added event
                                 $('#calendar').fullCalendar('renderEvent', response.appointment, 'stick');
-
                                 // set value to null
                                 $('#contact_id').val(null).trigger('change');
                                 $('#appointmentnote').val('');
                                 $('#appointmentname').val('');
-
-
                             }
                         });
 
@@ -73,11 +60,9 @@ var appointment;
             }
         },
     };
-
     $(function () {
         appointment.init();
     })
-
 })(jQuery);
 
 

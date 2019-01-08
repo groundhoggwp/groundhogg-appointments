@@ -58,12 +58,9 @@ class WPGH_Calendars_Table extends WP_List_Table {
 	protected function get_sortable_columns() {
 		$sortable_columns = array(
 			'calendar_id'    => array( 'calendar_id', false ),
-			'user_id'        => array( 'contact_id', false ),
 		);
 		return apply_filters( 'wpgh_calendar_sortable_columns', $sortable_columns );
 	}
-
-
 
     /**
      * @param object $item convert $item to calendar object
@@ -89,10 +86,8 @@ class WPGH_Calendars_Table extends WP_List_Table {
         if ( $primary !== $column_name ) {
             return '';
         }
-
         $actions = array();
         $actions['edit'] = "<span class='edit'><a href='" . admin_url('admin.php?page=gh_calendar&action=edit&calendar=' . $calendar->ID ) . "'>" . __('Edit') . "</a></span>";
-
         $actions['delete'] = sprintf(
             '<a href="%s" class="submitdelete" aria-label="%s">%s</a>',
             wp_nonce_url(admin_url('admin.php?page=gh_calendar&calendar='. $calendar->ID .'&action=delete')),
@@ -100,7 +95,6 @@ class WPGH_Calendars_Table extends WP_List_Table {
             esc_attr( sprintf( __( 'Delete &#8220;%s&#8221; permanently' ), $calendar->ID ) ),
             __( 'Delete Permanently' )
         );
-
         return $this->row_actions( apply_filters( 'wpgh_calendar_row_actions', $actions, $calendar, $column_name ) );
     }
 
@@ -118,8 +112,11 @@ class WPGH_Calendars_Table extends WP_List_Table {
         return $html;
     }
 
-    /*
+    /**
      * Display calendar owner
+     *
+     * @param $calendar
+     * @return string
      */
     protected function column_user_id( $calendar )
     {
@@ -127,18 +124,24 @@ class WPGH_Calendars_Table extends WP_List_Table {
         return esc_html( $user_data->user_login . ' (' . $user_data->user_email .')');
 
     }
-    /*
-     *  populate description column of table
+
+    /**
+     * populate description column of table
+     *
+     * @param $calendar
+     * @return string
      */
     protected function column_description( $calendar )
     {
         return esc_html( $calendar->description );
     }
 
-    /*
+    /**
      * Populate short code column
+     *
+     * @param $calendar
+     * @return string
      */
-
     protected function column_short_code( $calendar )
     {
         return '<input type="text" class="code" style="font-weight: bold;" onfocus="this.select()" value="[gh_calendar calendar_id='. $calendar->ID .' appointment_name=\'Client Appointment\']" readonly> ';

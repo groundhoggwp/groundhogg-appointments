@@ -135,20 +135,14 @@ class WPGH_DB_Calendar extends WPGH_DB
      * @since   1.0
      */
     public function delete( $id = false ) {
-
         if ( empty( $id ) ) {
             return false;
         }
-
         $calendar = $this->get_calendar_by( 'ID', $id );
-
         if ( $calendar->ID > 0 ) {
-
             global $wpdb;
-
             /* delete the actual calendar */
             $result = $wpdb->delete( $this->table_name, array( 'ID' =>$calendar->ID ), array( '%d' ) );
-
             if ( $result ) {
                 $this->set_last_changed();
                 do_action( 'wpgh_delete_calendar', $calendar->ID );
@@ -166,7 +160,6 @@ class WPGH_DB_Calendar extends WPGH_DB
      * @since   1.0
      */
     public function exists( $value = 0, $field = 'ID' ) {
-
         $columns = $this->get_columns();
         if ( ! array_key_exists( $field, $columns ) ) {
             return false;
@@ -200,20 +193,16 @@ class WPGH_DB_Calendar extends WPGH_DB
         if ( empty( $field ) || empty( $value ) ) {
             return NULL;
         }
-
         if ( 'ID' == $field ) {
             // Make sure the value is numeric to avoid casting objects, for example,
             // to int 1.
             if ( ! is_numeric( $value ) ) {
                 return false;
             }
-
             $value = intval( $value );
-
             if ( $value < 1 ) {
                 return false;
             }
-
         } else if ( 'slug' == $field )
         {
             if ( ! is_string( $value ) ) {
@@ -226,11 +215,9 @@ class WPGH_DB_Calendar extends WPGH_DB
         }
 
         $results = $this->get_by( $field, $value );
-
         if ( empty( $results ) ) {
             return false;
         }
-
         return $results;
     }
 
@@ -241,7 +228,6 @@ class WPGH_DB_Calendar extends WPGH_DB
      * @since   1.0
      */
     public function get_calendars() {
-
         global $wpdb;
         $results = $wpdb->get_results("SELECT * FROM $this->table_name ORDER BY $this->primary_key DESC" );
         return $results;
@@ -283,7 +269,6 @@ class WPGH_DB_Calendar extends WPGH_DB
             $last_changed = microtime();
             wp_cache_set( 'last_changed', $last_changed, $this->cache_group );
         }
-
         return $last_changed;
     }
 
@@ -294,11 +279,8 @@ class WPGH_DB_Calendar extends WPGH_DB
      * @since   1.0
      */
     public function create_table() {
-
         global $wpdb;
-
         require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-
         $sql = "CREATE TABLE " . $this->table_name . " (
         ID bigint(20) unsigned NOT NULL AUTO_INCREMENT,
         user_id bigint(20) unsigned NOT NULL,        
@@ -306,9 +288,7 @@ class WPGH_DB_Calendar extends WPGH_DB
         description text NOT NULL,        
         PRIMARY KEY (ID)
 		) CHARACTER SET utf8 COLLATE utf8_general_ci;";
-
         dbDelta( $sql );
-
         update_option( $this->table_name . '_db_version', $this->version );
     }
 

@@ -3,8 +3,10 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 class WPGH_Appointment_Shortcode
 {
-    /*
+    /**
      * create short code and handles ajax requests
+     *
+     * WPGH_Appointment_Shortcode constructor.
      */
     public function __construct()
     {
@@ -15,7 +17,7 @@ class WPGH_Appointment_Shortcode
 
     }
 
-    /*
+    /**
      * Load scripts for  operations
      */
     public function load_scripts() {
@@ -30,23 +32,22 @@ class WPGH_Appointment_Shortcode
     }
 
 
-    /*
+    /**
      *  Handle AJAX request to add appointment inside database
+     *
+     *  Requested by AJAX
      */
     public function gh_add_appointment_client()
     {
 
         // ADD APPOINTMENTS using AJAX.
-
         $start      = $_POST['start_time'] ;
         $end        = $_POST['end_time']  ;
         $email      = sanitize_email($_POST[ 'email' ]);
         $first_name = sanitize_text_field($_POST[ 'first_name' ]);
         $last_name  = sanitize_text_field($_POST[ 'last_name' ]);
-
         $appointment_name =  sanitize_text_field( $_POST [ 'appointment_name'] );
         $calendar_id =  sanitize_text_field( $_POST [ 'calendar_id'] );
-
         $contact_id = 0;
         // get contact id form email -> if contact is not found generate contact
         // check for contact
@@ -61,7 +62,6 @@ class WPGH_Appointment_Shortcode
                 'last_name'  => $last_name
             ));
         }
-
         // perform insert operation
         $appointment_id  = WPGH_APPOINTMENTS()->appointments->add( array (
             'contact_id'    => $contact_id,
@@ -72,24 +72,21 @@ class WPGH_Appointment_Shortcode
             'end_time'      => $end
         ));
         // Insert meta
-
         if ( $appointment_id === false ){
 
             $response = array( 'status' => 'failed' , 'msg' => __('Something went wrong. Appointment not created !' ,'groundhogg'));
             wp_die( json_encode( $response ) );
         }
-
         // generate array for event
         $response = array( 'status' => 'success','msg' => __('Appointment booked successfully.','groundhogg') );
-
         do_action('gh_calendar_add_appointment_client',$appointment_id , 'create_client' );
-
         wp_die( json_encode( $response ) );
-
     }
 
-    /*
+    /**
      *  GET available Appointment form the database based on calendar id.
+     *
+     *  Requested by AJAX
      */
     public function gh_get_appointment_client()
     {
@@ -111,24 +108,17 @@ class WPGH_Appointment_Shortcode
             $response = array(  'status'=>'failed', 'msg' => __('This date is out of business hours.','groundhogg'));
             wp_die( json_encode( $response ) );
         }
-
         $start_time = strtotime( $date .' '.$start_time );
         // check if current time is past time or not !
         if ($start_time < $time) {
             $d =  date('H:00' , $time);
             $start_time = strtotime( $d );
         }
-
         //GET AVAILABLE TIME IN DAY
         $end_time   = strtotime( $date .' '.$end_time );
-        // $start_time = strtotime( $date .' '.$start_time );
-
         // get appointments
-
         $appointments_table_name  = WPGH_APPOINTMENTS()->appointments->table_name;
-
         $appointments = $wpdb->get_results( "SELECT * FROM $appointments_table_name as a WHERE a.start_time >= $start_time AND a.end_time <=  $end_time AND a.calendar_id = $calendar_id" );
-
         // generate array to populate ddl
         $all_slots = null;
         while ($start_time < $end_time)
@@ -162,20 +152,16 @@ class WPGH_Appointment_Shortcode
         $final_slots = null;
         // cleaning where appointments are smaller then slots
         foreach( $available_slots as $slot){
-
             $slotbooked= false;
             foreach ($appointments as $appointment) {
-
                 if ( ($appointment->start_time >= $slot['start'] && $appointment->start_time < $slot['end'])) {
                     $slotbooked = true;
                     break;
                 }
-
             }
             if (!$slotbooked) {
                 $final_slots[] = $slot;
             }
-
         }
 
         if ( $available_slots == null ) {
@@ -185,11 +171,14 @@ class WPGH_Appointment_Shortcode
         // operation on data
         $response = array(  'status'=>'success','data' => json_encode($final_slots) );
         wp_die( json_encode( $response ) );
-
     }
 
-    /*
-     *  Create Short code for calendar.
+    /**
+     * Main shortcode function
+     * Accepts shortcode attributes and returns a string of HTML
+     *
+     * @param $atts array shortcode attributes
+     * @return string
      */
     public  function gh_calendar_shortcode( $atts )
     {
