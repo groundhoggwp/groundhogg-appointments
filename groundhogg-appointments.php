@@ -70,6 +70,11 @@ class GH_APPOINTMENTS
     public static $is_setup = false;
 
     /**
+     * @var WPGH_Pipeline_Replacements
+     */
+    public $pipeline;
+
+    /**
      * create object
      *
      * @return GH_APPOINTMENTS
@@ -99,6 +104,8 @@ class GH_APPOINTMENTS
             self::$instance->benchmark        = new WPGH_Appointment_Benchmark();
             self::$instance->page             = new WPGH_Calendar_Page();
             self::$instance->shortcode        = new WPGH_Appointment_Shortcode();
+            self::$instance->pipeline         = new WPGH_Pipeline_Replacements();
+
         }
         return self::$instance;
     }
@@ -160,6 +167,7 @@ class GH_APPOINTMENTS
         require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/class-wpgh-db-appointment.php';
         require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/class-wpgh-db-calendar.php';
         require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/class-wpgh-appointment-shortcode.php';
+        require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/class-wpgh-pipeline-replacements.php';
         require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/admin/class-wpgh-calendar-page.php';
         require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/admin/class-wpgh-appointment-benchmark.php';
     }
