@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     <?php wp_nonce_field(); ?>
     <table class="form-table">
         <tbody><tr class="form-field term-contact-wrap">
-            <th scope="row"><label for="user_id"><?php _e( 'Select Owner' ) ?></label></th>
+            <th scope="row"><label for="user_id"><?php _e( 'Select Owner' ,'groundhogg') ?></label></th>
             <td><?php $args = array();
                 $args[ 'id' ] = 'user_id';
                 $args[ 'required' ] = true;
@@ -36,7 +36,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
         <tbody>
         <tr class="form-field term-contact-wrap">
             <th scope="row">
-                <label for="date"><?php _e( 'Select working days' ); ?></label>
+                <label for="date"><?php _e( 'Select working days' ,'groundhogg'); ?></label>
             </th>
             <td>
                 <ul>
@@ -53,7 +53,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
         <tr class="form-field term-contact-wrap">
             <th scope="row">
-                <label for="date"><?php _e( 'Start Time:' ); ?></label>
+                <label for="date"><?php _e( 'Start Time:' ,'groundhogg'); ?></label>
             </th>
             <td>
                 <input type="time" id="starttime" name="starttime" value="09:00" autocomplete="off" >
@@ -62,7 +62,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
         </tr>
         <tr class="form-field term-contact-wrap">
             <th scope="row">
-                <label for="date"><?php _e( 'End Time:' ); ?></label>
+                <label for="date"><?php _e( 'End Time:' ,'groundhogg'); ?></label>
             </th>
             <td>
                 <input type="time" id="endtime" name="endtime" value="17:00" autocomplete="off" >
@@ -74,7 +74,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 
     <div class="add-calendar-actions">
-        <?php submit_button( __( 'Add Calendar' ), 'primary', 'add', false ); ?>
+        <?php submit_button( __( 'Add Calendar' ,'groundhogg') , 'primary', 'add', false ); ?>
     </div>
 </form>
 

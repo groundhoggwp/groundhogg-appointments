@@ -1,5 +1,6 @@
 <?php
 if ( ! defined( 'ABSPATH' ) ) exit;
+
 class WPGH_Appointment_Shortcode
 {
     /*
@@ -74,12 +75,12 @@ class WPGH_Appointment_Shortcode
 
         if ( $appointment_id === false ){
 
-            $response = array( 'status' => 'failed' , 'msg' => 'Something went wrong. Appointment not created !' );
+            $response = array( 'status' => 'failed' , 'msg' => __('Something went wrong. Appointment not created !' ,'groundhogg'));
             wp_die( json_encode( $response ) );
         }
 
         // generate array for event
-        $response = array( 'status' => 'success','msg' =>'Appointment booked successfully.' );
+        $response = array( 'status' => 'success','msg' => __('Appointment booked successfully.','groundhogg') );
 
         do_action('gh_calendar_add_appointment_client',$appointment_id , 'create_client' );
 
@@ -107,7 +108,7 @@ class WPGH_Appointment_Shortcode
             $entered_dow = 0 ;
         }
         if ( in_array( $entered_dow,$dow) == false ) {
-            $response = array(  'status'=>'failed', 'msg' => 'This date is out of business hours.');
+            $response = array(  'status'=>'failed', 'msg' => __('This date is out of business hours.','groundhogg'));
             wp_die( json_encode( $response ) );
         }
 
@@ -178,7 +179,7 @@ class WPGH_Appointment_Shortcode
         }
 
         if ( $available_slots == null ) {
-            $response = array(  'status'=>'failed', 'msg' => 'No Appointments available.' );
+            $response = array(  'status'=>'failed', 'msg' => __('No Appointments available.' ,'groundhogg'));
             wp_die( json_encode( $response ) );
         }
         // operation on data
@@ -205,10 +206,10 @@ class WPGH_Appointment_Shortcode
         $exist = WPGH_APPOINTMENTS()->calendar->exists($calendar_id);
 
         if ( !$exist ) {
-            return '<h1>Calendar not found check shortcode. </h1>';
+            return sprintf( '<p>%s</p>', __( 'The given calendar ID does not exist.', 'groundhogg' ) );
         }
 
-        $appointment_name = $args['appointment_name']; // get name for clients
+        $appointment_name = sanitize_text_field( $args[ 'appointment_name' ] ); // get name for clients
         ob_start();
         ?>
         <form >
@@ -218,7 +219,7 @@ class WPGH_Appointment_Shortcode
             <!--        <input  class="input" placeholder="Y-m-d" type="text" id="date" name="date" value="" autocomplete="off" required>-->
             <div  id="date"></div>
             Time : <hr />
-            <div name = "select_time" id="select_time"  >
+            <div id="select_time"  >
             </div>
             <input type="text" name="first_name" id="first_name" placeholder="First Name" required/>
             <input type="text" name="last_name" id="last_name" placeholder="Last Name" required/>

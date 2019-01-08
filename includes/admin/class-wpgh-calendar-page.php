@@ -53,7 +53,7 @@ class WPGH_Calendar_Page
     public function gh_update_appointment()
     {
         if ( ! current_user_can( 'edit_appointment' ) ){
-            $response = array(   'status' => 'failed','msg' => 'Your user role does not have the required permissions to Edit appointment.' );
+            $response = array(   'status' => 'failed','msg' => __('Your user role does not have the required permissions to Edit appointment.' ,'groundhogg'));
             wp_die( json_encode($response) );
         }
         // Handle update appointment
@@ -71,7 +71,7 @@ class WPGH_Calendar_Page
             do_action('gh_calendar_update_appointment_admin',$appointment_id , 'reschedule_admin' );
             wp_die( json_encode( array(
                 'status' => 'success',
-                'msg'    => 'Appointment reschedule successfully.'
+                'msg'    => __('Appointment reschedule successfully.','groundhogg')
 
             ) ) );
 
@@ -79,7 +79,7 @@ class WPGH_Calendar_Page
 
             wp_die( json_encode( array(
                 'status' => 'failed',
-                'msg'    => 'Something went wrong !'
+                'msg'    => __('Something went wrong !','groundhogg')
 
             ) ) );
         }
@@ -91,7 +91,7 @@ class WPGH_Calendar_Page
     public function gh_add_appointment()
     {
         if ( ! current_user_can( 'add_appointment' ) ){
-            $response = array( 'msg' => 'Your user role does not have the required permissions to add appointment.' );
+            $response = array( 'msg' => __('Your user role does not have the required permissions to add appointment.','groundhogg') );
             wp_die( json_encode($response) );
         }
 
@@ -117,7 +117,7 @@ class WPGH_Calendar_Page
         // Insert meta
         if ( $appointment_id === false ){
 
-            $response = array( 'msg' => 'Something went wrong. Appointment not created !' );
+            $response = array( 'msg' => __('Something went wrong. Appointment not created !' ,'groundhogg'));
             wp_die( json_encode( $response ) );
         }
 
