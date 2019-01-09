@@ -137,6 +137,7 @@ class WPGH_Calendar_Page
                 'constraint' => 'businessHours',
                 'editable'   => true,
                 'allDay'     => false,
+                'color'      => '#0073aa',
                 'url'        => admin_url( 'admin.php?page=gh_calendar&action=view_appointment&appointment=' . $appointment_id ),// link to view appointment page
             )
         );

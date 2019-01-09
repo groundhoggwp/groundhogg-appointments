@@ -77,7 +77,7 @@ function add_appointment()
                             <tr>
                                 <th scope="row"><label for="Date"><?php _e( 'Date' ,'groundhogg'); ?></label></th>
                                 <td>
-                                    <input type="text"  id="date"  style="height:29px;width: 100px" class="input" placeholder="Y-m-d" type="text" />
+                                    <input type="text"  id="date"  style="height:29px;width: 100px" class="input" placeholder="Y-m-d" type="text" autocomplete="off" required  />
                                     <input type="hidden" name="hidden_data" id="hidden_data" data-start_date="" data-end_date="" data-control_id="">
                                 </td>
 

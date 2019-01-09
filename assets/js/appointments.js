@@ -55,6 +55,7 @@ var appointment;
                                 $('#hidden_data').data('control_id' , '');
                                 // retrieve all available appointments  after booking
                                 $('#select_time').children().remove();
+                                $('#date').val('');
 
                             }
                         });
