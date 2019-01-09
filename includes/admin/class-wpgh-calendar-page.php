@@ -417,8 +417,8 @@ class WPGH_Calendar_Page
             $this->notices->add( 'NO_NAME', __( "Calendar not found.", 'groundhogg' ), 'error' );
             return;
         }
-        // ADD CALENDAR in DATABASE
 
+        // ADD CALENDAR in DATABASE
         $calendar_id = intval($_POST[ 'calendar' ] );
         $args =  array(
             'user_id' =>  intval( $_POST['owner_id'] ),
@@ -438,12 +438,33 @@ class WPGH_Calendar_Page
             WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id,'dow',$_POST['checkbox']) ;
         }
         // start time
-        if(isset( $_POST['starttime'] ) ) {
-            WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'start_time', sanitize_text_field($_POST['starttime']));
+        if( isset( $_POST['starttime'] ) ) {
+            if( isset( $_POST['endtime'] )) {
+                $end_time  = $_POST['endtime'];
+            } else {
+                $end_time  = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'end_time',true);
+            }
+
+            if( strtotime($end_time) < strtotime( $_POST['starttime'] ) ) {
+                $this->notices->add( 'INVALID_STARTTIME', __( "End time can not be smaller then start time.", 'groundhogg' ), 'error' );
+            } else {
+                WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'start_time', sanitize_text_field($_POST['starttime']));
+            }
         }
         //end time
-        if(isset( $_POST['endtime'] ) ) {
-            WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'end_time', sanitize_text_field($_POST['endtime']));
+        if( isset( $_POST['endtime'] ) ) {
+
+            if( isset( $_POST['starttime'] )) {
+                $start_time  = $_POST['starttime'];
+            } else {
+                $start_time  = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'start_time',true);
+            }
+
+            if( strtotime($start_time) < strtotime( $_POST['endtime'] ) ) {
+                WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'end_time', sanitize_text_field($_POST['endtime']));
+            } else {
+                $this->notices->add( 'INVALID_STARTTIME', __( "End time can not be smaller then start time.", 'groundhogg' ), 'error' );
+            }
         }
         $this->notices->add( 'success', __( 'Calendar updated successfully !', 'groundhogg' ), 'success' ); 
         wp_redirect( admin_url( 'admin.php?page=gh_calendar&action=edit&calendar=' . $calendar_id ) );
@@ -531,13 +552,35 @@ class WPGH_Calendar_Page
         if(isset( $_POST['checkbox'] ) ){
             WPGH_APPOINTMENTS()->calendarmeta->add_meta($calendar_id,'dow',$_POST['checkbox']) ;
         }
+
         // start time
-        if(isset( $_POST['starttime'] ) ) {
-            WPGH_APPOINTMENTS()->calendarmeta->add_meta($calendar_id, 'start_time', sanitize_text_field($_POST['starttime']));
+        if( isset( $_POST['starttime'] ) ) {
+            if( isset( $_POST['endtime'] )) {
+                $end_time  = $_POST['endtime'];
+            } else {
+                $end_time  = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'end_time',true);
+            }
+
+            if( strtotime($end_time) < strtotime( $_POST['starttime'] ) ) {
+                $this->notices->add( 'INVALID_STARTTIME', __( "End time can not be smaller then start time.", 'groundhogg' ), 'error' );
+            } else {
+                WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'start_time', sanitize_text_field($_POST['starttime']));
+            }
         }
         //end time
-        if(isset( $_POST['endtime'] ) ) {
-            WPGH_APPOINTMENTS()->calendarmeta->add_meta($calendar_id, 'end_time', sanitize_text_field($_POST['endtime']));
+        if( isset( $_POST['endtime'] ) ) {
+
+            if( isset( $_POST['starttime'] )) {
+                $start_time  = $_POST['starttime'];
+            } else {
+                $start_time  = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'start_time',true);
+            }
+
+            if( strtotime($start_time) < strtotime( $_POST['endtime'] ) ) {
+                WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'end_time', sanitize_text_field($_POST['endtime']));
+            } else {
+                $this->notices->add( 'INVALID_STARTTIME', __( "End time can not be smaller then start time.", 'groundhogg' ), 'error' );
+            }
         }
         $this->notices->add( 'success', __( 'New calendar added!', 'groundhogg' ), 'success' ); // not working
         wp_redirect( admin_url( 'admin.php?page=gh_calendar&action=edit&calendar=' . $calendar_id ) );
