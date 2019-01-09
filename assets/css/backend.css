@@ -1,3 +1,4 @@
+
 /* Display alerts in admin section */
 
 .alert {
@@ -79,10 +80,21 @@
     border-color: #91222e;
 }
 
+.gh_appointment_class {
+    color: #fff;
+    text-shadow: 1px 1px 1px rgba( 0, 0, 0, 0.2);
+    display: inline-block;
+    text-decoration: none;
+    font-size: 13px;
+    line-height: 26px;
+    height: 28px;
+    padding: 0 10px 1px;
+    cursor: pointer;
+    border-width: 1px;
+    border-style: solid;
+    -webkit-appearance: none;
+    border-radius: 3px;
+    white-space: nowrap;
+    box-sizing: border-box;
 
-
-
-
-
-
-
+}

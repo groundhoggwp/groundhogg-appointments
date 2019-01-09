@@ -1,12 +1,7 @@
-
-var appointment;
-
+var load_appointment;
 (function ($) {
-
-    appointment = {
-
+    load_appointment = {
         activeDomainBox: null,
-
         init: function()
         {
             $( '#book_appointment' ).on( 'click', function(e){
@@ -130,9 +125,8 @@ var appointment;
             }
         },
     };
-
     $(function () {
-        appointment.init();
+        load_appointment.init();
     })
 
 })(jQuery);

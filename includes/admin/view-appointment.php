@@ -4,8 +4,6 @@
  */
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-wp_enqueue_script( 'jquery-ui-datepicker' );
-wp_enqueue_style( 'jquery-ui' );
 
 $appointment_id = intval( $_GET['appointment'] );
 //fetch appointment

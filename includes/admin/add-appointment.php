@@ -74,9 +74,22 @@ function add_appointment()
                                     <p class="description"><?php _e( 'Additional information about appointment.', 'groundhogg' ) ?></p>
                                 </td>
                             </tr>
+                            <tr>
+                                <th scope="row"><label for="Date"><?php _e( 'Date' ,'groundhogg'); ?></label></th>
+                                <td>
+                                    <input type="text"  id="date"  style="height:29px;width: 100px" class="input" placeholder="Y-m-d" type="text" />
+                                    <input type="hidden" name="hidden_data" id="hidden_data" data-start_date="" data-end_date="" data-control_id="">
+                                </td>
+
+                            </tr>
+                            <tr>
+                                <th scope="row"><label for="description"><?php _e( 'Time' ,'groundhogg'); ?></label></th>
+                                <td><div id="select_time" ></div></td>
+                            </tr>
                         </tbody>
                     </table>
                     <input type="button" name="btndisplay" id ="btnalert" value="Book appointment" class="button button-primary"/>
+
                     <div class="alert alert-dark" style="margin-top: 10px" >
                         <div class='alert'>
                             <h2><?php _e( 'To add a new appointment:', 'Groundhogg' ); ?></h2>

@@ -91,10 +91,15 @@ class WPGH_Calendar_Page
      */
     public function gh_add_appointment()
     {
+
+
+
         if ( ! current_user_can( 'add_appointment' ) ){
             $response = array( 'msg' => __('Your user role does not have the required permissions to add appointment.','groundhogg') );
             wp_die( json_encode($response) );
         }
+
+
         // ADD APPOINTMENTS using AJAX.
         $start              = $_POST['start_time'] ;
         $end                = $_POST['end_time']  ;
@@ -109,8 +114,8 @@ class WPGH_Calendar_Page
             'calendar_id'   => $calendar_id,
             'name'          => $appointment_name,
             'status'        => 'pending',
-            'start_time'    => strtotime($start),
-            'end_time'      => strtotime($end)
+            'start_time'    => ($start),    //strtotime()
+            'end_time'      => ($end)       //strtotime()
         ));
 
         // Insert meta
@@ -127,8 +132,8 @@ class WPGH_Calendar_Page
             'appointment' => array(
                 'id'         => $appointment_id,
                 'title'      => $appointment_name,
-                'start'      => $start,
-                'end'        => $end,
+                'start'      => $start*1000,//$start,
+                'end'        => $end * 1000,//$end,
                 'constraint' => 'businessHours',
                 'editable'   => true,
                 'allDay'     => false,
@@ -137,6 +142,7 @@ class WPGH_Calendar_Page
         );
         do_action('gh_calendar_add_appointment_admin',$appointment_id , 'create_admin' );
         wp_die( json_encode( $response ) );
+
     }
 
     /**
@@ -144,8 +150,12 @@ class WPGH_Calendar_Page
      */
     public function scripts()
     {
-        wp_enqueue_script( 'ajax-script',    WPGH_APPOINTMENT_ASSETS_FOLDER . '/js/appointments.js',    array('jquery'),     filemtime( WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/js/appointments.js' ) );
-        wp_localize_script('ajax-script', 'ajax_object',array( 'ajax_url' => admin_url( 'admin-ajax.php' ), 'we_value' => 1234 ) );
+        wp_enqueue_script( 'jquery-ui-datepicker' );
+        wp_enqueue_style(  'jquery-ui' );
+        wp_enqueue_script( 'ajax-script-appointment',    WPGH_APPOINTMENT_ASSETS_FOLDER . '/js/appointments.js',    array('jquery'),     filemtime( WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/js/appointments.js' ) );
+        wp_enqueue_script( 'ajax-script-load_appointment',    WPGH_APPOINTMENT_ASSETS_FOLDER . '/js/load_appointment.js',    array('jquery'),     filemtime( WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/js/load_appointment.js' ) );
+        wp_localize_script('ajax-script-load_appointment', 'ajax_object',array( 'ajax_url' => admin_url( 'admin-ajax.php' ), 'we_value' => 1234 ) );
+        wp_localize_script('ajax-script-appointment', 'ajax_object1',array( 'ajax_url' => admin_url( 'admin-ajax.php' ), 'we_value' => 1233 ) );
         wp_enqueue_script( 'calender-moment',WPGH_APPOINTMENT_ASSETS_FOLDER . '/lib/fullcalendar/lib/moment.min.js', array(), filemtime(WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/lib/fullcalendar/lib/moment.min.js' ) );
         wp_enqueue_script( 'calender-main',  WPGH_APPOINTMENT_ASSETS_FOLDER . '/lib/fullcalendar/fullcalendar.js',   array(), filemtime(WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/lib/fullcalendar/fullcalendar.js') );
         wp_enqueue_style ( 'calender-css',   WPGH_APPOINTMENT_ASSETS_FOLDER . '/lib/fullcalendar/fullcalendar.css',  array(), filemtime(WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/lib/fullcalendar/fullcalendar.css') );
