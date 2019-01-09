@@ -149,7 +149,7 @@ class WPGH_Calendar_Page
         wp_enqueue_script( 'calender-moment',WPGH_APPOINTMENT_ASSETS_FOLDER . '/lib/fullcalendar/lib/moment.min.js', array(), filemtime(WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/lib/fullcalendar/lib/moment.min.js' ) );
         wp_enqueue_script( 'calender-main',  WPGH_APPOINTMENT_ASSETS_FOLDER . '/lib/fullcalendar/fullcalendar.js',   array(), filemtime(WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/lib/fullcalendar/fullcalendar.js') );
         wp_enqueue_style ( 'calender-css',   WPGH_APPOINTMENT_ASSETS_FOLDER . '/lib/fullcalendar/fullcalendar.css',  array(), filemtime(WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/lib/fullcalendar/fullcalendar.css') );
-        wp_enqueue_style ( 'frontend-css',   WPGH_APPOINTMENT_ASSETS_FOLDER . '/css/frontend.css',  array(), filemtime(WPGH_APPOINTMENT_PLUGIN_DIR . 'assets//css/frontend.css') );
+        wp_enqueue_style ( 'frontend-css',   WPGH_APPOINTMENT_ASSETS_FOLDER . '/css/backend.css',  array(), filemtime(WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/css/backend.css') );
 
     }
 
@@ -232,7 +232,7 @@ class WPGH_Calendar_Page
                 ?><a class="page-title-action aria-button-if-js" href="<?php echo admin_url( 'admin.php?page=gh_calendar&action=add' ); ?>"><?php _e( 'Add New' ); ?></a><?php
                 break;
             case 'view_appointment':
-                _e( 'Appointment' , 'groundhogg' );
+                _e( 'Edit Appointment' , 'groundhogg' );
                 break;
             case 'add_appointment':
                 _e( 'Add Appointment' , 'groundhogg' );
@@ -275,6 +275,16 @@ class WPGH_Calendar_Page
                     $this->update_calendar();
                 }
                 break;
+            case 'view_appointment':
+
+                if ( ! current_user_can( 'edit_appointment' ) ){
+                    wp_die( WPGH()->roles->error( 'edit_appointment' ) );
+                }
+                if ( isset( $_POST[ 'update_appointment' ] ) ) {
+                    $this->update_appointment();
+                }
+                break;
+
             case 'delete':
                 if ( ! current_user_can( 'delete_calendar' ) ){
                     wp_die( WPGH()->roles->error( 'delete_calendar' ) );
@@ -430,6 +440,53 @@ class WPGH_Calendar_Page
     }
 
     /**
+     * Handles post request form the view appointment to update appointment.
+     */
+    private  function update_appointment()
+    {
+        if ( ! isset( $_POST['contact_id'] ) ||  $_POST['contact_id'] == 0 ){
+            $this->notices->add( 'NO_CONTACT', __( "Please select a valid contact", 'groundhogg' ), 'error' );
+            return;
+        }
+        if ( ! isset( $_POST['appointment'] ) ||  $_POST['appointment'] == 0 ){
+            $this->notices->add( 'NO_APPOINTMENT', __( "Please select a valid appointment.", 'groundhogg' ), 'error' );
+            return;
+        }
+        if ( ! isset( $_POST['calendar'] ) ||  $_POST['calendar'] == 0 ){
+            $this->notices->add( 'NO_CALENDAR', __( "Please select a valid calendar.", 'groundhogg' ), 'error' );
+            return;
+        }
+        $contact_id      = intval( $_POST[ 'contact_id' ] );
+        $appointment_id  = intval( $_POST[ 'appointment' ] );
+        $calendar_id     = intval( $_POST[ 'calendar' ]);
+        // check for appointment times
+        $start_time      = strtotime($_POST[ 'start_date' ].' '.$_POST[ 'start_time' ]);
+        $end_time        = strtotime($_POST[ 'end_date' ].' '.$_POST[ 'end_time' ]);
+        if ( $start_time > $end_time ) {
+            $this->notices->add( 'INVALID_TIMES', __( "End time can not be earlier then start time.", 'groundhogg' ), 'error' );
+            wp_redirect( admin_url( 'admin.php?page=gh_calendar&action=view_appointment&appointment=' . $appointment_id ) );
+        }
+        // update query
+        $status     = $this->db->update($appointment_id ,  array(
+            'contact_id'    => $contact_id,
+            'name'          => sanitize_text_field( $_POST[ 'appointmentname' ] ),
+            'start_time'    => $start_time,
+            'end_time'      => $end_time
+        ));
+        //update notes
+        if ( isset( $_POST['description'] ) ) {
+            $this->meta->update_meta($appointment_id , 'note', sanitize_text_field($_POST['description']));
+        }
+        if( $status ) {
+            $this->notices->add( 'success', __( 'Calendar updated successfully !', 'groundhogg' ), 'success' );
+        } else {
+            $this->notices->add( 'UPDATE_FAILED', __( "Something went wrong while update.", 'groundhogg' ), 'error' );
+        }
+        wp_redirect( admin_url( 'admin.php?page=gh_calendar&action=add_appointment&calendar=' . $calendar_id ) );
+        die();
+    }
+
+    /**
      * Schedule a new calendar.
      * handle post request form add calendar
      */
@@ -503,7 +560,6 @@ class WPGH_Calendar_Page
         <?php
     }
 
-
     /**
      * Display the scheduling page
      */
@@ -523,14 +579,17 @@ class WPGH_Calendar_Page
         if ( ! current_user_can( 'view_appointment' ) ){
             wp_die( WPGH()->roles->error( 'view_appointment' ) );
         }
+
         include dirname(__FILE__) . '/view-appointment.php';
     }
+
+    /**
+     *  Display add appointment page
+     */
     public function add_appointment()
     {
         include dirname( __FILE__ ) . '/add-appointment.php';
     }
-
-
 
     /**
      * Display the Edit calendar page

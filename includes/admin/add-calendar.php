@@ -14,17 +14,17 @@ if ( ! defined( 'ABSPATH' ) ) exit;
                     <p class="description"><?php _e( 'Select owner for whom you are creating the calendar.', 'groundhogg' ) ?></p>
                 </td>
             </tr>
-            <tr class="form-field term-calendar-name-wrap">
+            <tr>
                 <th scope="row"><label for="name"><?php _e( 'Name' ) ?></label></th>
                 <td>
-                    <input name="name" id="name" type="text"  size="40" aria-required="true" placeholder="Calendar Name">
+                    <?php echo WPGH()->html->input( array( 'name' => 'name' ,'placeholder' => 'Calendar Name' ) ); ?>
                     <p class="description"><?php _e( 'A name of a calendar.', 'groundhogg' ) ?>.</p>
                 </td>
             </tr>
-            <tr class="form-field term-calendar-description-wrap">
+            <tr>
                 <th scope="row"><label for="description"><?php _e( 'Description' ,'groundhogg'); ?></label></th>
                 <td>
-                    <textarea name="description" id="description" rows="5" cols="50" class="large-text" placeholder="Calendar Description"></textarea>
+                    <?php echo WPGH()->html->textarea( array( 'name' => 'description' ,'placeholder' => 'Calendar Description' ) );?>
                     <p class="description"><?php _e( 'Calendar descriptions are only visible to admins and will never be seen by contacts.', 'groundhogg' ) ?>.</p>
                 </td>
             </tr>
