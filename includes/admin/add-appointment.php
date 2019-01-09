@@ -239,7 +239,9 @@ function add_appointment()
                                     // check for business hours
                                     if ( !isOverlapping( moment(date).add(1,'minutes') , moment(date).add(1, 'h') ) ) {
                                         // check for overlap
-                                        $(this).remove();
+                                        //$(this).remove(); /// bug which removes rows on event paste
+
+                                        /*
                                         var newEvent = {
                                             title: 'My Appointment',
                                             start: moment(date).add(1,'minutes'),
@@ -249,6 +251,8 @@ function add_appointment()
                                             editable: true,
                                         };
                                         $('#calendar').fullCalendar('renderEvent', newEvent, 'stick');
+
+                                        */
                                     } else {
                                         alert('time slot already booked!');
                                     }
