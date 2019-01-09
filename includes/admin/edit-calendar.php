@@ -20,6 +20,17 @@ $end_time   = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'end_time
 if( $end_time == null) {
     $end_time = '17:00';
 }
+
+$slot_hour      = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'slot_hour', true);
+if( $slot_hour == null) {
+    $slot_hour = 1;
+}
+$slot_minute    = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'slot_minute', true);
+if( $slot_minute == null) {
+    $slot_minute = 0;
+}
+
+
 ?>
 <form name="" id="" method="post" action="">
     <?php wp_nonce_field(); ?>
@@ -79,6 +90,29 @@ if( $end_time == null) {
                     <p class="description"><?php _e( 'End time of working hours.', 'groundhogg' ); ?></p>
                 </td>
             </tr>
+            <tr>
+                <th scope="row"><label for="date"><?php _e( 'Length of appointment' ,'groundhogg'); ?></label></th>
+                <td>
+                    <?php
+                    $hours;
+                    for ($i=0 ; $i<24 ; $i++)
+                    {
+                        $hours[$i] = $i;
+                    }
+                    $mins;
+                    for ($i=0 ; $i<60 ; $i++)
+                    {
+                        $mins[$i] = $i;
+                    }
+                    echo WPGH()->html->dropdown( array( 'name' =>'slot_hour' , 'options' => $hours , 'selected' => $slot_hour) ) ;
+                    _e('Hour(s)','groundhogg');
+                    echo WPGH()->html->dropdown( array( 'name' =>'slot_minute' , 'options' => $mins , 'selected' => $slot_minute) ) ;
+                    _e('Minutes','groundhogg');
+                    ?>
+                    <p class="description"><?php _e( 'Select default length of appointment', 'groundhogg' ); ?></p>
+                </td>
+            </tr>
+
         </tbody>
     </table>
     <input type="hidden" value="<?php echo $calendar_id; ?>" name="calendar" />

@@ -73,7 +73,6 @@ class WPGH_Appointment_Shortcode
         ));
         // Insert meta
         if ( $appointment_id === false ){
-
             $response = array( 'status' => 'failed' , 'msg' => __('Something went wrong. Appointment not created !' ,'groundhogg'));
             wp_die( json_encode( $response ) );
         }
@@ -99,6 +98,8 @@ class WPGH_Appointment_Shortcode
         $dow         = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'dow',true);
         $start_time  = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'start_time',true);
         $end_time    = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'end_time',true);
+        $slot_hour   = intval( WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'slot_hour',true) );
+        $slot_minute = intval( WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'slot_minute',true) );
 
         $entered_dow  = date ("N",strtotime($date) );
         if ($entered_dow == 7 ){
@@ -123,12 +124,14 @@ class WPGH_Appointment_Shortcode
         $all_slots = null;
         while ($start_time < $end_time)
         {
-            $temp_endtime = strtotime( '+1 hour',$start_time);
-            $all_slots[] = array(
-                'start'    => $start_time,
-                'end'      => $temp_endtime,
-                'name'     => date('H:i', $start_time ).' - '.date('H:i', $temp_endtime ),
-            );
+            $temp_endtime = strtotime( "+$slot_hour hour +$slot_minute minutes",$start_time);
+            if ($temp_endtime <= $end_time) {
+                $all_slots[] = array(
+                    'start'    => $start_time,
+                    'end'      => $temp_endtime,
+                    'name'     => date('H:i', $start_time ).' - '.date('H:i', $temp_endtime ),
+                );
+            }
             $start_time = $temp_endtime;
         }
         // remove booked appointment form the array
@@ -139,10 +142,9 @@ class WPGH_Appointment_Shortcode
             $slotbooked = false;
             foreach ($appointments as $appointment) {
                 //if ( ( $appointment->start_time >= $slot['start'] && $appointment->start_time < $slot['end'] ) || ($appointment->end_time >= $slot['start'] && $appointment->end_time < $slot['end']) ) {
-                if ( ( $slot['start'] >= $appointment->start_time && $slot['start'] < $appointment->end_time ) || ( $slot['end'] >= $appointment->start_time && $slot['end'] < $appointment->end_time ) ) {
+                if ( ( ( $slot['start'] >= $appointment->start_time && $slot['start'] < $appointment->end_time ) || ( $slot['end'] >= $appointment->start_time && $slot['end'] < $appointment->end_time ) )  ) {
                     $slotbooked = true;
                     break;
-
                 }
             }
             if (!$slotbooked) {
@@ -165,6 +167,11 @@ class WPGH_Appointment_Shortcode
         }
 
         if ( $available_slots == null ) {
+            $response = array(  'status'=>'failed', 'msg' => __('No Appointments available.' ,'groundhogg'));
+            wp_die( json_encode( $response ) );
+        }
+
+        if ( $final_slots == null ) {
             $response = array(  'status'=>'failed', 'msg' => __('No Appointments available.' ,'groundhogg'));
             wp_die( json_encode( $response ) );
         }

@@ -18,14 +18,14 @@ if ( ! defined( 'ABSPATH' ) ) exit;
                 <th scope="row"><label for="name"><?php _e( 'Name' ) ?></label></th>
                 <td>
                     <?php echo WPGH()->html->input( array( 'name' => 'name' ,'placeholder' => 'Calendar Name' ) ); ?>
-                    <p class="description"><?php _e( 'A name of a calendar.', 'groundhogg' ) ?>.</p>
+                    <p class="description"><?php _e( 'A name of a calendar.', 'groundhogg' ) ?></p>
                 </td>
             </tr>
             <tr>
                 <th scope="row"><label for="description"><?php _e( 'Description' ,'groundhogg'); ?></label></th>
                 <td>
                     <?php echo WPGH()->html->textarea( array( 'name' => 'description' ,'placeholder' => 'Calendar Description' ) );?>
-                    <p class="description"><?php _e( 'Calendar descriptions are only visible to admins and will never be seen by contacts.', 'groundhogg' ) ?>.</p>
+                    <p class="description"><?php _e( 'Calendar descriptions are only visible to admins and will never be seen by contacts.', 'groundhogg' ) ?></p>
                 </td>
             </tr>
         </tbody>
@@ -65,6 +65,30 @@ if ( ! defined( 'ABSPATH' ) ) exit;
                 <td>
                     <input type="time" id="endtime" name="endtime" value="17:00" autocomplete="off" >
                     <p class="description"><?php _e( 'End time of working hours.', 'groundhogg' ); ?></p>
+                </td>
+            </tr>
+            <tr>
+                <th scope="row"><label for="date"><?php _e( 'Length of appointment' ,'groundhogg'); ?></label></th>
+
+                <td>
+                    <?php
+                    $hours;
+                    for ($i=0 ; $i<24 ; $i++)
+                    {
+                        $hours[$i] = $i;
+                    }
+                    $mins;
+
+                    for ($i=0 ; $i<60 ; $i++)
+                    {
+                        $mins[$i] = $i;
+                    }
+                    echo WPGH()->html->dropdown( array( 'name' =>'slot_hour' , 'options' => $hours , 'selected' => '1') ) ;
+                    _e('Hour(s)','groundhogg');
+                    echo WPGH()->html->dropdown( array( 'name' =>'slot_minute' , 'options' => $mins , 'selected' => '0') ) ;
+                    _e('Minutes','groundhogg');
+                    ?>
+                    <p class="description"><?php _e( 'Select default length of appointment', 'groundhogg' ); ?></p>
                 </td>
             </tr>
         </tbody>

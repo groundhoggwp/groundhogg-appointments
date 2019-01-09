@@ -148,6 +148,7 @@ function add_appointment()
                     start: '<?php echo $start_time;  ?>', // a start time (10am in this example)
                     end: '<?php echo $end_time; ?>', // an end time (6pm in this example)
                 },
+                slotDuration: '00:15:00',
                 editable: true,
                 eventLimit: true, // allow "more" link when too many events
                 selectable :false,

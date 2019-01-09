@@ -92,8 +92,6 @@ class WPGH_Calendar_Page
     public function gh_add_appointment()
     {
 
-
-
         if ( ! current_user_can( 'add_appointment' ) ){
             $response = array( 'msg' => __('Your user role does not have the required permissions to add appointment.','groundhogg') );
             wp_die( json_encode($response) );
@@ -114,7 +112,7 @@ class WPGH_Calendar_Page
             'calendar_id'   => $calendar_id,
             'name'          => $appointment_name,
             'status'        => 'pending',
-            'start_time'    => ($start),    //strtotime()
+            'start_time'    => strtotime( '+1 minute',$start),    //strtotime()
             'end_time'      => ($end)       //strtotime()
         ));
 
@@ -466,7 +464,21 @@ class WPGH_Calendar_Page
                 $this->notices->add( 'INVALID_STARTTIME', __( "End time can not be smaller then start time.", 'groundhogg' ), 'error' );
             }
         }
-        $this->notices->add( 'success', __( 'Calendar updated successfully !', 'groundhogg' ), 'success' ); 
+        // appointment
+        $hour = intval( $_POST['slot_hour'] );
+        $min  = intval( $_POST['slot_minute'] );
+        // Enter time slot info
+        if ( $min == 0 && $hour == 0 ) {
+            $hour = 1;
+            $min  = 0;
+        }
+        if ($hour == 0 && ( $min < 5)  ) {
+            $min = 5;
+        }
+        // add meta
+        WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'slot_hour', $hour );
+        WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'slot_minute', $min);
+        $this->notices->add( 'success', __( 'Calendar updated successfully !', 'groundhogg' ), 'success' );
         wp_redirect( admin_url( 'admin.php?page=gh_calendar&action=edit&calendar=' . $calendar_id ) );
         die();
     }
@@ -558,13 +570,13 @@ class WPGH_Calendar_Page
             if( isset( $_POST['endtime'] )) {
                 $end_time  = $_POST['endtime'];
             } else {
-                $end_time  = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'end_time',true);
+                $end_time  = WPGH_APPOINTMENTS()->calendarmeta->add_meta($calendar_id,'end_time',true);
             }
 
             if( strtotime($end_time) < strtotime( $_POST['starttime'] ) ) {
                 $this->notices->add( 'INVALID_STARTTIME', __( "End time can not be smaller then start time.", 'groundhogg' ), 'error' );
             } else {
-                WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'start_time', sanitize_text_field($_POST['starttime']));
+                WPGH_APPOINTMENTS()->calendarmeta->add_meta($calendar_id, 'start_time', sanitize_text_field($_POST['starttime']));
             }
         }
         //end time
@@ -582,6 +594,19 @@ class WPGH_Calendar_Page
                 $this->notices->add( 'INVALID_STARTTIME', __( "End time can not be smaller then start time.", 'groundhogg' ), 'error' );
             }
         }
+        $hour = intval( $_POST['slot_hour'] );
+        $min  = intval( $_POST['slot_minute'] );
+        // Enter time slot info
+        if ( $min == 0 && $hour == 0 ) {
+            $hour = 1;
+            $min  = 0;
+        }
+        if ($hour == 0 && ( $min < 5)  ) {
+            $min = 5;
+        }
+        // add meta
+        WPGH_APPOINTMENTS()->calendarmeta->add_meta($calendar_id, 'slot_hour', $hour );
+        WPGH_APPOINTMENTS()->calendarmeta->add_meta($calendar_id, 'slot_minute', $min);
         $this->notices->add( 'success', __( 'New calendar added!', 'groundhogg' ), 'success' ); // not working
         wp_redirect( admin_url( 'admin.php?page=gh_calendar&action=edit&calendar=' . $calendar_id ) );
         die();
