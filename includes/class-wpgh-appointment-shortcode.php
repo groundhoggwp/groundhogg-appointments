@@ -14,21 +14,20 @@ class WPGH_Appointment_Shortcode
         add_action( 'wp_ajax_gh_add_appointment_client', array( $this , 'gh_add_appointment_client' ) );
         add_action( 'wp_ajax_gh_get_appointment_client', array( $this , 'gh_get_appointment_client'));
         add_shortcode( 'gh_calendar', array( $this , 'gh_calendar_shortcode' ) ) ;
-
     }
 
     /**
      * Load scripts for  operations
      */
     public function load_scripts() {
-
-        wp_enqueue_style(   'jquery-ui' );
-        //wp_enqueue_script(  'jquery', plugins_url( 'assets/js/lib/fullcalendar/lib/jquery.min.js', __FILE__ ), array('jquery') );
-        wp_enqueue_script(  'jquery-ui-datepicker' );
         wp_enqueue_script(  'jquery' );
+        wp_enqueue_style ( 'jquery-ui', WPGH_APPOINTMENT_ASSETS_FOLDER . 'css/jquery-ui.min.css',  array(), filemtime(WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/css/jquery-ui.min.css') );
+        wp_enqueue_style ( 'jquery-ui-calendar', WPGH_APPOINTMENT_ASSETS_FOLDER . 'css/calendar.css',  array(), filemtime(WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/css/calendar.css') );
+        wp_enqueue_script(  'jquery-ui-datepicker' );
         wp_enqueue_style ( 'calender-css',   WPGH_APPOINTMENT_ASSETS_FOLDER . 'css/frontend.css',  array(), filemtime(WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/css/frontend.css') );
-        wp_enqueue_script(  'ajax-script', WPGH_APPOINTMENT_ASSETS_FOLDER . '/js/load_appointment.js', array('jquery') , filemtime( WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/js/load_appointment.js' ) );
-        wp_localize_script( 'ajax-script', 'ajax_object',array( 'ajax_url' => admin_url( 'admin-ajax.php' ), 'we_value' => 1234 ) );
+        wp_enqueue_style( 'wpgh-frontend', WPGH_ASSETS_FOLDER . 'css/frontend.css', array(), filemtime( WPGH_PLUGIN_DIR . 'assets/css/frontend.css' ) );
+        wp_enqueue_script(  'gh-calendar', WPGH_APPOINTMENT_ASSETS_FOLDER . '/js/load_appointment.js', array('jquery') , filemtime( WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/js/load_appointment.js' ) );
+        wp_localize_script( 'gh-calendar', 'ghAppointment',array( 'ajax_url' => admin_url( 'admin-ajax.php' ) ) );
     }
 
 
@@ -77,7 +76,9 @@ class WPGH_Appointment_Shortcode
             wp_die( json_encode( $response ) );
         }
         // generate array for event
-        $response = array( 'status' => 'success','msg' => __('Appointment booked successfully.','groundhogg') );
+
+        //todo make dynamic (client chooses Msg!)
+        $response = array( 'status' => 'success','successMsg' => __('Appointment booked successfully.','groundhogg') );
         do_action('gh_calendar_add_appointment_client',$appointment_id , 'create_client' );
         wp_die( json_encode( $response ) );
     }
@@ -176,7 +177,7 @@ class WPGH_Appointment_Shortcode
             wp_die( json_encode( $response ) );
         }
         // operation on data
-        $response = array(  'status'=>'success','data' => json_encode($final_slots) );
+        $response = array(  'status'=> 'success', 'slots' => $final_slots );
         wp_die( json_encode( $response ) );
     }
 
@@ -208,21 +209,54 @@ class WPGH_Appointment_Shortcode
         $appointment_name = sanitize_text_field( $args[ 'appointment_name' ] ); // get name for clients
         ob_start();
         ?>
-        <form >
-            <input type="hidden" name="calendar_id" id = "calendar_id" value="<?php echo $calendar_id; ?>"/>
-            <input type="hidden"  id="appointment_name"  value="<?php echo $appointment_name; ?>"/>
-            <input type="hidden" name="hidden_data" id="hidden_data" data-start_date="" data-end_date="" data-control_id="">
-            <!--        <input  class="input" placeholder="Y-m-d" type="text" id="date" name="date" value="" autocomplete="off" required>-->
-            <div  id="date"></div>
-            Time : <hr />
-            <div id="select_time"  >
-            </div>
-            <input type="text" name="first_name" id="first_name" placeholder="First Name" required/>
-            <input type="text" name="last_name" id="last_name" placeholder="Last Name" required/>
-            <input type="email" name="email" id="email" placeholder="Email" required/>
-            <input type="submit" name="book_appointment" id="book_appointment" value="Book Appointment"/>
-        </form>
+        <div class="calendar-form-wrapper">
+            <form class="gh-calendar-form" method="post">
+                <input type="hidden" name="calendar_id" id = "calendar_id" value="<?php echo $calendar_id; ?>"/>
+                <input type="hidden"  id="appointment_name"  value="<?php echo $appointment_name; ?>"/>
+                <input type="hidden" name="hidden_data" id="hidden_data" data-start_date="" data-end_date="" data-control_id="">
+                <div class="ll-skin-nigran">
+                    <div id="appt-calendar" style="width: 100%"></div>
+                </div>
+                <div id="time-slots" class="select-time hidden">
+                    <p><b><?php _e( 'Select a time slot!', 'groundhogg' ) ?></b></p>
+                    <hr/>
+                    <div id="select_time"></div>
+                </div>
+                <div id="appointment-errors" class="appointment-errors hidden"></div>
+                <div id="details-form" class="details-form hidden gh-form-wrapper">
+                    <div class="gh-form">
+                        <div class="gh-form-row clearfix">
+                            <div class="gh-form-column col-1-of-2">
+                                <div class="gh-form-field">
+                                    <input type="text" name="first_name" id="first_name" placeholder="First Name" required/>
+                                </div>
+                            </div>
+                            <div class="gh-form-column col-1-of-2">
+                                <div class="gh-form-field">
+                                    <input type="text" name="last_name" id="last_name" placeholder="Last Name" required/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="gh-form-row clearfix">
+                            <div class="gh-form-column col-1-of-1">
+                                <div class="gh-form-field">
+                                    <input type="email" name="email" id="email" placeholder="Email" required/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="gh-form-row clearfix">
+                            <div class="gh-form-column col-1-of-1">
+                                <div class="gh-form-field">
+                                    <input type="submit" name="book_appointment" id="book_appointment" value="Book Appointment"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
         <?php
+
         $content = ob_get_clean();
         return $content;
     }

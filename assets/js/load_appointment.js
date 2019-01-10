@@ -1,132 +1,227 @@
-var load_appointment;
-(function ($) {
-    load_appointment = {
-        activeDomainBox: null,
+var ghAppointment = ghAppointment || {};
+
+(function ($,appt) {
+    appt = Object.assign( appt, {
+        id: null,
+        name: null,
+        calendar: null,
+        timeSlots: null,
+        detailsForm:null,
+        errors:null,
+        bookingData:null,
         init: function()
         {
-            $( '#book_appointment' ).on( 'click', function(e){
+
+            this.id             = $( '#calendar_id' ).val();
+            this.name           = $( '#appointment_name' ).val();
+            this.calendar       = $( '#appt-calendar' );
+            this.timeSlots      = $( '#time-slots' );
+            this.slots          = $( '#select_time' );
+            this.detailsForm    = $( '#details-form' );
+            this.errors         = $( '#appointment-errors' );
+            this.bookingData    = {};
+
+            /* Submit button */
+            $( document ).on( 'click', '#book_appointment', function( e ){
                 e.preventDefault();
-                //check for appointment
-                if ( $('#hidden_data').data('start_date') == ''  ||  $('#hidden_data').data('start_date') == '' ) {
-                    alert( 'Please select appointment.' );
-                } else {
-                    //check all the fields entered or not !
-                    if ($('#first_name').val() == '' || $('#last_name').val() == '' || $('#email').val() == '' ){
-                        alert( 'Please enter your information.' );
+                appt.submit();
+            } );
+
+            $(document).on( 'click', '.appointment-time', function(e){
+                e.preventDefault();
+                appt.selectAppointment( e.target );
+            } );
+
+            this.initDatePicker();
+        },
+
+        validateEmail: function (sEmail) {
+            var filter = /^([\w-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([\w-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)$/;
+            if (filter.test(sEmail)) {
+                return true;
+            } else {
+                return false;
+            }
+        },
+
+        submit: function()
+        {
+            this.hideErrors();
+            //check for appointment
+
+
+            /* Check that appointment has been seleced */
+            if ( ! this.bookingData.start_date || ! this.bookingData.end_date ){
+                this.setErrors( this.invalidDateMsg );
+                this.showErrors();
+                return false;
+            }
+
+            /* Check first last & email */
+            var $first  =  $('#first_name');
+            var $last   =  $('#last_name');
+            var $email  =  $('#email');
+
+            var details = {
+                'first' : $first.val(),
+                'last'  : $last.val(),
+                'email' : $email.val(),
+            };
+
+            /* Check that appointment has been seleced */
+            if ( ! details.first || ! details.last || ! details.email ){
+                this.setErrors( this.invalidDetailsMsg );
+                this.showErrors();
+                return false;
+            }
+
+            /* validate email */
+            if ( ! this.validateEmail( details.email ) ){
+                this.setErrors( this.invalidEmailMsg );
+                this.showErrors();
+                return false;
+            }
+
+            /* Passed all checks, make the request... */
+            $.ajax({
+                type: "post",
+                url: appt.ajax_url,
+                dataType: 'json',
+                data: {
+                    action: 'gh_add_appointment_client',
+                    start_time: appt.bookingData.start_date,
+                    end_time:   appt.bookingData.end_date,
+                    email:      details.email,
+                    first_name: details.first,
+                    last_name:  details.last,
+                    calendar_id: appt.id,
+                    appointment_name: $('#appointment_name').val(),
+                },
+                success: function (response) {
+                    if (response.status === 'failed') {
+                        appt.setErrors(response.msg);
+                        appt.showErrors();
+                        return false;
                     } else {
-                        //validate email address
-                        if(validateEmail($('#email').val())){
-                            //AJAX REQUEST TO CREATE APPOINTMENT
-                            // MAKE AJAX REQUEST TO ADD APPOINTMENT INSIDE DATA BASE
-                            $.ajax({
-                                type: "post",
-                                url: ajax_object.ajax_url,
-                                dataType: 'json',
-                                data: {
-                                    action: 'gh_add_appointment_client',
-                                    start_time: $('#hidden_data').data('start_date'),
-                                    end_time: $('#hidden_data').data('end_date'),
-                                    email: $('#email').val(),
-                                    first_name : $('#first_name').val(),
-                                    last_name : $('#last_name').val(),
-                                    calendar_id : $('#calendar_id').val(),
-                                    appointment_name: $('#appointment_name').val(),
-
-                                },
-                                success: function (response) {
-                                    if (response.status == 'failed') {
-                                        alert(response.msg);
-                                    } else {
-                                       //clear all the data
-                                        $('#email').val('');
-                                        $('#first_name').val('');
-                                        $('#last_name').val('');
-                                        $('#appointment_name').val('');
-                                        $('#hidden_data').data('start_date' , '');
-                                        $('#hidden_data').data('end_date'   , '');
-                                        $('#hidden_data').data('control_id' , '');
-                                        // retrieve all available appointments  after booking
-                                        $('#select_time').children().remove();
-                                        $('#select_time').append('<h3>'+ response.msg +'</h3>');
-                                        alert(response.msg);
-                                    }
-                                }
-                            });
-
-                        } else {
-                            alert('Please enter valid email address.');
-                        }
+                        $( '.gh-calendar-form' ).replaceWith( response.successMsg );
+                        $( '.calendar-form-wrapper' ).addClass( 'appointment-success' );
+                        return true;
                     }
-                }
-            } );
-
-            $(document).on( 'click', '.gh_appointment_class', function(e){
-                e.preventDefault();
-                // get data from hidden field
-                var id =  $('#hidden_data').data('control_id');
-                if( !( id == '' ) ) {
-                    //remove colour
-                    $('#'+id).css( 'background-color' ,'#8fdf82' );
-                }
-                // set data inside hidden field
-                $(this).css( 'background-color' ,'#123456' );
-                $('#hidden_data').data('start_date' , $(this).data('start_date'));
-                $('#hidden_data').data('end_date'   , $(this).data('end_date'));
-                $('#hidden_data').data('control_id' , $(this).attr('id'));
-
-            } );
-
-            $('#date').datepicker({
-                changeMonth: true,
-                changeYear: true,
-                minDate:0,
-                firstDay: 0,
-                dateFormat:'yy-mm-dd',
-                onSelect: function(dateText) {
-                    $('#select_time').children().remove();
-                    //clear hidden field data on date change
-                    $('#hidden_data').data('start_date' , '');
-                    $('#hidden_data').data('end_date'   , '');
-                    $('#hidden_data').data('control_id' , '');
-                    // MAKE AJAX REQUEST TO GET ALL THE AVAILABLE TIME SLOTS..
-                    $.ajax({
-                        type: "post",
-                        url: ajax_object.ajax_url,
-                        dataType: 'json',
-                        data: {
-                            action: 'gh_get_appointment_client',
-                            date : dateText,
-                            calendar : $('#calendar_id').val()
-                        },
-                        success: function (response) {
-                            if (response.status == 'failed') {
-                                //alert(response.msg);
-                                $('#select_time').append('<h3>'+ response.msg +'</h3>');
-                            } else {
-                                $('#select_time').children().remove();
-                                $('#select_time').css("visibility", "visible");
-                                var opts = $.parseJSON(response.data);
-                                $.each(opts, function ( i , d) {
-                                    $('#select_time').append('<input type="button" class="gh_appointment_class" name="appointment_time" id = "gh_appointment_'+ d.start +'" style="margin: 10px ;background-color: #8fdf82;" data-start_date = "'+ d.start +'" data-end_date="'+ d.end +'" value ="' + d.name + '"/>');
-                                });
-                            }
-                        }
-                    });
                 }
             });
 
-            function validateEmail(sEmail) {
-                var filter = /^([\w-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([\w-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)$/;
-                if (filter.test(sEmail)) {
-                    return true;
-                } else {
-                    return false;
-                }
-            }
+            return false;
         },
-    };
+
+        initDatePicker: function() {
+
+            this.calendar.datepicker({
+                minDate:0,
+                firstDay: 0,
+                dateFormat:'yy-mm-dd',
+                onSelect: function( dateText ) {
+                    appt.refreshTimeSlots( dateText );
+                }
+            });
+        },
+
+        refreshTimeSlots: function( date )
+        {
+            this.hideTimeSlots();
+            this.hideErrors();
+            this.removeTimeSlots(); //todo
+
+            console.log( date );
+
+            $.ajax({
+                type: "post",
+                url: appt.ajax_url,
+                dataType: 'json',
+                data: {
+                    action: 'gh_get_appointment_client',
+                    date : date,
+                    calendar : appt.id
+                },
+                success: function (response) {
+                    if ( response.status === 'failed' ) {
+                        appt.setErrors( response.msg );
+                        appt.showErrors();
+                    } else {
+                        appt.setTimeSlots( response.slots );
+                        appt.showTimeSlots();
+                    }
+                }
+            });
+        },
+
+        showErrors: function(){
+            this.errors.removeClass( 'hidden' );
+        },
+
+        hideErrors: function(){
+            this.errors.addClass( 'hidden' );
+        },
+
+        setErrors: function( html )
+        {
+            appt.errors.html( html );
+        },
+
+        setTimeSlots: function( slots )
+        {
+            $.each( slots, function (i,d) {
+                $('#select_time').append(
+                    '<input type="button" ' +
+                    'class="appointment-time" ' +
+                    'name="appointment_time" ' +
+                    'id="gh_appointment_'+ d.start +'" ' +
+                    'data-start_date="'+ d.start +'" ' +
+                    'data-end_date="'+ d.end +'" value="' + d.name + '"/>'
+                );
+            });
+        },
+
+        removeTimeSlots: function( slots ){
+            this.slots.html('');
+        },
+
+        showTimeSlots: function () {
+            this.timeSlots.removeClass( 'hidden' );
+        },
+
+        hideTimeSlots: function () {
+            this.timeSlots.addClass( 'hidden' );
+        },
+
+        showForm: function()
+        {
+            this.detailsForm.removeClass( 'hidden' );
+        },
+
+        /**
+         *
+         * @param e Node
+         */
+        selectAppointment: function ( e ) {
+            // get data from hidden field
+
+            var $e = $(e);
+
+            this.bookingData = {
+                start_date: $e.data('start_date'),
+                end_date:   $e.data('end_date'),
+            };
+
+            /* Remove selected class from all buttons */
+            $( '.appointment-time' ).removeClass( 'selected' );
+            $e.addClass( 'selected' );
+
+            this.showForm();
+        }
+    } );
+
     $(function () {
-        load_appointment.init();
+        appt.init();
     })
 
-})(jQuery);
+})(jQuery,ghAppointment);

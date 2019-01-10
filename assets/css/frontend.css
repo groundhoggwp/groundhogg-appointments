@@ -1,10 +1,49 @@
 .ui-datepicker-current-day{
     border-style: solid;
-    font-weight:bold; color: #123456;
+    font-weight: bold;
+    color: #ffffff;
 }
 
 .ui-datepicker-calendar{
     text-align: center;
 }
 
+.hidden {
+    display: none;
+}
 
+.select-time .appointment-time{
+    margin: 5px;
+    padding: 7px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #FFF;
+    background-color: #29a2d9;
+    border-color: #195b7a;
+    border-width: 1px 3px 2px 1px;
+    border-radius: 3px;
+    box-shadow: 0 1px 1px #15435a;
+}
+
+.select-time .appointment-time.selected{
+    background-color: #76c567;
+    border-color: #23783c;
+}
+
+.appointment-errors{
+    background: rgba(255, 198, 174, 0.56);
+    color: #FF1212;
+    border: 1px solid #FF1212;
+    border-radius: 2px;
+    padding-left: 4px;
+    margin: 5px 0 2px 0;
+}
+
+.appointment-success{
+    background: rgba(138, 230, 120, 0.56);
+    color: #558f49;
+    border: 1px solid #60a054;
+    border-radius: 2px;
+    padding-left: 4px;
+    margin: 5px 0 2px 0;
+}

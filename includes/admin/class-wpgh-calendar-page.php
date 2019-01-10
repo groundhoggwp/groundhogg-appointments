@@ -158,7 +158,7 @@ class WPGH_Calendar_Page
         wp_enqueue_script( 'calender-moment',WPGH_APPOINTMENT_ASSETS_FOLDER . '/lib/fullcalendar/lib/moment.min.js', array(), filemtime(WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/lib/fullcalendar/lib/moment.min.js' ) );
         wp_enqueue_script( 'calender-main',  WPGH_APPOINTMENT_ASSETS_FOLDER . '/lib/fullcalendar/fullcalendar.js',   array(), filemtime(WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/lib/fullcalendar/fullcalendar.js') );
         wp_enqueue_style ( 'calender-css',   WPGH_APPOINTMENT_ASSETS_FOLDER . '/lib/fullcalendar/fullcalendar.css',  array(), filemtime(WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/lib/fullcalendar/fullcalendar.css') );
-        wp_enqueue_style ( 'frontend-css',   WPGH_APPOINTMENT_ASSETS_FOLDER . '/css/backend.css',  array(), filemtime(WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/css/backend.css') );
+        wp_enqueue_style ( 'backend-css',   WPGH_APPOINTMENT_ASSETS_FOLDER . '/css/backend.css',  array(), filemtime(WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/css/backend.css') );
 
     }
 
