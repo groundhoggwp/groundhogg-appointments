@@ -47,3 +47,25 @@
     padding-left: 4px;
     margin: 5px 0 2px 0;
 }
+
+p.time-slot-select-text{
+    margin: 1em 0 1em 0;
+}
+
+hr.time-slot-divider{
+    margin: 1em 0 1em 0;
+}
+
+.spinner {
+    background: url(images/load.gif) no-repeat;
+    background-size: 30px 30px;
+    display: inline-block;
+    visibility: hidden;
+    float: right;
+    vertical-align: middle;
+    opacity: .7;
+    filter: alpha(opacity=70);
+    width: 30px;
+    height: 30px;
+    margin: 4px 10px 0;
+}

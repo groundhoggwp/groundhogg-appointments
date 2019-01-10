@@ -76,9 +76,12 @@ class WPGH_Appointment_Shortcode
             wp_die( json_encode( $response ) );
         }
         // generate array for event
-
         //todo make dynamic (client chooses Msg!)
-        $response = array( 'status' => 'success','successMsg' => __('Appointment booked successfully.','groundhogg') );
+        $message = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id , 'message',true );
+        if ($message == '' ){
+            $message = 'Appointment booked successfully';
+        }
+        $response = array( 'status' => 'success','successMsg' => __($message,'groundhogg') );
         do_action('gh_calendar_add_appointment_client',$appointment_id , 'create_client' );
         wp_die( json_encode( $response ) );
     }
@@ -205,6 +208,10 @@ class WPGH_Appointment_Shortcode
         if ( !$exist ) {
             return sprintf( '<p>%s</p>', __( 'The given calendar ID does not exist.', 'groundhogg' ) );
         }
+        $title          = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'slot_title', true);
+        if( $title == null ) {
+            $title    = 'Time slot';
+        }
 
         $appointment_name = sanitize_text_field( $args[ 'appointment_name' ] ); // get name for clients
         ob_start();
@@ -213,13 +220,13 @@ class WPGH_Appointment_Shortcode
             <form class="gh-calendar-form" method="post">
                 <input type="hidden" name="calendar_id" id = "calendar_id" value="<?php echo $calendar_id; ?>"/>
                 <input type="hidden"  id="appointment_name"  value="<?php echo $appointment_name; ?>"/>
-                <input type="hidden" name="hidden_data" id="hidden_data" data-start_date="" data-end_date="" data-control_id="">
+<!--                <input type="hidden" name="hidden_data" id="hidden_data" data-start_date="" data-end_date="" data-control_id="">-->
                 <div class="ll-skin-nigran">
                     <div id="appt-calendar" style="width: 100%"></div>
                 </div>
                 <div id="time-slots" class="select-time hidden">
-                    <p><b><?php _e( 'Select a time slot!', 'groundhogg' ) ?></b></p>
-                    <hr/>
+                    <p class="time-slot-select-text"><b><?php _e( $title , 'groundhogg' ) ?></b></p>
+                    <hr class="time-slot-divider"/>
                     <div id="select_time"></div>
                 </div>
                 <div id="appointment-errors" class="appointment-errors hidden"></div>
@@ -255,8 +262,10 @@ class WPGH_Appointment_Shortcode
                 </div>
             </form>
         </div>
+        <div style="text-align: center;" id="spinner">
+            <span class="spinner" style="float: none; visibility: visible"></span>
+        </div>
         <?php
-
         $content = ob_get_clean();
         return $content;
     }

@@ -29,6 +29,14 @@ $slot_minute    = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'slot
 if( $slot_minute == null) {
     $slot_minute = 0;
 }
+$message        = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'message', true);
+if( $message == null  || $message == '') {
+    $message    = 'Appointment booked successfully';
+}
+$title          = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'slot_title', true);
+if( $title == null  ) {
+    $title    = 'Time slot';
+}
 
 
 ?>
@@ -59,7 +67,7 @@ if( $slot_minute == null) {
             </tr>
         </tbody>
     </table>
-    <h2><?php _e( 'Business Hours'); ?></h2>
+    <h2><?php _e( 'Business Hours' ,'groundhogg' ); ?></h2>
     <table class="form-table">
         <tbody>
             <tr class="form-field term-contact-wrap">
@@ -90,29 +98,48 @@ if( $slot_minute == null) {
                     <p class="description"><?php _e( 'End time of working hours.', 'groundhogg' ); ?></p>
                 </td>
             </tr>
-            <tr>
-                <th scope="row"><label for="date"><?php _e( 'Length of appointment' ,'groundhogg'); ?></label></th>
-                <td>
-                    <?php
-                    $hours;
-                    for ($i=0 ; $i<24 ; $i++)
-                    {
-                        $hours[$i] = $i;
-                    }
-                    $mins;
-                    for ($i=0 ; $i<60 ; $i++)
-                    {
-                        $mins[$i] = $i;
-                    }
-                    echo WPGH()->html->dropdown( array( 'name' =>'slot_hour' , 'options' => $hours , 'selected' => $slot_hour) ) ;
-                    _e('Hour(s)','groundhogg');
-                    echo WPGH()->html->dropdown( array( 'name' =>'slot_minute' , 'options' => $mins , 'selected' => $slot_minute) ) ;
-                    _e('Minutes','groundhogg');
-                    ?>
-                    <p class="description"><?php _e( 'Select default length of appointment', 'groundhogg' ); ?></p>
-                </td>
-            </tr>
+        </tbody>
+    </table>
+    <h2><?php _e( 'Appointment' ,'groundhogg'); ?></h2>
+    <table class="form-table">
+        <tbody>
+        <tr>
+            <th scope="row"><label for="date"><?php _e( 'Length of appointment' ,'groundhogg'); ?></label></th>
+            <td>
+                <?php
+                $hours;
+                for ($i=0 ; $i<24 ; $i++)
+                {
+                    $hours[$i] = $i;
+                }
+                $mins;
 
+                for ($i=0 ; $i<60 ; $i++)
+                {
+                    $mins[$i] = $i;
+                }
+                echo WPGH()->html->dropdown( array( 'name' =>'slot_hour' , 'options' => $hours , 'selected' => $slot_hour) ) ;
+                _e('Hour(s)','groundhogg');
+                echo WPGH()->html->dropdown( array( 'name' =>'slot_minute' , 'options' => $mins , 'selected' => $slot_minute) ) ;
+                _e('Minutes','groundhogg');
+                ?>
+                <p class="description"><?php _e( 'Select default length of appointment', 'groundhogg' ); ?></p>
+            </td>
+        </tr>
+        <tr>
+            <th scope="row"><label for="name"><?php _e( 'Time Slot Title' ,'groundhogg') ?></label></th>
+            <td>
+                <?php echo WPGH()->html->input( array( 'name' => 'slot_title' ,'placeholder' => 'Custom title' , 'value' => __($title ,'groundhogg') ) );?>
+                <p class="description"><?php _e( 'This title will be displayed above time slots.', 'groundhogg' ) ?></p>
+            </td>
+        </tr>
+        <tr>
+            <th scope="row"><label for="name"><?php _e( 'Custom Message' ) ?></label></th>
+            <td>
+                <?php echo WPGH()->html->textarea( array( 'name' => 'message' ,'placeholder' => 'Custom Message' , 'value' => __($message , 'groundhogg') ) );?>
+                <p class="description"><?php _e( 'This message will be displayed when user or admin booked appointment successfully.', 'groundhogg' ) ?></p>
+            </td>
+        </tr>
         </tbody>
     </table>
     <input type="hidden" value="<?php echo $calendar_id; ?>" name="calendar" />

@@ -30,7 +30,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
             </tr>
         </tbody>
     </table>
-    <h2><?php _e( 'Business Hours'); ?></h2>
+    <h2><?php _e( 'Business Hours' ,'groundhogg'); ?></h2>
     <table class="form-table">
         <tbody>
             <tr class="form-field term-contact-wrap">
@@ -67,6 +67,11 @@ if ( ! defined( 'ABSPATH' ) ) exit;
                     <p class="description"><?php _e( 'End time of working hours.', 'groundhogg' ); ?></p>
                 </td>
             </tr>
+        </tbody>
+    </table>
+    <h2><?php _e( 'Appointment' ,'groundhogg'); ?></h2>
+    <table class="form-table">
+        <tbody>
             <tr>
                 <th scope="row"><label for="date"><?php _e( 'Length of appointment' ,'groundhogg'); ?></label></th>
 
@@ -89,6 +94,21 @@ if ( ! defined( 'ABSPATH' ) ) exit;
                     _e('Minutes','groundhogg');
                     ?>
                     <p class="description"><?php _e( 'Select default length of appointment', 'groundhogg' ); ?></p>
+                </td>
+
+            </tr>
+            <tr>
+                <th scope="row"><label for="name"><?php _e( 'Time Slot Title' ,'groundhogg') ?></label></th>
+                <td>
+                    <?php echo WPGH()->html->input( array( 'name' => 'slot_title' ,'placeholder' => 'Custom title' , 'value' => __('Time Slots' ,'groundhogg') ) );?>
+                    <p class="description"><?php _e( 'This title will be displayed above time slots.', 'groundhogg' ) ?></p>
+                </td>
+            </tr>
+            <tr>
+                <th scope="row"><label for="name"><?php _e( 'Custom Message' ,'groundhogg' ) ?></label></th>
+                <td>
+                    <?php echo WPGH()->html->textarea( array( 'name' => 'message' ,'placeholder' => 'Custom Message' , 'value' => __('Appointment booked successfully.' ,'groundhogg') ) );?>
+                    <p class="description"><?php _e( 'This message will be displayed when user booked appointment successfully.', 'groundhogg' ) ?></p>
                 </td>
             </tr>
         </tbody>

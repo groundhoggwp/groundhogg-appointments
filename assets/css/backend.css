@@ -98,3 +98,51 @@
     box-sizing: border-box;
 
 }
+
+
+.select-time .appointment-time{
+    color: #555;
+    border-color: #ccc;
+    background: #f7f7f7;
+    box-shadow: 0 1px 0 #ccc;
+    vertical-align: top;
+    display: inline-block;
+    text-decoration: none;
+    line-height: 26px;
+    height: 28px;
+    padding: 0 10px 1px;
+    cursor: pointer;
+    border-width: 1px;
+    border-style: solid;
+    -webkit-appearance: none;
+    border-radius: 3px;
+    white-space: nowrap;
+    box-sizing: border-box;
+    margin: 5px;
+    font-size: 14px;
+
+}
+
+.select-time .appointment-time.selected{
+    color: #fff;
+    background-color: #28a745;
+    border-color: #23783c;
+}
+
+.appointment-errors{
+    background: rgba(255, 198, 174, 0.56);
+    color: #FF1212;
+    border: 1px solid #FF1212;
+    border-radius: 2px;
+    padding-left: 4px;
+    margin: 5px 0 2px 0;
+}
+
+.appointment-success{
+    background: rgba(138, 230, 120, 0.56);
+    color: #558f49;
+    border: 1px solid #60a054;
+    border-radius: 2px;
+    padding-left: 4px;
+    margin: 5px 0 2px 0;
+}

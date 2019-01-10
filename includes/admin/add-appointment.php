@@ -77,14 +77,20 @@ function add_appointment()
                             <tr>
                                 <th scope="row"><label for="Date"><?php _e( 'Date' ,'groundhogg'); ?></label></th>
                                 <td>
-                                    <input type="text"  id="date"  style="height:29px;width: 100px" class="input" placeholder="Y-m-d" type="text" autocomplete="off" required  />
-                                    <input type="hidden" name="hidden_data" id="hidden_data" data-start_date="" data-end_date="" data-control_id="">
+                                    <input type="text"  id="appt-calendar"  style="height:29px;width: 100px" class="input" placeholder="Y-m-d" type="text" autocomplete="off" required  />
                                 </td>
-
                             </tr>
                             <tr>
                                 <th scope="row"><label for="description"><?php _e( 'Time' ,'groundhogg'); ?></label></th>
-                                <td><div id="select_time" ></div></td>
+                                <td>
+                                    <div style="text-align: center;" id="spinner">
+                                        <span class="spinner" style="float: none; visibility: visible"></span>
+                                    </div>
+                                    <div id="time-slots" class="select-time hidden">
+                                        <div id="select_time"></div>
+                                    </div>
+                                    <div id="appointment-errors" class="appointment-errors hidden"></div>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -221,52 +227,50 @@ function add_appointment()
                         });
                     }
                 },
-                dayClick: function( date ) {
-                    var fetchevent = $('#calendar').fullCalendar('clientEvents','booking_event');
-                    if ( fetchevent[0] == null ) {
-                        if ( date /1000 ><?php echo current_time('timestamp'); ?> ) {
-                            var dow =  <?php echo json_encode($dow); ?>;
-                            var isvalid = ( dow.indexOf(date.day().toString()) > -1 );
-                            if ( isvalid ){
-                                // check for all day
-                                if(date.hours() == 0 && date.minutes() == 0 ){
-                                    //this is all day event
-                                    // change view of calendar to date
-                                    $('#calendar').fullCalendar( 'changeView', 'agendaDay' );
-                                    $('#calendar').fullCalendar( 'gotoDate', date );
-                                    alert( 'Please select time slot from this date.' );
-                                } else {
-                                    // check for business hours
-                                    if ( !isOverlapping( moment(date).add(1,'minutes') , moment(date).add(1, 'h') ) ) {
-                                        // check for overlap
-                                        //$(this).remove(); /// bug which removes rows on event paste
-
-                                        /*
-                                        var newEvent = {
-                                            title: 'My Appointment',
-                                            start: moment(date).add(1,'minutes'),
-                                            end: moment(date).add(1, 'h'),
-                                            id: 'booking_event',
-                                            constraint: 'businessHours',
-                                            editable: true,
-                                        };
-                                        $('#calendar').fullCalendar('renderEvent', newEvent, 'stick');
-
-                                        */
-                                    } else {
-                                        alert('time slot already booked!');
-                                    }
-                                }
-                            }else {
-                                alert('Out of Business hours !');
-                            }
-                        } else {
-                            alert('You can not book passed date.');
-                        }
-                    } else {
-                        alert('You can book only one appointment at a time. Please drag and drop appointment to change dates.');
-                    }
-                },
+                //dayClick: function( date ) {
+                //    var fetchevent = $('#calendar').fullCalendar('clientEvents','booking_event');
+                //    if ( fetchevent[0] == null ) {
+                //        if ( date /1000 ><?php //echo current_time('timestamp'); ?>// ) {
+                //            var dow =  <?php //echo json_encode($dow); ?>//;
+                //            var isvalid = ( dow.indexOf(date.day().toString()) > -1 );
+                //            if ( isvalid ){
+                //                // check for all day
+                //                if(date.hours() == 0 && date.minutes() == 0 ){
+                //                    //this is all day event
+                //                    // change view of calendar to date
+                //                    $('#calendar').fullCalendar( 'changeView', 'agendaDay' );
+                //                    $('#calendar').fullCalendar( 'gotoDate', date );
+                //                    alert( 'Please select time slot from this date.' );
+                //                } else {
+                //                    // check for business hours
+                //                    if ( !isOverlapping( moment(date).add(1,'minutes') , moment(date).add(1, 'h') ) ) {
+                //                        // check for overlap
+                //                        //$(this).remove(); /// bug which removes rows on event paste
+                //                        var newEvent = {
+                //                            title: 'My Appointment',
+                //                            start: moment(date).add(1,'minutes'),
+                //                            end: moment(date).add(1, 'h'),
+                //                            id: 'booking_event',
+                //                            constraint: 'businessHours',
+                //                            editable: true,
+                //                        };
+                //                        $('#calendar').fullCalendar('renderEvent', newEvent, 'stick');
+                //
+                //
+                //                    } else {
+                //                        alert('time slot already booked!');
+                //                    }
+                //                }
+                //            }else {
+                //                alert('Out of Business hours !');
+                //            }
+                //        } else {
+                //            alert('You can not book passed date.');
+                //        }
+                //    } else {
+                //        alert('You can book only one appointment at a time. Please drag and drop appointment to change dates.');
+                //    }
+                //},
                 events : <?php echo $json; ?>
             });
 

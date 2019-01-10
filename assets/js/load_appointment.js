@@ -33,6 +33,7 @@ var ghAppointment = ghAppointment || {};
             } );
 
             this.initDatePicker();
+            $('#spinner').hide();
         },
 
         validateEmail: function (sEmail) {
@@ -130,9 +131,11 @@ var ghAppointment = ghAppointment || {};
             this.hideTimeSlots();
             this.hideErrors();
             this.removeTimeSlots(); //todo
+            var $spinner    = $('#spinner');
+            $spinner.show();
 
-            console.log( date );
-
+            // console.log( date );
+            $spinner.show();
             $.ajax({
                 type: "post",
                 url: appt.ajax_url,
@@ -146,9 +149,12 @@ var ghAppointment = ghAppointment || {};
                     if ( response.status === 'failed' ) {
                         appt.setErrors( response.msg );
                         appt.showErrors();
+                        $spinner.hide();
                     } else {
+                        appt.removeTimeSlots();
                         appt.setTimeSlots( response.slots );
                         appt.showTimeSlots();
+                        $spinner.hide();
                     }
                 }
             });
@@ -183,6 +189,11 @@ var ghAppointment = ghAppointment || {};
 
         removeTimeSlots: function( slots ){
             this.slots.html('');
+            //remove data form variable
+            this.bookingData = {
+                start_date: null,
+                end_date:  null,
+            };
         },
 
         showTimeSlots: function () {

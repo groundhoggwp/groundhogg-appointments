@@ -64,7 +64,7 @@ if ($calendar == null) {
                 <th scope="row"><label for="user_id"><?php _e( 'Appointment Start Time' ,'groundhogg') ?></label></th>
                 <td>
                     <input style="height:29px;width: 100px" class="input" placeholder="Y-m-d" type="text" id="start_date" name="start_date" value="<?php  _e(  date('Y-m-d', $appointment->start_time ), 'groundhogg' ) ; ?>" autocomplete="off" required >
-                    <input type="time" id="time" name="start_time" value="<?php  _e(  date('G:i:s', $appointment->start_time ), 'groundhogg' ) ; ?>" autocomplete="off" required>
+                    <input type="time" id="time" name="start_time" value="<?php  _e(  date('H:i:s', $appointment->start_time ), 'groundhogg' ) ; ?>"  required>
                     <script>
                         jQuery(function($){$('#start_date').datepicker({
                             changeMonth: true,
@@ -79,7 +79,7 @@ if ($calendar == null) {
                 <th scope="row"><label for="user_id"><?php _e( 'Appointment End Time' ,'groundhogg') ?></label></th>
                 <td>
                     <input style="height:29px;width: 100px" class="input" placeholder="Y-m-d" type="text" id="end_date" name="end_date" value="<?php  _e(  date('Y-m-d', $appointment->end_time ), 'groundhogg' ) ; ?>" autocomplete="off" required >
-                    <input type="time" id="time" name="end_time" value="<?php  _e( date('G:i:s', $appointment->end_time ), 'groundhogg' ) ; ?>"  required>
+                    <input type="time" id="time" name="end_time" value="<?php  _e( date('H:i:s', $appointment->end_time ), 'groundhogg' ) ; ?>"  required>
                     <script>
                         jQuery(function($){$('#end_date').datepicker({
                             changeMonth: true,

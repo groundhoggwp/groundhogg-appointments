@@ -152,9 +152,11 @@ class WPGH_Calendar_Page
         wp_enqueue_script( 'jquery-ui-datepicker' );
         wp_enqueue_style(  'jquery-ui' );
         wp_enqueue_script( 'ajax-script-appointment',    WPGH_APPOINTMENT_ASSETS_FOLDER . '/js/appointments.js',    array('jquery'),     filemtime( WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/js/appointments.js' ) );
-        wp_enqueue_script( 'ajax-script-load_appointment',    WPGH_APPOINTMENT_ASSETS_FOLDER . '/js/load_appointment.js',    array('jquery'),     filemtime( WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/js/load_appointment.js' ) );
-        wp_localize_script('ajax-script-load_appointment', 'ajax_object',array( 'ajax_url' => admin_url( 'admin-ajax.php' ), 'we_value' => 1234 ) );
-        wp_localize_script('ajax-script-appointment', 'ajax_object1',array( 'ajax_url' => admin_url( 'admin-ajax.php' ), 'we_value' => 1233 ) );
+        wp_localize_script('ajax-script-appointment', 'ajax_object',array( 'ajax_url' => admin_url( 'admin-ajax.php' ), 'we_value' => 1233 ) );
+
+        wp_enqueue_script( 'gh-calendar',    WPGH_APPOINTMENT_ASSETS_FOLDER . '/js/load_appointment.js',    array('jquery'),     filemtime( WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/js/load_appointment.js' ) );
+        wp_localize_script( 'gh-calendar', 'ghAppointment',array( 'ajax_url' => admin_url( 'admin-ajax.php' ) ) );
+
         wp_enqueue_script( 'calender-moment',WPGH_APPOINTMENT_ASSETS_FOLDER . '/lib/fullcalendar/lib/moment.min.js', array(), filemtime(WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/lib/fullcalendar/lib/moment.min.js' ) );
         wp_enqueue_script( 'calender-main',  WPGH_APPOINTMENT_ASSETS_FOLDER . '/lib/fullcalendar/fullcalendar.js',   array(), filemtime(WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/lib/fullcalendar/fullcalendar.js') );
         wp_enqueue_style ( 'calender-css',   WPGH_APPOINTMENT_ASSETS_FOLDER . '/lib/fullcalendar/fullcalendar.css',  array(), filemtime(WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/lib/fullcalendar/fullcalendar.css') );
@@ -478,6 +480,14 @@ class WPGH_Calendar_Page
         // add meta
         WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'slot_hour', $hour );
         WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'slot_minute', $min);
+        $message = wp_kses_post( $_POST['message'] );
+        if ($message != '') {
+            WPGH_APPOINTMENTS()->calendarmeta->update_meta( $calendar_id , 'message', $message );
+        }
+        $title   = sanitize_text_field( $_POST['slot_title'] );
+        if ($title != '') {
+            WPGH_APPOINTMENTS()->calendarmeta->update_meta( $calendar_id , 'slot_title', $title );
+        }
         $this->notices->add( 'success', __( 'Calendar updated successfully !', 'groundhogg' ), 'success' );
         wp_redirect( admin_url( 'admin.php?page=gh_calendar&action=edit&calendar=' . $calendar_id ) );
         die();
@@ -605,8 +615,20 @@ class WPGH_Calendar_Page
             $min = 5;
         }
         // add meta
-        WPGH_APPOINTMENTS()->calendarmeta->add_meta($calendar_id, 'slot_hour', $hour );
-        WPGH_APPOINTMENTS()->calendarmeta->add_meta($calendar_id, 'slot_minute', $min);
+        WPGH_APPOINTMENTS()->calendarmeta->add_meta( $calendar_id, 'slot_hour', $hour  );
+        WPGH_APPOINTMENTS()->calendarmeta->add_meta( $calendar_id, 'slot_minute', $min );
+        // add custom message
+        $message = wp_kses_post( $_POST['message'] );
+        if ($message == '') {
+            $message = 'Appointment booked successfully';
+        }
+        WPGH_APPOINTMENTS()->calendarmeta->add_meta( $calendar_id , 'message', $message );
+        $title   = sanitize_text_field( $_POST['slot_title'] );
+        if ($title == '') {
+            $title = 'Time Slot';
+        }
+        WPGH_APPOINTMENTS()->calendarmeta->update_meta( $calendar_id , 'slot_title', $title );
+
         $this->notices->add( 'success', __( 'New calendar added!', 'groundhogg' ), 'success' ); // not working
         wp_redirect( admin_url( 'admin.php?page=gh_calendar&action=edit&calendar=' . $calendar_id ) );
         die();
