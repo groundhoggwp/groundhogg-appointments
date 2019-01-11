@@ -63,6 +63,7 @@ var appointment;
                                 $('#select_time').children().remove();
                                 //$( '#select_time' ).replaceWith( response.successMsg );
                                 $('#appt-calendar').val('');
+                                $('#spinner').hide();
                             }
                         });
 
