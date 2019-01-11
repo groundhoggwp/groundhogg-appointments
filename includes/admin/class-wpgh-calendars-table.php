@@ -87,7 +87,7 @@ class WPGH_Calendars_Table extends WP_List_Table {
             return '';
         }
         $actions = array();
-        $actions['edit'] = "<span class='edit'><a href='" . admin_url('admin.php?page=gh_calendar&action=edit&calendar=' . $calendar->ID ) . "'>" . __('Edit') . "</a></span>";
+        $actions['edit'] = "<span class='edit'><a href='" . admin_url('admin.php?page=gh_calendar&action=edit&calendar=' . $calendar->ID ) . "'>" . __('Edit Calendar') . "</a></span>";
         $actions['delete'] = sprintf(
             '<a href="%s" class="submitdelete" aria-label="%s">%s</a>',
             wp_nonce_url(admin_url('admin.php?page=gh_calendar&calendar='. $calendar->ID .'&action=delete')),

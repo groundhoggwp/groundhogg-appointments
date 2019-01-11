@@ -97,14 +97,14 @@ function add_appointment()
                     <input type="button" name="btndisplay" id ="btnalert" value="Book appointment" class="button button-primary"/>
 
                     <div class="alert alert-dark" style="margin-top: 10px" >
-                        <div class='alert'>
-                            <h2><?php _e( 'To add a new appointment:', 'Groundhogg' ); ?></h2>
-                            <ol>
-                                <li><?php _e( 'Select a contact from dropdown and fill additional details.', 'groundhogg' ); ?></li>
-                                <li><?php _e( 'Click on a time slot in the calendar to add an appointment (You can book only one appointment at a time).', 'groundhogg' ); ?></li>
-                                <li><?php _e( 'Click on "Book Appointment" to finish booking.', 'groundhogg' ); ?></li>
-                            </ol>
-                        </div>
+<!--                        <div class='alert'>-->
+<!--                            <h2>--><?php //_e( 'To add a new appointment:', 'Groundhogg' ); ?><!--</h2>-->
+<!--                            <ol>-->
+<!--                                <li>--><?php //_e( 'Select a contact from dropdown and fill additional details.', 'groundhogg' ); ?><!--</li>-->
+<!--                                <li>--><?php //_e( 'Click on a time slot in the calendar to add an appointment (You can book only one appointment at a time).', 'groundhogg' ); ?><!--</li>-->
+<!--                                <li>--><?php //_e( 'Click on "Book Appointment" to finish booking.', 'groundhogg' ); ?><!--</li>-->
+<!--                            </ol>-->
+<!--                        </div>-->
                         <table>
                             <tr>
                                 <td class="fc-button-group" style="background-color:#0073aa; color: #ffffff ;padding: 5px; border-radius: .25rem"></td>
