@@ -26,8 +26,13 @@ class WPGH_Appointment_Shortcode
         wp_enqueue_script(  'jquery-ui-datepicker' );
         wp_enqueue_style ( 'calender-css',   WPGH_APPOINTMENT_ASSETS_FOLDER . 'css/frontend.css',  array(), filemtime(WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/css/frontend.css') );
         wp_enqueue_style( 'wpgh-frontend', WPGH_ASSETS_FOLDER . 'css/frontend.css', array(), filemtime( WPGH_PLUGIN_DIR . 'assets/css/frontend.css' ) );
-        wp_enqueue_script(  'gh-calendar', WPGH_APPOINTMENT_ASSETS_FOLDER . '/js/load_appointment.js', array('jquery') , filemtime( WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/js/load_appointment.js' ) );
-        wp_localize_script( 'gh-calendar', 'ghAppointment',array( 'ajax_url' => admin_url( 'admin-ajax.php' ) ) );
+        wp_enqueue_script(  'gh-calendar', WPGH_APPOINTMENT_ASSETS_FOLDER . '/js/appointment-frontend.js', array('jquery') , filemtime( WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/js/appointment-frontend.js' ) );
+        wp_localize_script( 'gh-calendar', 'ghAppointment', array(
+            'ajax_url' => admin_url( 'admin-ajax.php' ),
+            'invalidDateMsg'    => __( 'Please select a time slot first.', 'groundhogg' ),
+            'invalidDetailsMsg' => __( 'Please make sure all your details are filled out.', 'groundhogg' ),
+            'invalidEmailMsg'   => __( 'Your email address is invalid.', 'groundhogg' ),
+        ) );
     }
 
 
@@ -40,16 +45,29 @@ class WPGH_Appointment_Shortcode
     {
 
         // ADD APPOINTMENTS using AJAX.
-        $start      = $_POST['start_time'] ;
-        $end        = $_POST['end_time']  ;
+        $start      = intval( $_POST['start_time'] );
+        $end        = intval( $_POST['end_time'] );
+
+        if ( ! $start || ! $end ){
+            $response = array( 'status' => 'failed' , 'msg' => __('PLease provide a valid date selection.' ,'groundhogg'));
+            wp_die( json_encode( $response ) );
+        }
+
         $email      = sanitize_email($_POST[ 'email' ]);
-        $first_name = sanitize_text_field($_POST[ 'first_name' ]);
-        $last_name  = sanitize_text_field($_POST[ 'last_name' ]);
-        $appointment_name =  sanitize_text_field( $_POST [ 'appointment_name'] );
-        $calendar_id =  sanitize_text_field( $_POST [ 'calendar_id'] );
+        if ( ! filter_var( $email, FILTER_VALIDATE_EMAIL ) ){
+            $response = array( 'status' => 'failed' , 'msg' => __('Please enter a valid email address.' ,'groundhogg'));
+            wp_die( json_encode( $response ) );
+        }
+
+        $first_name         = sanitize_text_field($_POST[ 'first_name' ]);
+        $last_name          = sanitize_text_field($_POST[ 'last_name' ]);
+        $appointment_name   = sanitize_text_field( $_POST [ 'appointment_name'] );
+        $calendar_id        = sanitize_text_field( $_POST [ 'calendar_id'] );
+
         $contact_id = 0;
         // get contact id form email -> if contact is not found generate contact
         // check for contact
+
         $contact = WPGH()->contacts->get_contacts( array( 'email' => $email ) );
         if ( count($contact )  > 0 ){
             // create new contact if contact not found
@@ -72,7 +90,7 @@ class WPGH_Appointment_Shortcode
         ));
         // Insert meta
         if ( $appointment_id === false ){
-            $response = array( 'status' => 'failed' , 'msg' => __('Something went wrong. Appointment not created !' ,'groundhogg'));
+            $response = array( 'status' => 'failed' , 'msg' => __('Something went wrong. Appointment not created!' ,'groundhogg'));
             wp_die( json_encode( $response ) );
         }
         // generate array for event
@@ -95,36 +113,36 @@ class WPGH_Appointment_Shortcode
     {
 
         global $wpdb;
-        $date = $_POST['date'];
-        $calendar_id  = intval( $_POST['calendar'] );
-        //get start time and end time from business hours  of a day
-        $time = current_time('timestamp' );
-        $dow         = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'dow',true);
-        $start_time  = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'start_time',true);
-        $end_time    = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'end_time',true);
-        $slot_hour   = intval( WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'slot_hour',true) );
-        $slot_minute = intval( WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'slot_minute',true) );
 
-        $entered_dow  = date ("N",strtotime($date) );
-        if ($entered_dow == 7 ){
+        $date           = sanitize_text_field(stripslashes( $_POST['date'] ) );
+        $calendar_id    = intval( $_POST['calendar'] );
+        //get start time and end time from business hours  of a day
+        $time           = current_time('timestamp' );
+        $dow            = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'dow',true);
+        $start_time     = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'start_time',true);
+        $end_time       = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'end_time',true);
+        $slot_hour      = intval( WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'slot_hour',true) );
+        $slot_minute    = intval( WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'slot_minute',true) );
+        $entered_dow    = date ("N", strtotime($date) );
+        if ( $entered_dow == 7 ){
             $entered_dow = 0 ;
         }
-        if ( in_array( $entered_dow,$dow) == false ) {
-            $response = array(  'status'=>'failed', 'msg' => __('This date is out of business hours.','groundhogg'));
+        if ( in_array( $entered_dow,$dow) === false ) {
+            $response = array(  'status'=>'failed', 'msg' => __( 'Sorry, no time slots are available for this date period.','groundhogg'));
             wp_die( json_encode( $response ) );
         }
         $start_time = strtotime( $date .' '.$start_time );
         // check if current time is past time or not !
         if ($start_time < $time) {
-            $d =  date('H:00' , $time);
+            $d = date('H:00' , $time);
             $start_time = strtotime( $d );
         }
         //GET AVAILABLE TIME IN DAY
-        $end_time   = strtotime( $date .' '.$end_time );
+        $end_time = strtotime( $date .' '.$end_time );
         // get appointments
         //$appointments_table_name  = WPGH_APPOINTMENTS()->appointments->table_name;
         //$appointments = $wpdb->get_results( "SELECT * FROM $appointments_table_name as a WHERE a.start_time >= $start_time AND a.end_time <=  $end_time AND a.calendar_id = $calendar_id" );
-        $appointments  = WPGH_APPOINTMENTS()->appointments->get_appointments_by_args(array( 'calendar_id' => $calendar_id ) );
+        $appointments = WPGH_APPOINTMENTS()->appointments->get_appointments_by_args(array( 'calendar_id' => $calendar_id ) );
         // generate array to populate ddl
         $all_slots = null;
         while ($start_time < $end_time)
@@ -159,7 +177,7 @@ class WPGH_Appointment_Shortcode
         $final_slots = null;
         // cleaning where appointments are smaller then slots
         foreach( $available_slots as $slot){
-            $slotbooked= false;
+            $slotbooked = false;
             foreach ($appointments as $appointment) {
                 if ( ($appointment->start_time >= $slot['start'] && $appointment->start_time < $slot['end'])) {
                     $slotbooked = true;
@@ -172,12 +190,12 @@ class WPGH_Appointment_Shortcode
         }
 
         if ( $available_slots == null ) {
-            $response = array(  'status'=>'failed', 'msg' => __('No Appointments available.' ,'groundhogg'));
+            $response = array(  'status'=>'failed', 'msg' => __('No appointments available.' ,'groundhogg'));
             wp_die( json_encode( $response ) );
         }
 
         if ( $final_slots == null ) {
-            $response = array(  'status'=>'failed', 'msg' => __('No Appointments available.' ,'groundhogg'));
+            $response = array(  'status'=>'failed', 'msg' => __('No appointments available.' ,'groundhogg'));
             wp_die( json_encode( $response ) );
         }
         // operation on data
@@ -196,24 +214,20 @@ class WPGH_Appointment_Shortcode
     {
         $args =  shortcode_atts(array(
             'calendar_id' => 0,
-            'appointment_name' =>'client Appointment'
+            'appointment_name' => __( 'New Client Appointment', 'groundhogg' )
         ),$atts);
 
         // get calendar id  form short code
         $calendar_id = intval($args['calendar_id']) ;
-
         //fetch calendar
-
         $exist = WPGH_APPOINTMENTS()->calendar->exists($calendar_id);
-
-        if ( !$exist ) {
+        if ( ! $exist ) {
             return sprintf( '<p>%s</p>', __( 'The given calendar ID does not exist.', 'groundhogg' ) );
         }
-        $title          = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'slot_title', true);
-        if( $title == null ) {
-            $title    = 'Time slot';
+        $title = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'slot_title', true);
+        if( $title === null ) {
+            $title = __( 'Time Slot', 'groundhogg' );
         }
-
         $appointment_name = sanitize_text_field( $args[ 'appointment_name' ] ); // get name for clients
         ob_start();
         ?>

@@ -55,14 +55,15 @@ class WPGH_Calendar_Page
      */
     public function gh_update_appointment()
     {
+
         if ( ! current_user_can( 'edit_appointment' ) ){
-            $response = array(   'status' => 'failed','msg' => __('Your user role does not have the required permissions to Edit appointment.' ,'groundhogg'));
+            $response = array(   'status' => 'failed','msg' => __( 'Your user role does not have the required permissions to Edit appointment.' ,'groundhogg'));
             wp_die( json_encode($response) );
         }
         // Handle update appointment
-        $appointment_id  = $_POST['id'];
-        $start_time      = strtotime( $_POST['start_time'] );
-        $end_time        = strtotime( $_POST['end_time'] );
+        $appointment_id  = intval( $_POST['id'] );
+        $start_time      = strtotime( sanitize_text_field( stripslashes( $_POST['start_time'] ) ) );
+        $end_time        = strtotime( sanitize_text_field( stripslashes( $_POST['end_time'] ) ) );
 
         // update appointment detail
         $status = $this->db->update($appointment_id ,array(
@@ -96,11 +97,13 @@ class WPGH_Calendar_Page
             $response = array( 'msg' => __('Your user role does not have the required permissions to add appointment.','groundhogg') );
             wp_die( json_encode($response) );
         }
-
-
         // ADD APPOINTMENTS using AJAX.
-        $start              = $_POST['start_time'] ;
-        $end                = $_POST['end_time']  ;
+        $start              = intval( $_POST[ 'start_time' ] );
+        $end                = intval( $_POST[ 'end_time' ]  );
+        if ( ! $start || ! $end ){
+            $response = array( 'status' => 'failed' , 'msg' => __('PLease provide a valid date selection.' ,'groundhogg'));
+            wp_die( json_encode( $response ) );
+        }
         $contact_id         = intval( $_POST['id'] );
         $note               = sanitize_text_field( $_POST['note'] );
         $appointment_name   = sanitize_text_field( $_POST [ 'appointment_name'] );
@@ -153,10 +156,13 @@ class WPGH_Calendar_Page
         wp_enqueue_style(  'jquery-ui' );
         wp_enqueue_script( 'ajax-script-appointment',    WPGH_APPOINTMENT_ASSETS_FOLDER . '/js/appointments.js',    array('jquery'),     filemtime( WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/js/appointments.js' ) );
         wp_localize_script('ajax-script-appointment', 'ajax_object',array( 'ajax_url' => admin_url( 'admin-ajax.php' ), 'we_value' => 1233 ) );
-
-        wp_enqueue_script( 'gh-calendar',    WPGH_APPOINTMENT_ASSETS_FOLDER . '/js/load_appointment.js',    array('jquery'),     filemtime( WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/js/load_appointment.js' ) );
-        wp_localize_script( 'gh-calendar', 'ghAppointment',array( 'ajax_url' => admin_url( 'admin-ajax.php' ) ) );
-
+        wp_enqueue_script( 'gh-calendar',    WPGH_APPOINTMENT_ASSETS_FOLDER . '/js/appointment-frontend.js',    array('jquery'),     filemtime( WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/js/appointment-frontend.js' ) );
+        wp_localize_script( 'gh-calendar', 'ghAppointment', array(
+            'ajax_url' => admin_url( 'admin-ajax.php' ),
+            'invalidDateMsg'    => __( 'Please select a time slot first.', 'groundhogg' ),
+            'invalidDetailsMsg' => __( 'Please make sure all your details are filled out.', 'groundhogg' ),
+            'invalidEmailMsg'   => __( 'Your email address is invalid.', 'groundhogg' ),
+        ) );
         wp_enqueue_script( 'calender-moment',WPGH_APPOINTMENT_ASSETS_FOLDER . '/lib/fullcalendar/lib/moment.min.js', array(), filemtime(WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/lib/fullcalendar/lib/moment.min.js' ) );
         wp_enqueue_script( 'calender-main',  WPGH_APPOINTMENT_ASSETS_FOLDER . '/lib/fullcalendar/fullcalendar.js',   array(), filemtime(WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/lib/fullcalendar/fullcalendar.js') );
         wp_enqueue_style ( 'calender-css',   WPGH_APPOINTMENT_ASSETS_FOLDER . '/lib/fullcalendar/fullcalendar.css',  array(), filemtime(WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/lib/fullcalendar/fullcalendar.css') );
@@ -247,6 +253,7 @@ class WPGH_Calendar_Page
                 break;
             case 'add_appointment':
                 _e( 'Add Appointment' , 'groundhogg' );
+                ?><a class="page-title-action aria-button-if-js" href="<?php echo admin_url( 'admin.php?page=gh_calendar&action=edit&calendar='.$_GET['calendar'] ); ?>"><?php _e( 'Edit Calendar' ); ?></a><?php
                 break;
             case 'view':
                 _e( 'Calendar' , 'groundhogg' );
@@ -302,7 +309,9 @@ class WPGH_Calendar_Page
                 }
                 $this->delete_calendar();
                 break;
+
             case 'approve' :
+
                 if ( ! current_user_can( 'edit_appointment' ) ){
                     wp_die( WPGH()->roles->error( 'edit_appointment' ) );
                 }
@@ -326,7 +335,9 @@ class WPGH_Calendar_Page
                     die();
                 }
                 break;
+
             case 'delete_appointment':
+
                 if ( ! current_user_can( 'edit_appointment' ) ){
                     wp_die( WPGH()->roles->error( 'edit_appointment' ) );
                 }
@@ -348,7 +359,9 @@ class WPGH_Calendar_Page
                     die();
                 }
                 break;
+
             case 'cancel':
+
                 if ( ! current_user_can( 'edit_appointment' ) ){
                     wp_die( WPGH()->roles->error( 'edit_appointment' ) );
                 }
@@ -419,33 +432,35 @@ class WPGH_Calendar_Page
         }
 
         // ADD CALENDAR in DATABASE
-        $calendar_id = intval($_POST[ 'calendar' ] );
+        $calendar_id = intval( $_POST[ 'calendar' ] );
         $args =  array(
             'user_id' =>  intval( $_POST['owner_id'] ),
             'name'    => sanitize_text_field( $_POST['name'] ),
         );
         if ( isset( $_POST['description'] ) ) {
-            $args['description']  =  sanitize_text_field( $_POST['description'] );
+            $args[ 'description' ]  =  sanitize_text_field( $_POST['description'] );
         }
         //update operation
-        $status  = WPGH_APPOINTMENTS()->calendar->update( $calendar_id,$args );
+        $status  = WPGH_APPOINTMENTS()->calendar->update( $calendar_id, $args );
         if ( ! $status ){
             wp_die( 'Something went wrong' );
         }
         //update meta
         // days
-        if(isset( $_POST['checkbox'] ) ){
-            WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id,'dow',$_POST['checkbox']) ;
+        if(isset( $_POST[ 'checkbox' ] ) ){
+            $checkbox = (array)$_POST['checkbox'];
+            $checkbox = array_map( 'sanitize_text_field', $checkbox );
+            WPGH_APPOINTMENTS()->calendarmeta->update_meta( $calendar_id,'dow', $checkbox ) ;
         }
         // start time
-        if( isset( $_POST['starttime'] ) ) {
-            if( isset( $_POST['endtime'] )) {
-                $end_time  = $_POST['endtime'];
+        if( isset( $_POST[ 'starttime' ] ) ) {
+            if( isset( $_POST[ 'endtime' ] )) {
+                $end_time  = $_POST[ 'endtime' ];
             } else {
-                $end_time  = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'end_time',true);
+                $end_time  = WPGH_APPOINTMENTS()->calendarmeta->get_meta( $calendar_id,'end_time',true );
             }
 
-            if( strtotime($end_time) < strtotime( $_POST['starttime'] ) ) {
+            if( strtotime($end_time) < strtotime( $_POST[ 'starttime' ] ) ) {
                 $this->notices->add( 'INVALID_STARTTIME', __( "End time can not be smaller then start time.", 'groundhogg' ), 'error' );
             } else {
                 WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'start_time', sanitize_text_field($_POST['starttime']));
@@ -513,10 +528,10 @@ class WPGH_Calendar_Page
         $contact_id      = intval( $_POST[ 'contact_id' ] );
         $appointment_id  = intval( $_POST[ 'appointment' ] );
         $calendar_id     = intval( $_POST[ 'calendar' ]);
-        // check for appointment times
         $start_time      = strtotime($_POST[ 'start_date' ].' '.$_POST[ 'start_time' ]);
         $end_time        = strtotime($_POST[ 'end_date' ].' '.$_POST[ 'end_time' ]);
         if ( $start_time > $end_time ) {
+            //check for times
             $this->notices->add( 'INVALID_TIMES', __( "End time can not be earlier then start time.", 'groundhogg' ), 'error' );
             return;
         }
@@ -575,26 +590,28 @@ class WPGH_Calendar_Page
           'name'    => sanitize_text_field( $_POST['name'] ),
         );
         if ( isset( $_POST['description'] ) ) {
-            $args['description']  =  sanitize_text_field( $_POST['description'] );
+            $args[ 'description' ]  =  sanitize_text_field( $_POST[ 'description' ] );
         }
         // ADD OPERATION
         $calendar_id = WPGH_APPOINTMENTS()->calendar->add( $args ) ;
         //META OPERATION
         if ( ! $calendar_id ){
-            wp_die( 'Something went wrong' );
+            wp_die( __('Something went wrong' ,'groundhogg'));
         }
         // Enter metadata of calendar
         // days
-        if(isset( $_POST['checkbox'] ) ){
-            WPGH_APPOINTMENTS()->calendarmeta->add_meta($calendar_id,'dow',$_POST['checkbox']) ;
+        if(isset( $_POST[ 'checkbox' ] ) ){
+            $checkbox = (array)$_POST['checkbox'];
+            $checkbox = array_map( 'sanitize_text_field', $checkbox );
+            WPGH_APPOINTMENTS()->calendarmeta->add_meta( $calendar_id,'dow', $checkbox ) ;
         }
 
         // start time
-        if( isset( $_POST['starttime'] ) ) {
-            if( isset( $_POST['endtime'] )) {
-                $end_time  = $_POST['endtime'];
+        if( isset( $_POST[ 'starttime' ] ) ) {
+            if( isset( $_POST[ 'endtime' ] ) ) {
+                $end_time  = $_POST[ 'endtime' ];
             } else {
-                $end_time  = WPGH_APPOINTMENTS()->calendarmeta->add_meta($calendar_id,'end_time',true);
+                $end_time  = WPGH_APPOINTMENTS()->calendarmeta->get_meta( $calendar_id,'end_time',true );
             }
 
             if( strtotime($end_time) < strtotime( $_POST['starttime'] ) ) {
@@ -611,7 +628,6 @@ class WPGH_Calendar_Page
             } else {
                 $start_time  = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'start_time',true);
             }
-
             if( strtotime($start_time) < strtotime( $_POST['endtime'] ) ) {
                 WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'end_time', sanitize_text_field($_POST['endtime']));
             } else {
