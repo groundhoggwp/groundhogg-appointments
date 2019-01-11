@@ -53,16 +53,16 @@ class WPGH_Appointment_Shortcode
             wp_die( json_encode( $response ) );
         }
 
-        $email      = sanitize_email($_POST[ 'email' ]);
+        $email      = sanitize_email( stripslashes( $_POST[ 'email' ] ) );
         if ( ! filter_var( $email, FILTER_VALIDATE_EMAIL ) ){
             $response = array( 'status' => 'failed' , 'msg' => __('Please enter a valid email address.' ,'groundhogg'));
             wp_die( json_encode( $response ) );
         }
 
-        $first_name         = sanitize_text_field($_POST[ 'first_name' ]);
-        $last_name          = sanitize_text_field($_POST[ 'last_name' ]);
-        $appointment_name   = sanitize_text_field( $_POST [ 'appointment_name'] );
-        $calendar_id        = sanitize_text_field( $_POST [ 'calendar_id'] );
+        $first_name         = sanitize_text_field( stripslashes( $_POST[ 'first_name' ] ) );
+        $last_name          = sanitize_text_field( stripslashes( $_POST[ 'last_name' ] ) );
+        $appointment_name   = sanitize_text_field( stripslashes( $_POST [ 'appointment_name'] ) );
+        $calendar_id        = sanitize_text_field( stripslashes( $_POST [ 'calendar_id'] ) );
 
         $contact_id = 0;
         // get contact id form email -> if contact is not found generate contact
@@ -114,8 +114,8 @@ class WPGH_Appointment_Shortcode
 
         global $wpdb;
 
-        $date           = sanitize_text_field(stripslashes( $_POST['date'] ) );
-        $calendar_id    = intval( $_POST['calendar'] );
+        $date           = sanitize_text_field( stripslashes( $_POST['date'] ) );
+        $calendar_id    = intval( stripslashes( $_POST['calendar'] ) );
         //get start time and end time from business hours  of a day
         $time           = current_time('timestamp' );
         $dow            = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'dow',true);
@@ -228,21 +228,53 @@ class WPGH_Appointment_Shortcode
         if( $title === null ) {
             $title = __( 'Time Slot', 'groundhogg' );
         }
-        $appointment_name = sanitize_text_field( $args[ 'appointment_name' ] ); // get name for clients
+        $appointment_name = sanitize_text_field( stripslashes ( $args[ 'appointment_name' ] ) ); // get name for clients
+
+        $main_color = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'main_color', true);
+        if ( ! $main_color ){
+            $main_color = '#f7f7f7';
+        }
+
+        $font_color = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'font_color', true);
+        if ( ! $font_color ){
+            $font_color = '#292929';
+        }
+
+        $slots_color = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'slots_color', true);
+        if( ! $slots_color ) {
+            $slots_color = '#29a2d9';
+        }
+
         ob_start();
         ?>
+        <style>
+            .calendar-form-wrapper .wpgh-calendar .ui-widget{background-color: <?php echo $main_color?> ;}
+            .calendar-form-wrapper .wpgh-calendar .ui-datepicker-header{border-bottom-color: <?php echo $this->adjust_brightness( $main_color, -20 )?>;}
+            .calendar-form-wrapper .wpgh-calendar .ui-datepicker .ui-datepicker-title{color: <?php echo  $font_color ;?>; }
+            .calendar-form-wrapper .wpgh-calendar .ui-datepicker th{color: <?php echo $font_color ;?>;background: <?php echo $this->adjust_brightness( $main_color, -20 )?>;}
+            .calendar-form-wrapper .wpgh-calendar td .ui-state-default{color: <?php echo $this->adjust_brightness( $main_color, -150 )?>; color: <?php echo $font_color; ?>; }
+            .calendar-form-wrapper .wpgh-calendar td .ui-state-hover, .calendar-form-wrapper .wpgh-calendar td .ui-state-active{background-color: <?php echo $this->adjust_brightness( $main_color, -20 )?>;}
+            .calendar-form-wrapper .select-time .appointment-time {background-color: <?php  echo $main_color;?>;  color: <?php echo $font_color; ?>;  background: <?php echo $this->adjust_brightness( $main_color, -20 );?>;}
+            .calendar-form-wrapper .select-time .appointment-time.selected {background-color: <?php  echo $slots_color;?>;  }
+            .calendar-form-wrapper .select-time .appointment-time:hover{background-color: <?php  echo $slots_color;?>; }
+        </style>
         <div class="calendar-form-wrapper">
             <form class="gh-calendar-form" method="post">
                 <input type="hidden" name="calendar_id" id = "calendar_id" value="<?php echo $calendar_id; ?>"/>
                 <input type="hidden"  id="appointment_name"  value="<?php echo $appointment_name; ?>"/>
 <!--                <input type="hidden" name="hidden_data" id="hidden_data" data-start_date="" data-end_date="" data-control_id="">-->
-                <div class="ll-skin-nigran">
+                <div class="wpgh-calendar">
                     <div id="appt-calendar" style="width: 100%"></div>
+                </div>
+                <div style="text-align: center;" id="spinner">
+                    <span class="spinner" style="float: none; visibility: visible"></span>
                 </div>
                 <div id="time-slots" class="select-time hidden">
                     <p class="time-slot-select-text"><b><?php _e( $title , 'groundhogg' ) ?></b></p>
                     <hr class="time-slot-divider"/>
+
                     <div id="select_time"></div>
+                    <hr class="time-slot-divider"/>
                 </div>
                 <div id="appointment-errors" class="appointment-errors hidden"></div>
                 <div id="details-form" class="details-form hidden gh-form-wrapper">
@@ -277,12 +309,34 @@ class WPGH_Appointment_Shortcode
                 </div>
             </form>
         </div>
-        <div style="text-align: center;" id="spinner">
-            <span class="spinner" style="float: none; visibility: visible"></span>
-        </div>
+
         <?php
         $content = ob_get_clean();
         return $content;
     }
+
+    private function adjust_brightness($hex, $steps) {
+
+    // Steps should be between -255 and 255. Negative = darker, positive = lighter
+    $steps = max(-255, min(255, $steps));
+
+    // Normalize into a six character long hex string
+    $hex = str_replace('#', '', $hex);
+    if (strlen($hex) == 3) {
+        $hex = str_repeat(substr($hex,0,1), 2).str_repeat(substr($hex,1,1), 2).str_repeat(substr($hex,2,1), 2);
+    }
+
+    // Split into three parts: R, G and B
+    $color_parts = str_split($hex, 2);
+    $return = '#';
+
+    foreach ($color_parts as $color) {
+        $color   = hexdec($color); // Convert to decimal
+        $color   = max(0, min(255,$color + $steps ) ); // Adjust color
+        $return .= str_pad(dechex($color), 2, '0', STR_PAD_LEFT); // Make two char hex code
+    }
+
+    return $return;
+}
 
 }

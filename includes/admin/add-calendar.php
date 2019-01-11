@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     <table class="form-table">
         <tbody>
             <tr class="form-field term-contact-wrap">
-                <th scope="row"><label for="user_id"><?php _e( 'Select Owner' ,'groundhogg') ?></label></th>
+                <th scope="row"><label ><?php _e( 'Select Owner' ,'groundhogg') ?></label></th>
                 <td><?php $args = array();
                     $args[ 'id' ] = 'user_id';
                     $args[ 'required' ] = true;
@@ -15,14 +15,14 @@ if ( ! defined( 'ABSPATH' ) ) exit;
                 </td>
             </tr>
             <tr>
-                <th scope="row"><label for="name"><?php _e( 'Name' ) ?></label></th>
+                <th scope="row"><label><?php _e( 'Name' ) ?></label></th>
                 <td>
                     <?php echo WPGH()->html->input( array( 'name' => 'name' ,'placeholder' => 'Calendar Name' ) ); ?>
                     <p class="description"><?php _e( 'A name of a calendar.', 'groundhogg' ) ?></p>
                 </td>
             </tr>
             <tr>
-                <th scope="row"><label for="description"><?php _e( 'Description' ,'groundhogg'); ?></label></th>
+                <th scope="row"><label><?php _e( 'Description' ,'groundhogg'); ?></label></th>
                 <td>
                     <?php echo WPGH()->html->textarea( array( 'name' => 'description' ,'placeholder' => 'Calendar Description' ) );?>
                     <p class="description"><?php _e( 'Calendar descriptions are only visible to admins and will never be seen by contacts.', 'groundhogg' ) ?></p>
@@ -35,7 +35,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
         <tbody>
             <tr class="form-field term-contact-wrap">
                 <th scope="row">
-                    <label for="date"><?php _e( 'Select working days' ,'groundhogg'); ?></label>
+                    <label><?php _e( 'Select working days' ,'groundhogg'); ?></label>
                 </th>
                 <td>
                     <ul>
@@ -51,7 +51,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
             </tr>
             <tr class="form-field term-contact-wrap">
                 <th scope="row">
-                    <label for="date"><?php _e( 'Start Time:' ,'groundhogg'); ?></label>
+                    <label ><?php _e( 'Start Time:' ,'groundhogg'); ?></label>
                 </th>
                 <td>
                     <input type="time" id="starttime" name="starttime" value="09:00" autocomplete="off" >
@@ -60,7 +60,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
             </tr>
             <tr class="form-field term-contact-wrap">
                 <th scope="row">
-                    <label for="date"><?php _e( 'End Time:' ,'groundhogg'); ?></label>
+                    <label ><?php _e( 'End Time:' ,'groundhogg'); ?></label>
                 </th>
                 <td>
                     <input type="time" id="endtime" name="endtime" value="17:00" autocomplete="off" >
@@ -73,19 +73,14 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     <table class="form-table">
         <tbody>
             <tr>
-                <th scope="row"><label for="date"><?php _e( 'Length of appointment' ,'groundhogg'); ?></label></th>
+                <th scope="row"><label ><?php _e( 'Length of appointment' ,'groundhogg'); ?></label></th>
 
                 <td>
                     <?php
-                    $hours;
-                    for ($i=0 ; $i<24 ; $i++)
-                    {
+                    for ( $i=0 ; $i<24 ; $i++ ) {
                         $hours[$i] = $i;
                     }
-                    $mins;
-
-                    for ($i=0 ; $i<60 ; $i++)
-                    {
+                    for ( $i=0 ; $i<60 ; $i++ ) {
                         $mins[$i] = $i;
                     }
                     echo WPGH()->html->dropdown( array( 'name' =>'slot_hour' , 'options' => $hours , 'selected' => '1') ) ;
@@ -95,22 +90,47 @@ if ( ! defined( 'ABSPATH' ) ) exit;
                     ?>
                     <p class="description"><?php _e( 'Select default length of appointment', 'groundhogg' ); ?></p>
                 </td>
-
             </tr>
             <tr>
-                <th scope="row"><label for="name"><?php _e( 'Time Slot Title' ,'groundhogg') ?></label></th>
+                <th scope="row"><label><?php _e( 'Time Slot Title' ,'groundhogg') ?></label></th>
                 <td>
                     <?php echo WPGH()->html->input( array( 'name' => 'slot_title' ,'placeholder' => 'Custom title' , 'value' => __('Time Slots' ,'groundhogg') ) );?>
                     <p class="description"><?php _e( 'This title will be displayed above time slots.', 'groundhogg' ) ?></p>
                 </td>
             </tr>
             <tr>
-                <th scope="row"><label for="name"><?php _e( 'Custom Message' ,'groundhogg' ) ?></label></th>
+                <th scope="row"><label ><?php _e( 'Custom Message' ,'groundhogg' ) ?></label></th>
                 <td>
                     <?php echo WPGH()->html->textarea( array( 'name' => 'message' ,'placeholder' => 'Custom Message' , 'value' => __('Appointment booked successfully.' ,'groundhogg') ) );?>
                     <p class="description"><?php _e( 'This message will be displayed when user booked appointment successfully.', 'groundhogg' ) ?></p>
                 </td>
             </tr>
+        </tbody>
+    </table>
+    <h2><?php _e( 'Calendar Styling' ,'groundhogg'); ?></h2>
+    <table class="form-table">
+        <tbody>
+        <tr>
+            <th scope="row"><label><?php _e( 'Main Calendar Color' ) ?></label></th>
+            <td>
+                <?php echo WPGH()->html->color_picker( array( 'name' => 'main_color', 'value' => '#f7f7f7' ) );?>
+                <p class="description"><?php _e( 'The main color of the calendar and time slots.', 'groundhogg' ) ?></p>
+            </td>
+        </tr>
+        <tr>
+            <th scope="row"><label><?php _e( 'Font Color' ) ?></label></th>
+            <td>
+                <?php echo WPGH()->html->color_picker( array( 'name' => 'font_color', 'value' => '#292929' ) );?>
+                <p class="description"><?php _e( 'The color of the fonts of the calender and time slots.', 'groundhogg' ) ?></p>
+            </td>
+        </tr>
+        <tr>
+            <th scope="row"><label><?php _e( 'Time Slots selected' ) ?></label></th>
+            <td>
+                <?php echo WPGH()->html->color_picker( array( 'name' => 'slots_color', 'value' => '#29a2d9' ) );?>
+                <p class="description"><?php _e( 'The color of the selected time slot.', 'groundhogg' ) ?></p>
+            </td>
+        </tr>
         </tbody>
     </table>
     <div class="add-calendar-actions">

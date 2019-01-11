@@ -161,6 +161,7 @@ var ghAppointment = ghAppointment || {};
         },
 
         showErrors: function(){
+            this.hideTimeSlots();
             this.errors.removeClass( 'hidden' );
         },
 
@@ -197,6 +198,7 @@ var ghAppointment = ghAppointment || {};
         },
 
         showTimeSlots: function () {
+            this.hideErrors();
             this.timeSlots.removeClass( 'hidden' );
         },
 

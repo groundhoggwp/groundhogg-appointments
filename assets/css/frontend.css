@@ -16,36 +16,60 @@
     margin: 5px;
     padding: 7px;
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 600;
     color: #FFF;
     background-color: #29a2d9;
-    border-color: #195b7a;
-    border-width: 1px 3px 2px 1px;
+    border-color: #2586b3;
+    border-width: 1px 2px 2px 1px;
     border-radius: 3px;
-    box-shadow: 0 1px 1px #15435a;
+    transition: 0.4s;
+    cursor: pointer;
+    /*box-shadow: 0 1px 1px #15435a;*/
+}
+
+.select-time .appointment-time:hover{
+    transition: 0.4s;
+    background-color: #80d771;
+    /*border-color: #3bca65;*/
 }
 
 .select-time .appointment-time.selected{
     background-color: #76c567;
-    border-color: #23783c;
+    border-color: #32aa55;
 }
 
 .appointment-errors{
-    background: rgba(255, 198, 174, 0.56);
-    color: #FF1212;
-    border: 1px solid #FF1212;
-    border-radius: 2px;
-    padding-left: 4px;
-    margin: 5px 0 2px 0;
+    /*background: rgba(255, 198, 174, 0.56);*/
+    /*color: #FF1212;*/
+    /*border: 1px solid #FF1212;*/
+    /*border-radius: 2px;*/
+    /*padding-left: 4px;*/
+    /*margin: 5px 0 2px 0;*/
+    background-color: #f2dede;
+    border-color: #ebcccc;
+    color: #a94442;
+    padding: .75rem 1.25rem;
+    margin-bottom: 1rem;
+    margin-top: 1rem;
+    border: 1px solid transparent;
+    border-radius: .25rem;
 }
 
 .appointment-success{
-    background: rgba(138, 230, 120, 0.56);
-    color: #558f49;
-    border: 1px solid #60a054;
-    border-radius: 2px;
-    padding-left: 4px;
-    margin: 5px 0 2px 0;
+    /*background: rgba(138, 230, 120, 0.56);*/
+    /*color: #558f49;*/
+    /*border: 1px solid #60a054;*/
+    /*border-radius: 2px;*/
+    /*padding-left: 4px;*/
+    /*margin: 5px 0 2px 0;*/
+    background-color: #dff0d8;
+    border-color: #d0e9c6;
+    color: #3c763d;
+    padding: .75rem 1.25rem;
+    margin-bottom: 1rem;
+    margin-top: 1rem;
+    border: 1px solid transparent;
+    border-radius: .25rem;
 }
 
 p.time-slot-select-text{
@@ -68,4 +92,11 @@ hr.time-slot-divider{
     width: 30px;
     height: 30px;
     margin: 4px 10px 0;
+}
+
+.calendar-form-wrapper .details-form input[type="text"],
+.calendar-form-wrapper .details-form input[type="email"]{
+    width: 100%;
+    display: block;
+    padding: 7px;
 }

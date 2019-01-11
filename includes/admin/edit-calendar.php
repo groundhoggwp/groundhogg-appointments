@@ -4,40 +4,53 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 $calendar_id = intval( $_GET[ 'calendar' ] );
 $calendar = WPGH_APPOINTMENTS()->calendar->get_calendar($calendar_id);
 if( $calendar == null) {
-    wp_die( __( 'Calendar does not found.', 'groundhogg' ) );
+    wp_die( __( 'Calendar not found.', 'groundhogg' ) );
 }
 
 // get meta value
-$dow        = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'dow',true);
-if ( $dow == null ) {
+$dow = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'dow',true);
+if ( ! $dow ) {
     $dow = array('0','1','2','3','4','5','6');
 }
 $start_time = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'start_time', true);
-if( $start_time == null) {
+if( ! $start_time ) {
     $start_time = '09:00';
 }
-$end_time   = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'end_time', true);
-if( $end_time == null) {
+$end_time = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'end_time', true);
+if( ! $end_time) {
     $end_time = '17:00';
 }
-
-$slot_hour      = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'slot_hour', true);
-if( $slot_hour == null) {
+$slot_hour = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'slot_hour', true);
+if( ! $slot_hour ) {
     $slot_hour = 1;
 }
-$slot_minute    = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'slot_minute', true);
-if( $slot_minute == null) {
+$slot_minute = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'slot_minute', true);
+if( ! $slot_minute ) {
     $slot_minute = 0;
 }
-$message        = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'message', true);
-if( $message == null  || $message == '') {
-    $message    = 'Appointment booked successfully';
+$message = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'message', true);
+if( ! $message ) {
+    $message    =  __( 'Appointment booked successfully', 'groundhogg' );
 }
-$title          = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'slot_title', true);
-if( $title == null  ) {
-    $title    = 'Time slot';
+$title = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'slot_title', true);
+if( ! $title ) {
+    $title    = __( 'Time Slot', 'groundhogg' );
 }
 
+$main_color = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'main_color', true);
+if( ! $main_color ) {
+    $main_color = '#f7f7f7';
+}
+
+$slots_color = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'slots_color', true);
+if( ! $slots_color ) {
+    $slots_color = '#29a2d9';
+}
+
+$font_color = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'font_color', true);
+if ( ! $font_color ){
+    $font_color = '#292929';
+}
 
 ?>
 <form name="" id="" method="post" action="">
@@ -45,21 +58,21 @@ if( $title == null  ) {
     <table class="form-table">
         <tbody>
             <tr class="form-field term-contact-wrap">
-                <th scope="row"><label for="user_id"><?php _e( 'Select Owner' ) ?></label></th>
+                <th scope="row"><label><?php _e( 'Select Owner' ) ?></label></th>
                 <td>
                     <?php echo WPGH()->html->dropdown_owners(  array( 'selected' => ( $calendar->user_id )? $calendar->user_id : 0 ) ); ?>
                     <p class="description"><?php _e( 'Select owner for whom you are creating the calendar.', 'groundhogg' ) ?></p>
                 </td>
             </tr>
             <tr >
-                <th scope="row"><label for="name"><?php _e( 'Name' ) ?></label></th>
+                <th scope="row"><label><?php _e( 'Name' ) ?></label></th>
                 <td>
                     <?php echo WPGH()->html->input( array( 'name' => 'name' ,'placeholder' => 'Calendar Name' ,'value' => $calendar->name) ); ?>
                     <p class="description"><?php _e( 'A name of a calendar.', 'groundhogg' ) ?>.</p>
                 </td>
             </tr>
             <tr >
-                <th scope="row"><label for="description"><?php _e( 'Description' ,'groundhogg'); ?></label></th>
+                <th scope="row"><label><?php _e( 'Description' ,'groundhogg'); ?></label></th>
                 <td>
                     <?php echo WPGH()->html->textarea( array( 'name' => 'description' ,'placeholder' => 'Calendar Description' ,'value' => $calendar->description) ); ?>
                     <p class="description"><?php _e( 'Calendar descriptions are only visible to admins and will never be seen by contacts.', 'groundhogg' ) ?>.</p>
@@ -71,7 +84,7 @@ if( $title == null  ) {
     <table class="form-table">
         <tbody>
             <tr class="form-field term-contact-wrap">
-                <th scope="row"><label for="date"><?php _e( 'Select working days' ); ?></label></th>
+                <th scope="row"><label><?php _e( 'Select working days' ); ?></label></th>
                 <td>
                     <ul>
                         <li><input type="checkbox" name="checkbox[]" value="0" <?php if( in_array('0' ,$dow ,true) ) { echo 'checked' ;} ?>> Sunday</li>
@@ -85,14 +98,14 @@ if( $title == null  ) {
                 </td>
             </tr>
             <tr class="form-field term-contact-wrap">
-                <th scope="row"><label for="date"><?php _e( 'Start Time:' ); ?></label></th>
+                <th scope="row"><label><?php _e( 'Start Time:' ); ?></label></th>
                 <td>
                     <input type="time" id="starttime" name="starttime" value="<?php echo $start_time; ?>" autocomplete="off" >
                     <p class="description"><?php _e( 'Start time of working hours.', 'groundhogg' ); ?></p>
                 </td>
             </tr>
             <tr class="form-field term-contact-wrap">
-                <th scope="row"><label for="date"><?php _e( 'End Time:' ); ?></label></th>
+                <th scope="row"><label><?php _e( 'End Time:' ); ?></label></th>
                 <td>
                     <input type="time" id="endtime" name="endtime" value="<?php echo $end_time; ?>" autocomplete="off" >
                     <p class="description"><?php _e( 'End time of working hours.', 'groundhogg' ); ?></p>
@@ -104,18 +117,15 @@ if( $title == null  ) {
     <table class="form-table">
         <tbody>
         <tr>
-            <th scope="row"><label for="date"><?php _e( 'Length of appointment' ,'groundhogg'); ?></label></th>
+            <th scope="row"><label><?php _e( 'Length of appointment' ,'groundhogg'); ?></label></th>
             <td>
                 <?php
-                $hours;
-                for ($i=0 ; $i<24 ; $i++)
-                {
+//                $hours;
+                for ($i=0 ; $i<24 ; $i++) {
                     $hours[$i] = $i;
                 }
-                $mins;
-
-                for ($i=0 ; $i<60 ; $i++)
-                {
+//                $mins = array();
+                for ($i=0 ; $i<60 ; $i++) {
                     $mins[$i] = $i;
                 }
                 echo WPGH()->html->dropdown( array( 'name' =>'slot_hour' , 'options' => $hours , 'selected' => $slot_hour) ) ;
@@ -127,21 +137,49 @@ if( $title == null  ) {
             </td>
         </tr>
         <tr>
-            <th scope="row"><label for="name"><?php _e( 'Time Slot Title' ,'groundhogg') ?></label></th>
+            <th scope="row"><label><?php _e( 'Time Slot Title' ,'groundhogg') ?></label></th>
             <td>
-                <?php echo WPGH()->html->input( array( 'name' => 'slot_title' ,'placeholder' => 'Custom title' , 'value' => __($title ,'groundhogg') ) );?>
+                <?php echo WPGH()->html->input( array( 'name' => 'slot_title' ,'placeholder' => 'Custom title' , 'value' => $title ) );?>
                 <p class="description"><?php _e( 'This title will be displayed above time slots.', 'groundhogg' ) ?></p>
             </td>
         </tr>
         <tr>
-            <th scope="row"><label for="name"><?php _e( 'Custom Message' ) ?></label></th>
+            <th scope="row"><label><?php _e( 'Custom Message' ) ?></label></th>
             <td>
-                <?php echo WPGH()->html->textarea( array( 'name' => 'message' ,'placeholder' => 'Custom Message' , 'value' => __($message , 'groundhogg') ) );?>
+                <?php echo WPGH()->html->textarea( array( 'name' => 'message' ,'placeholder' => 'Custom Message' , 'value' => $message ) );?>
                 <p class="description"><?php _e( 'This message will be displayed when user or admin booked appointment successfully.', 'groundhogg' ) ?></p>
             </td>
         </tr>
         </tbody>
     </table>
+    <h2><?php _e( 'Calendar Styling' ,'groundhogg'); ?></h2>
+    <table class="form-table">
+        <tbody>
+        <tr>
+            <th scope="row"><label><?php _e( 'Main Calendar Color' ) ?></label></th>
+            <td>
+                <?php echo WPGH()->html->color_picker( array( 'name' => 'main_color', 'value' => $main_color ) );?>
+                <p class="description"><?php _e( 'The main color of the calendar and time slots.', 'groundhogg' ) ?></p>
+            </td>
+        </tr>
+        <tr>
+            <th scope="row"><label><?php _e( 'Font Color' ) ?></label></th>
+            <td>
+                <?php echo WPGH()->html->color_picker( array( 'name' => 'font_color', 'value' => $font_color ) );?>
+                <p class="description"><?php _e( 'The color of the fonts of the calender and time slots.', 'groundhogg' ) ?></p>
+            </td>
+        </tr>
+        <tr>
+            <th scope="row"><label><?php _e( 'Time Slots selected' ) ?></label></th>
+            <td>
+                <?php echo WPGH()->html->color_picker( array( 'name' => 'slots_color', 'value' => $slots_color ) );?>
+                <p class="description"><?php _e( 'The color of the selected time slot.', 'groundhogg' ) ?></p>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+
     <input type="hidden" value="<?php echo $calendar_id; ?>" name="calendar" />
     <div class="add-calendar-actions">
         <?php submit_button( __( 'Update Calendar' ), 'primary', 'update', false ); ?>

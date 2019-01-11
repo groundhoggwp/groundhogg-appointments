@@ -105,9 +105,9 @@ class WPGH_Calendar_Page
             wp_die( json_encode( $response ) );
         }
         $contact_id         = intval( $_POST['id'] );
-        $note               = sanitize_text_field( $_POST['note'] );
-        $appointment_name   = sanitize_text_field( $_POST [ 'appointment_name'] );
-        $calendar_id        = sanitize_text_field( $_POST [ 'calendar_id'] );
+        $note               = sanitize_text_field( stripslashes ( $_POST['note'] ) );
+        $appointment_name   = sanitize_text_field( stripslashes ( $_POST [ 'appointment_name'] ) ) ;
+        $calendar_id        = sanitize_text_field( stripslashes ($_POST [ 'calendar_id'] ) );
 
         // perform insert operation
         $appointment_id  = $this->db->add( array (
@@ -435,10 +435,10 @@ class WPGH_Calendar_Page
         $calendar_id = intval( $_POST[ 'calendar' ] );
         $args =  array(
             'user_id' =>  intval( $_POST['owner_id'] ),
-            'name'    => sanitize_text_field( $_POST['name'] ),
+            'name'    => sanitize_text_field( stripslashes ( $_POST['name'] ) ),
         );
         if ( isset( $_POST['description'] ) ) {
-            $args[ 'description' ]  =  sanitize_text_field( $_POST['description'] );
+            $args[ 'description' ]  =  sanitize_text_field( stripslashes ( $_POST['description'] ) );
         }
         //update operation
         $status  = WPGH_APPOINTMENTS()->calendar->update( $calendar_id, $args );
@@ -463,7 +463,7 @@ class WPGH_Calendar_Page
             if( strtotime($end_time) < strtotime( $_POST[ 'starttime' ] ) ) {
                 $this->notices->add( 'INVALID_STARTTIME', __( "End time can not be smaller then start time.", 'groundhogg' ), 'error' );
             } else {
-                WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'start_time', sanitize_text_field($_POST['starttime']));
+                WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'start_time', sanitize_text_field( stripslashes ( $_POST['starttime'] ) ) );
             }
         }
         //end time
@@ -476,7 +476,7 @@ class WPGH_Calendar_Page
             }
 
             if( strtotime($start_time) < strtotime( $_POST['endtime'] ) ) {
-                WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'end_time', sanitize_text_field($_POST['endtime']));
+                WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'end_time', sanitize_text_field( stripslashes( $_POST['endtime'] ) ) );
             } else {
                 $this->notices->add( 'INVALID_STARTTIME', __( "End time can not be smaller then start time.", 'groundhogg' ), 'error' );
             }
@@ -495,14 +495,32 @@ class WPGH_Calendar_Page
         // add meta
         WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'slot_hour', $hour );
         WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'slot_minute', $min);
-        $message = wp_kses_post( $_POST['message'] );
+        $message = wp_kses_post( stripslashes( $_POST['message'] ) );
         if ($message != '') {
             WPGH_APPOINTMENTS()->calendarmeta->update_meta( $calendar_id , 'message', $message );
         }
-        $title   = sanitize_text_field( $_POST['slot_title'] );
+
+        $title = sanitize_text_field( stripslashes( $_POST['slot_title'] ) );
         if ($title != '') {
             WPGH_APPOINTMENTS()->calendarmeta->update_meta( $calendar_id , 'slot_title', $title );
         }
+
+        $main_color = sanitize_text_field( stripslashes( $_POST['main_color'] ) );
+        if ( $main_color ) {
+            WPGH_APPOINTMENTS()->calendarmeta->update_meta( $calendar_id , 'main_color', $main_color );
+        }
+
+        $slots_color = sanitize_text_field( stripslashes( $_POST['slots_color'] ) );
+        if ( $slots_color ) {
+            WPGH_APPOINTMENTS()->calendarmeta->update_meta( $calendar_id , 'slots_color', $slots_color );
+        }
+
+        $font_color = sanitize_text_field( stripslashes( $_POST[ 'font_color' ] ) );
+        if ( $font_color ) {
+            WPGH_APPOINTMENTS()->calendarmeta->update_meta( $calendar_id , 'font_color', $font_color );
+        }
+
+
         $this->notices->add( 'success', __( 'Calendar updated successfully !', 'groundhogg' ), 'success' );
         wp_redirect( admin_url( 'admin.php?page=gh_calendar&action=edit&calendar=' . $calendar_id ) );
         die();
@@ -553,13 +571,13 @@ class WPGH_Calendar_Page
         // update query
         $status     = $this->db->update($appointment_id ,  array(
             'contact_id'    => $contact_id,
-            'name'          => sanitize_text_field( $_POST[ 'appointmentname' ] ),
+            'name'          => sanitize_text_field( stripslashes( $_POST[ 'appointmentname' ] ) ),
             'start_time'    => $start_time,
             'end_time'      => $end_time
         ));
         //update notes
         if ( isset( $_POST['description'] ) ) {
-            $this->meta->update_meta($appointment_id , 'note', sanitize_text_field($_POST['description']));
+            $this->meta->update_meta($appointment_id , 'note', sanitize_text_field(stripslashes( $_POST[ 'description' ] ) ) );
         }
         if( $status ) {
             $this->notices->add( 'success', __( 'Calendar updated successfully !', 'groundhogg' ), 'success' );
@@ -587,10 +605,10 @@ class WPGH_Calendar_Page
         // ADD CALENDAR in DATABASE
         $args =  array(
           'user_id' =>  intval( $_POST['owner_id'] ),
-          'name'    => sanitize_text_field( $_POST['name'] ),
+          'name'    => sanitize_text_field( stripslashes ( $_POST['name'] ) ),
         );
         if ( isset( $_POST['description'] ) ) {
-            $args[ 'description' ]  =  sanitize_text_field( $_POST[ 'description' ] );
+            $args[ 'description' ]  =  sanitize_text_field( stripslashes ( $_POST[ 'description' ] ) );
         }
         // ADD OPERATION
         $calendar_id = WPGH_APPOINTMENTS()->calendar->add( $args ) ;
@@ -617,7 +635,7 @@ class WPGH_Calendar_Page
             if( strtotime($end_time) < strtotime( $_POST['starttime'] ) ) {
                 $this->notices->add( 'INVALID_STARTTIME', __( "End time can not be smaller then start time.", 'groundhogg' ), 'error' );
             } else {
-                WPGH_APPOINTMENTS()->calendarmeta->add_meta($calendar_id, 'start_time', sanitize_text_field($_POST['starttime']));
+                WPGH_APPOINTMENTS()->calendarmeta->add_meta($calendar_id, 'start_time', sanitize_text_field( stripslashes ( $_POST[ 'starttime' ] ) ) );
             }
         }
         //end time
@@ -629,7 +647,7 @@ class WPGH_Calendar_Page
                 $start_time  = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'start_time',true);
             }
             if( strtotime($start_time) < strtotime( $_POST['endtime'] ) ) {
-                WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'end_time', sanitize_text_field($_POST['endtime']));
+                WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'end_time', sanitize_text_field( stripslashes ( $_POST['endtime'] ) ) );
             } else {
                 $this->notices->add( 'INVALID_STARTTIME', __( "End time can not be smaller then start time.", 'groundhogg' ), 'error' );
             }
@@ -653,11 +671,26 @@ class WPGH_Calendar_Page
             $message = 'Appointment booked successfully';
         }
         WPGH_APPOINTMENTS()->calendarmeta->add_meta( $calendar_id , 'message', $message );
-        $title   = sanitize_text_field( $_POST['slot_title'] );
+        $title   = sanitize_text_field( stripslashes (  $_POST['slot_title'] ) );
         if ($title == '') {
             $title = 'Time Slot';
         }
         WPGH_APPOINTMENTS()->calendarmeta->update_meta( $calendar_id , 'slot_title', $title );
+
+        $main_color = sanitize_text_field( stripslashes( $_POST['main_color'] ) );
+        if ( $main_color ) {
+            WPGH_APPOINTMENTS()->calendarmeta->add_meta( $calendar_id , 'main_color', $main_color );
+        }
+
+        $slots_color = sanitize_text_field( stripslashes( $_POST['slots_color'] ) );
+        if ( $slots_color ) {
+            WPGH_APPOINTMENTS()->calendarmeta->add_meta( $calendar_id , 'slots_color', $slots_color );
+        }
+
+        $font_color = sanitize_text_field( stripslashes( $_POST[ 'font_color' ] ) );
+        if ( $font_color ) {
+            WPGH_APPOINTMENTS()->calendarmeta->add_meta( $calendar_id , 'font_color', $font_color );
+        }
 
         $this->notices->add( 'success', __( 'New calendar added!', 'groundhogg' ), 'success' ); // not working
         wp_redirect( admin_url( 'admin.php?page=gh_calendar&action=edit&calendar=' . $calendar_id ) );
