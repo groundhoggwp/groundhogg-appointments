@@ -122,8 +122,9 @@ class WPGH_Appointment_Shortcode
         //GET AVAILABLE TIME IN DAY
         $end_time   = strtotime( $date .' '.$end_time );
         // get appointments
-        $appointments_table_name  = WPGH_APPOINTMENTS()->appointments->table_name;
-        $appointments = $wpdb->get_results( "SELECT * FROM $appointments_table_name as a WHERE a.start_time >= $start_time AND a.end_time <=  $end_time AND a.calendar_id = $calendar_id" );
+        //$appointments_table_name  = WPGH_APPOINTMENTS()->appointments->table_name;
+        //$appointments = $wpdb->get_results( "SELECT * FROM $appointments_table_name as a WHERE a.start_time >= $start_time AND a.end_time <=  $end_time AND a.calendar_id = $calendar_id" );
+        $appointments  = WPGH_APPOINTMENTS()->appointments->get_appointments_by_args(array( 'calendar_id' => $calendar_id ) );
         // generate array to populate ddl
         $all_slots = null;
         while ($start_time < $end_time)
