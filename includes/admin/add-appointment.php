@@ -49,7 +49,7 @@ function add_appointment()
                         <tbody>
                             <tr class="form-field term-contact-wrap">
                                 <th scope="row">
-                                    <label for="user_id"><?php _e( 'Select Contact' ) ?></label>
+                                    <label ><?php _e( 'Select Contact' ) ?></label>
                                 </th>
                                 <td>
                                     <?php echo WPGH()->html->dropdown_contacts( array( 'name'   => 'contact_id','id'     => 'contact_id' )); ?>
@@ -58,7 +58,7 @@ function add_appointment()
                             </tr>
                             <tr class="form-field term-calendar-name-wrap">
                                 <th scope="row">
-                                    <label for="name"><?php _e( 'Appointment Name' ) ?></label>
+                                    <label ><?php _e( 'Appointment Name' ) ?></label>
                                 </th>
                                 <td>
                                     <input name="name" id="appointmentname"type="text"  size="40" aria-required="true" placeholder="Appointment Name">
@@ -67,7 +67,7 @@ function add_appointment()
                             </tr>
                             <tr class="form-field term-calendar-description-wrap">
                                 <th scope="row">
-                                    <label for="description"><?php _e( 'Note' ,'groundhogg'); ?></label>
+                                    <label><?php _e( 'Note' ,'groundhogg'); ?></label>
                                 </th>
                                 <td>
                                     <textarea name="description" id="appointmentnote" rows="5" cols="50" class="large-text" placeholder="Enter notes."></textarea>
@@ -75,13 +75,13 @@ function add_appointment()
                                 </td>
                             </tr>
                             <tr>
-                                <th scope="row"><label for="Date"><?php _e( 'Date' ,'groundhogg'); ?></label></th>
+                                <th scope="row"><label ><?php _e( 'Date' ,'groundhogg'); ?></label></th>
                                 <td>
                                     <input type="text"  id="appt-calendar"  style="height:29px;width: 100px" class="input" placeholder="Y-m-d" type="text" autocomplete="off" required  />
                                 </td>
                             </tr>
                             <tr>
-                                <th scope="row"><label for="description"><?php _e( 'Time' ,'groundhogg'); ?></label></th>
+                                <th scope="row"><label ><?php _e( 'Time' ,'groundhogg'); ?></label></th>
                                 <td>
                                     <div style="text-align: center;" id="spinner">
                                         <span class="spinner" style="float: none; visibility: visible"></span>
