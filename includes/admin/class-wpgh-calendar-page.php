@@ -373,7 +373,7 @@ class WPGH_Calendar_Page
                 break;
         }
         set_transient( 'gh_last_action', $this->get_action(), 30 );
-        if ( $this->get_action() === 'edit' || $this->get_action() === 'add' ){
+        if ( $this->get_action() === 'edit' || $this->get_action() === 'view_appointment' || $this->get_action() === 'add' ){
             return true;
         }
         if ( $this->get_calendars() ){
@@ -518,7 +518,22 @@ class WPGH_Calendar_Page
         $end_time        = strtotime($_POST[ 'end_date' ].' '.$_POST[ 'end_time' ]);
         if ( $start_time > $end_time ) {
             $this->notices->add( 'INVALID_TIMES', __( "End time can not be earlier then start time.", 'groundhogg' ), 'error' );
-            wp_redirect( admin_url( 'admin.php?page=gh_calendar&action=view_appointment&appointment=' . $appointment_id ) );
+            return;
+        }
+        //check for appointment clash.
+        global $wpdb;
+        $appointments_table_name  = WPGH_APPOINTMENTS()->appointments->table_name;
+        $appointments = $wpdb->get_results( "SELECT * FROM $appointments_table_name as a WHERE a.start_time >= $start_time AND a.end_time <=  $end_time AND a.calendar_id = $calendar_id AND a.ID != $appointment_id " );
+        if ( count( $appointments ) > 0 ) {
+            $this->notices->add( 'APPOINTMENT_CLASH', __( "You already have appointment in this time slot.", 'groundhogg' ), 'error' );
+            return;
+        }
+        $all_appoinments  = $this->db->get_appointments();
+        foreach ( $all_appoinments as $appo ) {
+            if( ( ( $start_time >= $appo->start_time && $start_time < $appo->end_time ) || ( $end_time >= $appo->start_time && $end_time < $appo->end_time ) ) && $appo->ID != $appointment_id  ) {
+                $this->notices->add( 'APPOINTMENT_CLASH', __( "You already have appointment in this time slot.", 'groundhogg' ), 'error' );
+                return;
+            }
         }
         // update query
         $status     = $this->db->update($appointment_id ,  array(
@@ -536,8 +551,7 @@ class WPGH_Calendar_Page
         } else {
             $this->notices->add( 'UPDATE_FAILED', __( "Something went wrong while update.", 'groundhogg' ), 'error' );
         }
-        wp_redirect( admin_url( 'admin.php?page=gh_calendar&action=add_appointment&calendar=' . $calendar_id ) );
-        die();
+        return;
     }
 
     /**
