@@ -10,10 +10,6 @@ var appointment;
             } );
         },
         addAppointment: function(){
-            var $spinner    = $('#spinner');
-            $spinner.show();
-
-
             var start_time          = null;
             var end_time            = null;
             var id                  = $('#contact_id').val();
@@ -22,8 +18,6 @@ var appointment;
             var calendar_id         = $('#calendar_id').val();
             start_time              = ghAppointment.valueOf().bookingData.start_date;
             end_time                = ghAppointment.valueOf().bookingData.end_date;
-
-
             if (  start_time === null  || end_time === null ) {
                 alert( 'Please select appointment.' );
             } else {
@@ -31,7 +25,6 @@ var appointment;
                     // check for contact id
                     alert('Please select contact.');
                 } else {
-
                     if (appointment_name != '') {
                         //AJAX Call to add appointment
                         $.ajax({
@@ -63,10 +56,9 @@ var appointment;
                                 $('#select_time').children().remove();
                                 //$( '#select_time' ).replaceWith( response.successMsg );
                                 $('#appt-calendar').val('');
-                                $('#spinner').hide();
+
                             }
                         });
-
                     } else {
                         alert('Please enter appointment name');
                     }
