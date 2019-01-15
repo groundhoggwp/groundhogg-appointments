@@ -75,6 +75,16 @@ class GH_APPOINTMENTS
     public $pipeline;
 
     /**
+     * @var WPGH_Appointment_settings_Tab
+     */
+    public $settings;
+
+    /**
+     * @var WPGH_Appointment_Shortcode
+     */
+    public $shortcode;
+
+    /**
      * create object
      *
      * @return GH_APPOINTMENTS
@@ -99,12 +109,14 @@ class GH_APPOINTMENTS
             self::$instance->calendar         = new WPGH_DB_Calendar();
             self::$instance->appointments     = new WPGH_DB_Appointments();
             self::$instance->role_calendar    = new WPGH_Roles_Calendar();
-
-
             self::$instance->benchmark        = new WPGH_Appointment_Benchmark();
-            self::$instance->page             = new WPGH_Calendar_Page();
             self::$instance->shortcode        = new WPGH_Appointment_Shortcode();
             self::$instance->pipeline         = new WPGH_Pipeline_Replacements();
+
+            if ( is_admin() ){
+                self::$instance->page             = new WPGH_Calendar_Page();
+                self::$instance->settings         = new WPGH_Appointment_Settings_Tab();
+            }
 
         }
         return self::$instance;
@@ -169,6 +181,7 @@ class GH_APPOINTMENTS
         require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/class-wpgh-appointment-shortcode.php';
         require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/class-wpgh-pipeline-replacements.php';
         require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/admin/class-wpgh-calendar-page.php';
+        require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/admin/class-wpgh-appointment-settings-tab.php';
         require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/admin/class-wpgh-appointment-benchmark.php';
     }
 }
