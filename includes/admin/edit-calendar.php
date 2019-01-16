@@ -52,6 +52,8 @@ if ( ! $font_color ){
     $font_color = '#292929';
 }
 
+$access_token = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'access_token', true);
+
 ?>
 <form name="" id="" method="post" action="">
     <?php wp_nonce_field(); ?>
@@ -178,9 +180,29 @@ if ( ! $font_color ){
         </tr>
         </tbody>
     </table>
+    <h2><?php _e( 'Google Calendar' ,'groundhogg'); ?></h2>
+    <table class="form-table">
+        <tbody>
+        <tr>
+            <th scope="row"><label><?php _e( 'Enable Google Calendar sync' ) ?></label></th>
+            <td>
+                <?php echo WPGH()->html->checkbox( array( 'name' => 'google_calendar' ) );?>
+                <p class="description"><?php _e( 'Enable Google calendar.', 'groundhogg' ) ?></p>
+            </td>
+        </tr>
+        <tr>
+            <th scope="row"><label><?php _e( 'Enable Google Calendar sync' ) ?></label></th>
+            <td>
+                <p><?php if ( $access_token ){  _e('Your access token is already generated.','groundhogg'); } ?></p>
+                <p><a class="button btn-approve"  target="_blank" href="<?php echo wp_nonce_url( admin_url( 'admin.php?page=gh_calendar&action=access_code&calendar='.$calendar_id ) ); ?>"><?php _e( 'Generate access code' ); ?></a> </p>
+                <p><?php echo WPGH()->html->input( array( 'name' => 'auth_code' ,'id' =>'auth_code' , 'placeholder' => 'Please Enter validation code') );?> </p>
+                <p><?php echo WPGH()->html->button( array( 'name' => 'verify_code' , 'id' => 'verify_code' ,'text' =>'Verify code') );?></p>
 
-
-    <input type="hidden" value="<?php echo $calendar_id; ?>" name="calendar" />
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <input type="hidden" value="<?php echo $calendar_id; ?>" name="calendar" id="calendar" />
     <div class="add-calendar-actions">
         <?php submit_button( __( 'Update Calendar' ), 'primary', 'update', false ); ?>
     </div>

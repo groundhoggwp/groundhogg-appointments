@@ -85,6 +85,11 @@ class GH_APPOINTMENTS
     public $shortcode;
 
     /**
+     * @var WPGH_Google_Calendar
+     */
+    public $google_calendar;
+
+    /**
      * create object
      *
      * @return GH_APPOINTMENTS
@@ -112,6 +117,7 @@ class GH_APPOINTMENTS
             self::$instance->benchmark        = new WPGH_Appointment_Benchmark();
             self::$instance->shortcode        = new WPGH_Appointment_Shortcode();
             self::$instance->pipeline         = new WPGH_Pipeline_Replacements();
+            self::$instance->google_calendar  = new WPGH_Google_Calendar();
 
             if ( is_admin() ){
                 self::$instance->page             = new WPGH_Calendar_Page();
@@ -174,6 +180,7 @@ class GH_APPOINTMENTS
     {
         require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/class-wpgh-db-appointmentmeta.php';
         require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/install.php';
+        require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/class-wpgh-google-calendar.php';
         require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/class-wpgh-roles-calendar.php';
         require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/class-wpgh-db-calendarmeta.php';
         require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/class-wpgh-db-appointment.php';
@@ -183,6 +190,7 @@ class GH_APPOINTMENTS
         require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/admin/class-wpgh-calendar-page.php';
         require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/admin/class-wpgh-appointment-settings-tab.php';
         require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/admin/class-wpgh-appointment-benchmark.php';
+
     }
 }
 endif;

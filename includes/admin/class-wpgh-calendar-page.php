@@ -38,6 +38,7 @@ class WPGH_Calendar_Page
         add_action( 'admin_menu', array( $this, 'register' ) );
         add_action( 'wp_ajax_gh_add_appointment', array($this, 'gh_add_appointment'));
         add_action( 'wp_ajax_gh_update_appointment', array($this, 'gh_update_appointment'));
+        add_action( 'wp_ajax_gh_verify_code', array($this, 'gh_verify_code'));
 
         if ( isset( $_GET['page'] ) && $_GET[ 'page' ] === 'gh_calendar' ){
             add_action( 'init' , array( $this, 'process_action' )  );
@@ -46,6 +47,39 @@ class WPGH_Calendar_Page
         }
         $this->db   = WPGH_APPOINTMENTS()->appointments;
         $this->meta = WPGH_APPOINTMENTS()->appointmentmeta;
+
+    }
+
+    /**
+     * AJAX call to generate access code
+     *
+     * Requested by AJAX
+     */
+    public function gh_verify_code()
+    {
+        $calendar_id = intval( $_POST[ 'calendar' ] ) ;
+        if ( isset( $_POST[ 'auth_code' ] ) ) {
+            //call method to validate information
+            try  {
+                $client  = WPGH_APPOINTMENTS()->google_calendar->generate_access_token( $calendar_id ,  trim( $_POST[ 'auth_code' ] ) );
+            } catch (Exception $e){
+                wp_die( json_encode( array(
+                    'status' => 'failed',
+                    'msg'    => __( 'This code is expired or invalid and make sure you entered correct google clientID and Secret.','groundhogg')
+                )));
+            }
+            if( is_wp_error( $client ) ) {
+                wp_die( json_encode( array(
+                    'status' => 'failed',
+                    'msg'    => __('Something went wrong!','groundhogg')
+                )));
+            } else {
+                wp_die( json_encode( array(
+                    'status' => 'success',
+                    'msg'    => __( 'Access token generated successfully!' ,'groundhogg' )
+                ) ) );
+            }
+        }
     }
 
     /**
@@ -55,6 +89,8 @@ class WPGH_Calendar_Page
      */
     public function gh_update_appointment()
     {
+
+        $google_calendar_id = 'primary';
 
         if ( ! current_user_can( 'edit_appointment' ) ){
             $response = array(   'status' => 'failed','msg' => __( 'Your user role does not have the required permissions to Edit appointment.' ,'groundhogg'));
@@ -73,6 +109,26 @@ class WPGH_Calendar_Page
 
         if ($status){
             do_action('gh_calendar_update_appointment_admin',$appointment_id , 'reschedule_admin' );
+            //update appointment on google
+
+            // retrieve appointment and update its detail on google calendar.
+            $appointment  =  $this->db->get_appointment( $appointment_id );
+            $access_token  = WPGH_APPOINTMENTS()->calendarmeta->get_meta($appointment->calendar_id , 'access_token',true) ;
+            if ( $access_token ) {
+                $client     = WPGH_APPOINTMENTS()->google_calendar->get_google_client_form_access_token($appointment->calendar_id);
+                $service    = new Google_Service_Calendar($client);
+                $event = new Google_Service_Calendar_Event(array(
+                    'start' => array(
+                        'dateTime' => date('Y-m-d\TH:i:s', $appointment->start_time),
+                        'timeZone' => get_option('timezone_string'),
+                    ),
+                    'end' => array(
+                        'dateTime' => date('Y-m-d\TH:i:s', $appointment->end_time),
+                        'timeZone' => get_option('timezone_string'),
+                    ),
+                ));
+                $updatedEvent = $service->events->patch( $google_calendar_id, 'ghcalendarcid'.$appointment->calendar_id.'aid' . $appointment_id, $event);
+            }
             wp_die( json_encode( array(
                 'status' => 'success',
                 'msg'    => __('Appointment reschedule successfully.','groundhogg')
@@ -93,6 +149,8 @@ class WPGH_Calendar_Page
     public function gh_add_appointment()
     {
 
+        $google_calendar_id = 'primary';
+
         if ( ! current_user_can( 'add_appointment' ) ){
             $response = array( 'msg' => __('Your user role does not have the required permissions to add appointment.','groundhogg') );
             wp_die( json_encode($response) );
@@ -108,14 +166,14 @@ class WPGH_Calendar_Page
         $note               = sanitize_text_field( stripslashes ( $_POST['note'] ) );
         $appointment_name   = sanitize_text_field( stripslashes ( $_POST [ 'appointment_name'] ) ) ;
         $calendar_id        = sanitize_text_field( stripslashes ($_POST [ 'calendar_id'] ) );
-
+        $start              = strtotime( '+1 minute',$start);
         // perform insert operation
         $appointment_id  = $this->db->add( array (
             'contact_id'    => $contact_id,
             'calendar_id'   => $calendar_id,
             'name'          => $appointment_name,
             'status'        => 'pending',
-            'start_time'    => strtotime( '+1 minute',$start),    //strtotime()
+            'start_time'    => $start,    //strtotime()
             'end_time'      => ($end)       //strtotime()
         ));
 
@@ -143,6 +201,32 @@ class WPGH_Calendar_Page
             )
         );
         do_action('gh_calendar_add_appointment_admin',$appointment_id , 'create_admin' );
+
+        //add appointment inside google calendar //
+        $access_token  = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id , 'access_token',true) ;
+        if ( $access_token ) {
+            $client = WPGH_APPOINTMENTS()->google_calendar->get_google_client_form_access_token($calendar_id);
+            $service = new Google_Service_Calendar($client);
+            $contact = WPGH()->contacts->get($contact_id);
+            $event = new Google_Service_Calendar_Event(array(
+                'id' => 'ghcalendarcid'.$calendar_id.'aid' . $appointment_id,
+                'summary' => $appointment_name,
+                'description' => $note,
+                'start' => array(
+                    'dateTime' => date('Y-m-d\TH:i:s', $start),
+                    'timeZone' => get_option('timezone_string'),
+                ),
+                'end' => array(
+                    'dateTime' => date('Y-m-d\TH:i:s', $end),
+                    'timeZone' => get_option('timezone_string'),
+                ),
+                'attendees' => array(
+                    array('email' => $contact->email),
+                ),
+            ));
+
+            $event = $service->events->insert( $google_calendar_id , $event);
+        }
         wp_die( json_encode( $response ) );
 
     }
@@ -309,7 +393,16 @@ class WPGH_Calendar_Page
                 }
                 $this->delete_calendar();
                 break;
-
+            case 'access_code' :
+                $client = WPGH_APPOINTMENTS()->google_calendar->get_basic_client();
+                if( is_wp_error( $client ) ) {
+                    $this->notices->add( 'CLIENT_ERROR', __('Please Check your google clientId and Secret.'), 'error');
+                    return;
+                }
+                $authUrl = $client->createAuthUrl();
+                echo "<script>window.open(\"". $authUrl ."\",\"_self\");</script>" ;
+                die();
+                break;
             case 'approve' :
 
                 if ( ! current_user_can( 'edit_appointment' ) ){
@@ -577,10 +670,41 @@ class WPGH_Calendar_Page
         ));
         //update notes
         if ( isset( $_POST['description'] ) ) {
+
             $this->meta->update_meta($appointment_id , 'note', sanitize_text_field(stripslashes( $_POST[ 'description' ] ) ) );
         }
         if( $status ) {
-            $this->notices->add( 'success', __( 'Calendar updated successfully !', 'groundhogg' ), 'success' );
+            //update google calendar  ..
+
+            $google_calendar_id = 'primary';
+            $appointment    =  $this->db->get_appointment( $appointment_id );
+            $access_token   = WPGH_APPOINTMENTS()->calendarmeta->get_meta($appointment->calendar_id , 'access_token',true) ;
+            if ( $access_token ) {
+                $client     = WPGH_APPOINTMENTS()->google_calendar->get_google_client_form_access_token($appointment->calendar_id);
+                $service    = new Google_Service_Calendar($client);
+                $contact    = WPGH()->contacts->get( $appointment->contact_id );
+                $event = new Google_Service_Calendar_Event(array(
+                    'id' => 'ghcalendarcid'.$appointment->calendar_id.'aid' . $appointment->ID,
+                    'summary' => $appointment->name,
+                    'description' => $this->meta->get_meta( $appointment->ID , 'note', true ),
+                    'start' => array(
+                        'dateTime' => date('Y-m-d\TH:i:s', $appointment->start_time),
+                        'timeZone' => get_option('timezone_string'),
+                    ),
+                    'end' => array(
+                        'dateTime' => date('Y-m-d\TH:i:s', $appointment->end_time),
+                        'timeZone' => get_option('timezone_string'),
+                    ),
+                    'attendees' => array(
+                        array('email' => $contact->email),
+                    ),
+                ));
+                $updatedEvent = $service->events->update( $google_calendar_id, 'ghcalendarcid'.$appointment->calendar_id.'aid' . $appointment_id, $event);
+            }
+
+
+
+            $this->notices->add( 'success', __( 'Appointment updated successfully !'.$contact->email, 'groundhogg' ), 'success' );
         } else {
             $this->notices->add( 'UPDATE_FAILED', __( "Something went wrong while update.", 'groundhogg' ), 'error' );
         }

@@ -12,6 +12,42 @@ function add_appointment()
 {
     //get list of appointment
     $calendar_id    = $_GET[ 'calendar' ];
+
+    $access_token  = WPGH_APPOINTMENTS()->calendarmeta->get_meta( $calendar_id , 'access_token',true ) ;
+    if ( $access_token  ) {
+        /*
+
+    // Get the API client and construct the service object.
+        $client = WPGH_APPOINTMENTS()->google_calendar->get_google_client_form_access_token($calendar_id);
+        $service = new Google_Service_Calendar($client);
+
+    // Print the next 10 events on the user's calendar.
+        $calendarId = 'primary';
+        $optParams = array(
+            'maxResults' => 10,
+            'orderBy' => 'startTime',
+            'singleEvents' => true,
+            'timeMin' => date('c'),
+        );
+        $results = $service->events->listEvents($calendarId, $optParams);
+        $events = $results->getItems();
+
+        if (empty($events)) {
+            print "No upcoming events found.\n";
+        } else {
+            print "Upcoming events:\n";
+            foreach ($events as $event) {
+                $start = $event->start->dateTime;
+                if (empty($start)) {
+                    $start = $event->start->date;
+                }
+                printf("%s (%s)\n", $event->getSummary(), $start);
+            }
+        }
+        */
+    }
+
+
     // get all the appointment
     $appointments   = WPGH_APPOINTMENTS()->appointments->get_appointments_by_args( array( 'calendar_id' => $calendar_id ) );
     $display_data   = array();

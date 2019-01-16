@@ -8,6 +8,11 @@ var appointment;
                 e.preventDefault();
                 appointment.addAppointment();
             } );
+
+            $( '#verify_code' ).on( 'click', function(e){
+                e.preventDefault();
+                appointment.verifyCode();
+            } );
         },
         addAppointment: function(){
             var start_time          = null;
@@ -66,6 +71,30 @@ var appointment;
             }
 
         },
+        verifyCode : function () {
+            var code        = $('#auth_code').val();
+            var calendar    = $('#calendar').val();
+            if ( code != '' ){
+                // ajax request to generate access code
+                $.ajax({
+                    type: "post",
+                    url: ajax_object.ajax_url,
+                    dataType: 'json',
+                    data: {
+                        action: 'gh_verify_code',
+                        auth_code : code,
+                        calendar : calendar
+                    },
+                    success: function (response) {
+                        alert(response.msg);
+                        $('#auth_code').val('');
+                    }
+                });
+
+            } else {
+                alert('Please enter Validation code.');
+            }
+        }
     };
     $(function () {
         appointment.init();
