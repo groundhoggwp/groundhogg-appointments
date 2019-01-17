@@ -113,7 +113,19 @@ class WPGH_Google_Calendar
           return new WP_Error( 'ACCESS_TOKEN_ERROR', __( 'error' , "groundhogg" ) );
         }
         WPGH_APPOINTMENTS()->calendarmeta->update_meta( $calendar_id , 'access_token' ,  $client->getAccessToken() );
+        // create new calendar
+        $google_calendar  =  new Google_Service_Calendar_Calendar();
+        // fetch calendar name from DB
+        $calendar   = WPGH_APPOINTMENTS()->calendar->get_calendar( $calendar_id );
+        $google_calendar->setSummary( $calendar->name );
+        $google_calendar->setTimeZone( get_option('timezone_string') );
+        $service = new Google_Service_Calendar($client);
+        $createdCalendar = $service->calendars->insert( $google_calendar );
+        WPGH_APPOINTMENTS()->calendarmeta->update_meta( $calendar_id , 'google_calendar_id' ,  $createdCalendar->getId() );
         return $client;
 
     }
+
+
+
 }

@@ -14,6 +14,8 @@ function add_appointment()
     $calendar_id    = $_GET[ 'calendar' ];
 
     $access_token  = WPGH_APPOINTMENTS()->calendarmeta->get_meta( $calendar_id , 'access_token',true ) ;
+
+
     if ( $access_token  ) {
         /*
 
