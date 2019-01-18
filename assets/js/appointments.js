@@ -4,6 +4,7 @@ var appointment;
         activeDomainBox: null,
         init: function()
         {
+            $('#spinner').show();
             $( '#btnalert' ).on( 'click', function(e){
                 e.preventDefault();
                 appointment.addAppointment();
@@ -72,9 +73,17 @@ var appointment;
 
         },
         verifyCode : function () {
+
+
+
             var code        = $('#auth_code').val();
             var calendar    = $('#calendar').val();
             if ( code != '' ){
+
+                $('#spinner').show();
+                $('#auth_code').hide();
+                $('#verify_code').hide();
+                $('#generate_access_code').hide();
                 // ajax request to generate access code
                 $.ajax({
                     type: "post",
@@ -88,6 +97,10 @@ var appointment;
                     success: function (response) {
                         alert(response.msg);
                         $('#auth_code').val('');
+                        $('#spinner').hide();
+                        $('#auth_code').show();
+                        $('#verify_code').show();
+                        $('#generate_access_code').show();
                     }
                 });
 

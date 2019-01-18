@@ -53,6 +53,7 @@ if ( ! $font_color ){
 }
 
 $access_token = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'access_token', true);
+$google_calendar_id = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id ,'google_calendar_id' ,true);
 
 ?>
 <form name="" id="" method="post" action="">
@@ -184,19 +185,18 @@ $access_token = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'access
     <table class="form-table">
         <tbody>
         <tr>
-            <th scope="row"><label><?php _e( 'Enable Google Calendar sync' ) ?></label></th>
-            <td>
-                <?php echo WPGH()->html->checkbox( array( 'name' => 'google_calendar' ) );?>
-                <p class="description"><?php _e( 'Enable Google calendar.', 'groundhogg' ) ?></p>
-            </td>
-        </tr>
-        <tr>
-            <th scope="row"><label><?php _e( 'Enable Google Calendar sync' ) ?></label></th>
-            <td>
-                <p><?php if ( $access_token ){  _e('Your access token is already generated.','groundhogg'); } ?></p>
-                <p><a class="button btn-approve"  target="_blank" href="<?php echo wp_nonce_url( admin_url( 'admin.php?page=gh_calendar&action=access_code&calendar='.$calendar_id ) ); ?>"><?php _e( 'Generate access code' ); ?></a> </p>
-                <p><?php echo WPGH()->html->input( array( 'name' => 'auth_code' ,'id' =>'auth_code' , 'placeholder' => 'Please Enter validation code') );?> </p>
-                <p><?php echo WPGH()->html->button( array( 'name' => 'verify_code' , 'id' => 'verify_code' ,'text' =>'Verify code') );?></p>
+            <th scope="row"><label><?php _e( 'Google Calendar sync' ) ?></label></th>
+            <td id="appointment-status">
+                <p><?php if ( $access_token  && $google_calendar_id ){  _e('your google calendar sync is on. (Delete calender from your google account to stop sync.)','groundhogg'); } ?></p>
+                <p><a class="button" id ="generate_access_code"  target="_blank" href="<?php echo wp_nonce_url( admin_url( 'admin.php?page=gh_calendar&action=access_code&calendar='.$calendar_id ) ); ?>"><?php _e( 'Generate access code' ); ?></a> </p>
+                <p>
+                    <?php echo WPGH()->html->input( array( 'name' => 'auth_code' ,'id' =>'auth_code' , 'placeholder' => 'Please Enter validation code') );?>
+                    <?php echo WPGH()->html->button( array( 'class' => 'button btn-approve', 'name' => 'verify_code' , 'id' => 'verify_code' ,'text' =>'Verify Code & Sync calendar') );?>
+                    <div id="spinner">
+                        <span class="spinner" style="float: none; visibility: visible"></span>
+                    </div>
+                </p>
+
 
             </td>
         </tr>

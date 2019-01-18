@@ -103,30 +103,32 @@ class WPGH_Appointment_Shortcode
         }
 
         //ADD Appointment into google calendar
-        $appointment      = WPGH_APPOINTMENTS()->appointments->get($appointment_id);
-        $access_token     = WPGH_APPOINTMENTS()->calendarmeta->get_meta( $appointment->calendar_id , 'access_token',true) ;
-        if ( $access_token ) {
-            $google_calendar_id = 'primary';
+        $appointment        = WPGH_APPOINTMENTS()->appointments->get($appointment_id);
+        $access_token       = WPGH_APPOINTMENTS()->calendarmeta->get_meta( $appointment->calendar_id , 'access_token',true) ;
+        $google_calendar_id = WPGH_APPOINTMENTS()->calendarmeta->get_meta( $appointment->calendar_id ,'google_calendar_id' ,true );
+        if ( $access_token && $google_calendar_id ) {
             $client = WPGH_APPOINTMENTS()->google_calendar->get_google_client_form_access_token($calendar_id);
             $service = new Google_Service_Calendar($client);
-            $contact = WPGH()->contacts->get( $appointment->contact_id );
-            $event = new Google_Service_Calendar_Event(array(
-                'id' => 'ghcalendarcid'.$appointment->calendar_id.'aid' . $appointment->ID,
-                'summary' => $appointment->name,
+            if ( WPGH_APPOINTMENTS()->google_calendar->is_valid_calendar( $appointment->calendar_id  ,$google_calendar_id ,$service )) {
+                $contact = WPGH()->contacts->get($appointment->contact_id);
+                $event = new Google_Service_Calendar_Event(array(
+                    'id' => 'ghcalendarcid' . $appointment->calendar_id . 'aid' . $appointment->ID,
+                    'summary' => $appointment->name,
 
-                'start' => array(
-                    'dateTime' => date('Y-m-d\TH:i:s', $appointment->start_time),
-                    'timeZone' => get_option('timezone_string'),
-                ),
-                'end' => array(
-                    'dateTime' => date('Y-m-d\TH:i:s', $appointment->end_time),
-                    'timeZone' => get_option('timezone_string'),
-                ),
-                'attendees' => array(
-                    array('email' => $contact->email),
-                ),
-            ));
-            $event = $service->events->insert( $google_calendar_id , $event);
+                    'start' => array(
+                        'dateTime' => date('Y-m-d\TH:i:s', $appointment->start_time),
+                        'timeZone' => get_option('timezone_string'),
+                    ),
+                    'end' => array(
+                        'dateTime' => date('Y-m-d\TH:i:s', $appointment->end_time),
+                        'timeZone' => get_option('timezone_string'),
+                    ),
+                    'attendees' => array(
+                        array('email' => $contact->email),
+                    ),
+                ));
+                $event = $service->events->insert( $google_calendar_id, $event );
+            }
         }
         $response = array( 'status' => 'success','successMsg' => __($message,'groundhogg') );
         do_action('gh_calendar_add_appointment_client',$appointment_id , 'create_client' );

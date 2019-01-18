@@ -121,8 +121,23 @@ class WPGH_Google_Calendar
         $google_calendar->setTimeZone( get_option('timezone_string') );
         $service = new Google_Service_Calendar($client);
         $createdCalendar = $service->calendars->insert( $google_calendar );
-        WPGH_APPOINTMENTS()->calendarmeta->update_meta( $calendar_id , 'google_calendar_id' ,  $createdCalendar->getId() );
+        WPGH_APPOINTMENTS()->calendarmeta->update_meta( $calendar_id , 'google_calendar_id' , sanitize_text_field( $createdCalendar->getId() ) );
         return $client;
+
+    }
+
+
+    public  function is_valid_calendar( $calendar_id , $google_calendar_id ,  $service )
+    {
+        try {
+            $google_calendar = $service->calendars->get( $google_calendar_id );
+            return true;
+        }  catch (Exception $e) {
+            //clear calendar id
+            WPGH_APPOINTMENTS()->calendarmeta->update_meta( $calendar_id , 'google_calendar_id' ,'' );
+            WPGH_APPOINTMENTS()->calendarmeta->update_meta( $calendar_id , 'access_token' ,'' );
+            return false;
+        }
 
     }
 
