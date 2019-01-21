@@ -1,6 +1,6 @@
 <?php
 /*
-Plugin Name: Groundhogg-Appoinments
+Plugin Name: Groundhogg-Appointments
 Description: Create calendar and Appointments for  contact.
 Version: 1.0
 Author: Groundhogg Inc.

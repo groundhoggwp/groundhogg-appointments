@@ -187,7 +187,7 @@ $google_calendar_id = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id ,
         <tr>
             <th scope="row"><label><?php _e( 'Google Calendar sync' ) ?></label></th>
             <td id="appointment-status">
-                <p><?php if ( $access_token  && $google_calendar_id ){  _e('your google calendar sync is on. (Delete calender from your google account to stop sync.)','groundhogg'); } ?></p>
+                <p><?php if ( $access_token  && $google_calendar_id ){  _e('Your google calendar sync is on.(please delete calender from your google account to stop sync)','groundhogg'); } ?></p>
                 <p><a class="button" id ="generate_access_code"  target="_blank" href="<?php echo wp_nonce_url( admin_url( 'admin.php?page=gh_calendar&action=access_code&calendar='.$calendar_id ) ); ?>"><?php _e( 'Generate access code' ); ?></a> </p>
                 <p>
                     <?php echo WPGH()->html->input( array( 'name' => 'auth_code' ,'id' =>'auth_code' , 'placeholder' => 'Please Enter validation code') );?>

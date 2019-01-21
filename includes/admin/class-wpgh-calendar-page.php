@@ -104,7 +104,7 @@ class WPGH_Calendar_Page
                 }
                 wp_die( json_encode( array(
                     'status' => 'success',
-                    'msg'    => __( 'Access token generated successfully!' ,'groundhogg' )
+                    'msg'    => __( 'your calendar synced successfully!' ,'groundhogg' )
                 ) ) );
             }
         }
@@ -424,7 +424,7 @@ class WPGH_Calendar_Page
             case 'access_code' :
                 $client = WPGH_APPOINTMENTS()->google_calendar->get_basic_client();
                 if( is_wp_error( $client ) ) {
-                    $this->notices->add( 'CLIENT_ERROR', __('Please Check your google clientId and Secret.'), 'error');
+                    $this->notices->add( 'CLIENT_ERROR', __('Please check your google clientId and Secret.'), 'error');
                     return;
                 }
                 $authUrl = $client->createAuthUrl();
@@ -451,7 +451,7 @@ class WPGH_Calendar_Page
                         wp_die( 'Something went wrong' );
                     }
                     do_action('gh_calendar_appointment_approved', $appointment_id , 'approved' );
-                    $this->notices->add( 'success', __( 'Appointment updated successfully !', 'groundhogg' ), 'success' );
+                    $this->notices->add( 'success', __( 'Appointment updated successfully!', 'groundhogg' ), 'success' );
                     wp_redirect( admin_url( 'admin.php?page=gh_calendar&action=add_appointment&calendar=' . $appointment->calendar_id ) );
                     die();
                 }
@@ -486,7 +486,7 @@ class WPGH_Calendar_Page
                     if ( ! $status ){
                         wp_die( 'Something went wrong' );
                     }
-                    $this->notices->add( 'success', __( 'Appointment deleted successfully !', 'groundhogg' ), 'success' );
+                    $this->notices->add( 'success', __( 'Appointment deleted successfully!', 'groundhogg' ), 'success' );
                     wp_redirect( admin_url( 'admin.php?page=gh_calendar&action=add_appointment&calendar=' . $appointment->calendar_id ) );
                     die();
                 }
@@ -515,7 +515,7 @@ class WPGH_Calendar_Page
                         wp_die( 'Something went wrong' );
                     }
                     do_action('gh_calendar_appointment_cancelled',$appointment_id , 'cancelled' );
-                    $this->notices->add( 'success', __( 'Appointment updated successfully !', 'groundhogg' ), 'success' );
+                    $this->notices->add( 'success', __( 'Appointment updated successfully!', 'groundhogg' ), 'success' );
                     wp_redirect( admin_url( 'admin.php?page=gh_calendar&action=add_appointment&calendar=' . $appointment->calendar_id ) );
                     die();
                 }
@@ -552,7 +552,7 @@ class WPGH_Calendar_Page
                 );
                 $results = $service->events->listEvents($google_calendar_id, $optParams);
                 $events = $results->getItems();
-                if (!empty($events)) {
+                if (! empty($events)) {
                     // update values in data base
                     foreach ($events as $event) {
                         // get event id and check for update
@@ -650,12 +650,14 @@ class WPGH_Calendar_Page
                     wp_redirect(admin_url('admin.php?page=gh_calendar&action=add_appointment&calendar=' . $calendar_id));
                 } else {
                     $this->notices->add('success', __('No events found in Google calendar.', 'groundhogg'), 'error');
+                    wp_redirect( admin_url( 'admin.php?page=gh_calendar&action=add_appointment&calendar=' . $calendar_id) );
+
                 }
             } else {
                 // calendar not found
                 $this->notices->add( 'GOOGLE_CALENDAR', __( 'Google calendar not found.', 'groundhogg' ), 'error' );
                 wp_redirect( admin_url( 'admin.php?page=gh_calendar&action=add_appointment&calendar=' . $calendar_id) );
-                die();
+
             }
         } else {
             $this->notices->add( 'success', __( 'Please generate access code sync appointments. ', 'groundhogg' ), 'error' );
