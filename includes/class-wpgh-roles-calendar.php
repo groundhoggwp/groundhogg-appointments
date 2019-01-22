@@ -36,7 +36,7 @@ class WPGH_Roles_Calendar {
     /**
      * array for calendar roles
      *
-     * @return mixed|void
+     * @return mixed
      */
     public function get_calendar_caps()
     {
@@ -53,7 +53,7 @@ class WPGH_Roles_Calendar {
     /**
      * array for appointment role
      *
-     * @return mixed|void
+     * @return mixed
      */
     public function get_appoinment_caps()
     {

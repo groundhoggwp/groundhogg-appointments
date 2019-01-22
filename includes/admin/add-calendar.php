@@ -39,13 +39,13 @@ if ( ! defined( 'ABSPATH' ) ) exit;
                 </th>
                 <td>
                     <ul>
-                        <li><input type="checkbox" name="checkbox[]" value="0" checked> Sunday</li>
-                        <li><input type="checkbox" name="checkbox[]" value="1" checked> Monday</li>
-                        <li><input type="checkbox" name="checkbox[]" value="2" checked> Tuesday</li>
-                        <li><input type="checkbox" name="checkbox[]" value="3" checked> Wednesday</li>
-                        <li><input type="checkbox" name="checkbox[]" value="4" checked> Thursday</li>
-                        <li><input type="checkbox" name="checkbox[]" value="5" checked> Friday</li>
-                        <li><input type="checkbox" name="checkbox[]" value="6" checked> Saturday</li>
+                        <li><input type="checkbox" name="checkbox[]" value="0" checked> <?php _e( 'Sunday');?></li>
+                        <li><input type="checkbox" name="checkbox[]" value="1" checked> <?php _e( 'Monday');?></li>
+                        <li><input type="checkbox" name="checkbox[]" value="2" checked> <?php _e( 'Tuesday');?></li>
+                        <li><input type="checkbox" name="checkbox[]" value="3" checked> <?php _e( 'Wednesday');?></li>
+                        <li><input type="checkbox" name="checkbox[]" value="4" checked> <?php _e( 'Thursday');?></li>
+                        <li><input type="checkbox" name="checkbox[]" value="5" checked> <?php _e( 'Friday');?></li>
+                        <li><input type="checkbox" name="checkbox[]" value="6" checked> <?php _e( 'Saturday '); ?></li>
                     </ul>
                 </td>
             </tr>
@@ -89,6 +89,25 @@ if ( ! defined( 'ABSPATH' ) ) exit;
                     _e('Minutes','groundhogg');
                     ?>
                     <p class="description"><?php _e( 'Select default length of appointment', 'groundhogg' ); ?></p>
+                </td>
+            </tr>
+            <tr>
+                <th scope="row"><label><?php _e( 'Buffer Time (after)' ,'groundhogg') ?></label></th>
+                <td>
+                    <?php
+                    for ($i=0 ; $i<60 ; $i++) {
+                        $mins[$i] = $i;
+                    }
+                    echo WPGH()->html->dropdown( array( 'name' =>'buffer_time' , 'options' => $mins , 'selected' => '0') ) ;
+                    _e('Minutes','groundhogg'); ?>
+                    <p class="description"><?php _e( 'Buffer time after completion of appointment.', 'groundhogg' ) ?></p>
+                </td>
+            </tr>
+            <tr>
+                <th scope="row"><label><?php _e( 'Make me look Busy.' ,'groundhogg') ?></label></th>
+                <td>
+                    <?php echo WPGH()->html->input( array( 'name' => 'busy_slot' ,'placeholder' => 'Enter How many time slots you want to display' , 'value' => 0 ) );?>
+                    <p class="description"><?php _e( 'Enter how many time slots client can see! (Enter 0 to display all time slots)', 'groundhogg' ) ?></p>
                 </td>
             </tr>
             <tr>

@@ -20,10 +20,8 @@ $end_time = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'end_time',
 if( ! $end_time) {
     $end_time = '17:00';
 }
-$slot_hour = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'slot_hour', true);
-if( ! $slot_hour ) {
-    $slot_hour = 1;
-}
+$slot_hour = intval(  WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'slot_hour', true) );
+
 $slot_minute = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'slot_minute', true);
 if( ! $slot_minute ) {
     $slot_minute = 0;
@@ -50,6 +48,16 @@ if( ! $slots_color ) {
 $font_color = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'font_color', true);
 if ( ! $font_color ){
     $font_color = '#292929';
+}
+
+$buffer_time  = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'buffer_time', true);
+if ( ! $buffer_time ){
+    $buffer_time = 0;
+}
+
+$busy_slot = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'busy_slot', true);
+if ( ! $busy_slot ){
+    $busy_slot = 0;
 }
 
 $access_token = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'access_token', true);
@@ -90,13 +98,13 @@ $google_calendar_id = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id ,
                 <th scope="row"><label><?php _e( 'Select working days' ); ?></label></th>
                 <td>
                     <ul>
-                        <li><input type="checkbox" name="checkbox[]" value="0" <?php if( in_array('0' ,$dow ,true) ) { echo 'checked' ;} ?>> Sunday</li>
-                        <li><input type="checkbox" name="checkbox[]" value="1" <?php if( in_array('1' ,$dow ,true) ) { echo 'checked' ;} ?>> Monday</li>
-                        <li><input type="checkbox" name="checkbox[]" value="2" <?php if( in_array('2' ,$dow ,true) ) { echo 'checked' ;} ?>> Tuesday</li>
-                        <li><input type="checkbox" name="checkbox[]" value="3" <?php if( in_array('3' ,$dow ,true) ) { echo 'checked' ;} ?>> Wednesday</li>
-                        <li><input type="checkbox" name="checkbox[]" value="4" <?php if( in_array('4' ,$dow ,true) ) { echo 'checked' ;} ?>> Thursday</li>
-                        <li><input type="checkbox" name="checkbox[]" value="5" <?php if( in_array('5' ,$dow ,true) ) { echo 'checked' ;} ?>> Friday</li>
-                        <li><input type="checkbox" name="checkbox[]" value="6" <?php if( in_array('6' ,$dow ,true) ) { echo 'checked' ;} ?>> Saturday</li>
+                        <li><input type="checkbox" name="checkbox[]" value="0" <?php if( in_array('0' ,$dow ,true) ) { echo 'checked' ;} ?>> <?php _e( 'Sunday');?></li>
+                        <li><input type="checkbox" name="checkbox[]" value="1" <?php if( in_array('1' ,$dow ,true) ) { echo 'checked' ;} ?>> <?php _e( 'Monday');?></li>
+                        <li><input type="checkbox" name="checkbox[]" value="2" <?php if( in_array('2' ,$dow ,true) ) { echo 'checked' ;} ?>> <?php _e( 'Tuesday');?></li>
+                        <li><input type="checkbox" name="checkbox[]" value="3" <?php if( in_array('3' ,$dow ,true) ) { echo 'checked' ;} ?>> <?php _e( 'Wednesday');?></li>
+                        <li><input type="checkbox" name="checkbox[]" value="4" <?php if( in_array('4' ,$dow ,true) ) { echo 'checked' ;} ?>> <?php _e( 'Thursday');?></li>
+                        <li><input type="checkbox" name="checkbox[]" value="5" <?php if( in_array('5' ,$dow ,true) ) { echo 'checked' ;} ?>> <?php _e( 'Friday');?></li>
+                        <li><input type="checkbox" name="checkbox[]" value="6" <?php if( in_array('6' ,$dow ,true) ) { echo 'checked' ;} ?>> <?php _e( 'Saturday '); ?></li>
                     </ul>
                 </td>
             </tr>
@@ -138,6 +146,25 @@ $google_calendar_id = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id ,
                 ?>
                 <p class="description"><?php _e( 'Select default length of appointment', 'groundhogg' ); ?></p>
             </td>
+        </tr>
+        <tr>
+            <th scope="row"><label><?php _e( 'Buffer Time (after)' ,'groundhogg') ?></label></th>
+            <td>
+                <?php
+                for ($i=0 ; $i<60 ; $i++) {
+                    $mins[$i] = $i;
+                }
+                echo WPGH()->html->dropdown( array( 'name' =>'buffer_time' , 'options' => $mins , 'selected' => $buffer_time) ) ;
+                _e('Minutes','groundhogg'); ?>
+                <p class="description"><?php _e( 'Buffer time after completion of appointment.', 'groundhogg' ) ?></p>
+            </td>
+        </tr>
+        <tr>
+        <th scope="row"><label><?php _e( 'Make me look Busy.' ,'groundhogg') ?></label></th>
+        <td>
+            <?php echo WPGH()->html->input( array( 'name' => 'busy_slot' ,'placeholder' => 'Custom title' , 'value' => $busy_slot ) );?>
+            <p class="description"><?php _e( 'Enter how many time slots client can see! (Enter 0 to display all time slots)', 'groundhogg' ) ?></p>
+        </td>
         </tr>
         <tr>
             <th scope="row"><label><?php _e( 'Time Slot Title' ,'groundhogg') ?></label></th>
@@ -196,8 +223,6 @@ $google_calendar_id = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id ,
                         <span class="spinner" style="float: none; visibility: visible"></span>
                     </div>
                 </p>
-
-
             </td>
         </tr>
         </tbody>

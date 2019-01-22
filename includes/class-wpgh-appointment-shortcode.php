@@ -37,7 +37,6 @@ class WPGH_Appointment_Shortcode
         ) );
     }
 
-
     /**
      *  Handle AJAX request to add appointment inside database
      *
@@ -45,7 +44,6 @@ class WPGH_Appointment_Shortcode
      */
     public function gh_add_appointment_client()
     {
-
         // ADD APPOINTMENTS using AJAX.
         $start      = intval( $_POST['start_time'] );
         $end        = intval( $_POST['end_time'] );
@@ -154,6 +152,9 @@ class WPGH_Appointment_Shortcode
         $end_time       = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'end_time',true);
         $slot_hour      = intval( WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'slot_hour',true) );
         $slot_minute    = intval( WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'slot_minute',true) );
+        $buffer_time    = intval( WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'buffer_time',true) );
+        $busy_slot      = intval( WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'busy_slot',true) );
+
         $entered_dow    = date ("N", strtotime($date) );
         if ( $entered_dow == 7 ){
             $entered_dow = 0 ;
@@ -186,10 +187,9 @@ class WPGH_Appointment_Shortcode
                     'name'     => date('H:i', $start_time ).' - '.date('H:i', $temp_endtime ),
                 );
             }
-            $start_time = $temp_endtime;
+            $start_time = strtotime( "+$buffer_time minute", $temp_endtime );
         }
         // remove booked appointment form the array
-
         // cleaning where appointment are bigger then slots
         $available_slots = null;
         foreach ($all_slots as $slot) {
@@ -229,9 +229,44 @@ class WPGH_Appointment_Shortcode
             $response = array(  'status'=>'failed', 'msg' => __('No appointments available.' ,'groundhogg'));
             wp_die( json_encode( $response ) );
         }
+
         // operation on data
-        $response = array(  'status'=> 'success', 'slots' => $final_slots );
+        $display_slot = null ;
+        if ( $busy_slot  ===  0 || $busy_slot >= count( $final_slots ) || current_user_can( 'edit_appointment' ) ) {
+            $display_slot = $final_slots;
+        } else {
+            $this->my_shuffle($final_slots ,  strtotime( $date ) );
+            for ($i=0; $i < $busy_slot  ;$i++)
+            {
+                $display_slot[] = $final_slots[$i];
+            }
+            //short array
+            $sort = array();
+            foreach ($display_slot as $key => $row)
+            {
+                $sort[$key] = $row['start'];
+            }
+            array_multisort($sort, SORT_ASC, $display_slot );
+        }
+        $response = array(  'status'=> 'success', 'slots' => $display_slot );
         wp_die( json_encode( $response ) );
+    }
+
+    /**
+     * shuffle array to get random appointment from appointment list.
+     * @param $items
+     * @param $seed
+     */
+    public function my_shuffle(&$items, $seed)
+    {
+        @mt_srand($seed);
+        for ($i = count($items) - 1; $i > 0; $i--)
+        {
+            $j = @mt_rand(0, $i);
+            $tmp = $items[$i];
+            $items[$i] = $items[$j];
+            $items[$j] = $tmp;
+        }
     }
 
     /**
@@ -297,7 +332,7 @@ class WPGH_Appointment_Shortcode
                 <div class="wpgh-calendar">
                     <div id="appt-calendar" style="width: 100%"></div>
                 </div>
-                <div style="text-align: center;" id="spinner">
+                <div style="text-align: center;margin-top: 15px;" id="spinner">
                     <span class="spinner" style="float: none; visibility: visible"></span>
                 </div>
                 <div id="time-slots" class="select-time hidden">
@@ -346,6 +381,13 @@ class WPGH_Appointment_Shortcode
         return $content;
     }
 
+    /**
+     * Adjust shades of colour for front end calendar
+     *
+     * @param $hex
+     * @param $steps
+     * @return string
+     */
     private function adjust_brightness($hex, $steps) {
 
     // Steps should be between -255 and 255. Negative = darker, positive = lighter
