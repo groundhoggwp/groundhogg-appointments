@@ -1,7 +1,8 @@
 <?php
 /*
-Plugin Name: Groundhogg-Appointments
-Description: Create calendar and Appointments for  contact.
+Plugin Name: Groundhogg Appointments
+Plugin URI: https://www.groundhogg.io/downloads/booking-calendar/
+Description: Create calendars and appointments.
 Version: 1.0
 Author: Groundhogg Inc.
 Author URI: http://www.groundhogg.io
@@ -14,10 +15,10 @@ if ( ! class_exists( 'GH_APPOINTMENTS' ) ) :
 class GH_APPOINTMENTS
 {
 
-    public $ID = 1238;
+    public $ID = 3461;
     public $name = 'appointments';
     public $version = '1.0';
-    public $author = 'Dhrumit Thaker';
+    public $author = 'Groundhogg Inc.';
     /**
      * @var WPGH_DB_Calendar_Meta
      */
@@ -47,11 +48,6 @@ class GH_APPOINTMENTS
      * @var GH_APPOINTMENTS
      */
     public static $instance;
-
-    /**
-     * @var WPGH_Sliced_Benchmark;
-     */
-    public $benchmark;
 
     /**
      * @var WPGH_Calendar_Page
