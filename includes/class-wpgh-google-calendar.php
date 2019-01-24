@@ -354,4 +354,28 @@ class WPGH_Google_Calendar
             }
         }
     }
+
+    /**
+     * Delete Appointment from google calendar if it exist.
+     * @param $appointment_id
+     */
+    public function delete_appointment_from_google($appointment_id)
+    {
+        $appointment_id = intval($appointment_id);
+        $appointment    = WPGH_APPOINTMENTS()->appointments->get($appointment_id);
+        if ($appointment) {
+            $access_token = WPGH_APPOINTMENTS()->calendarmeta->get_meta($appointment->calendar_id, 'access_token', true);
+            $google_calendar_id = WPGH_APPOINTMENTS()->calendarmeta->get_meta($appointment->calendar_id, 'google_calendar_id', true);
+            if ($access_token && $google_calendar_id) {
+                $client = WPGH_APPOINTMENTS()->google_calendar->get_google_client_form_access_token($appointment->calendar_id);
+                $service = new Google_Service_Calendar($client);
+                try {
+                    $service->events->delete($google_calendar_id, 'ghcalendarcid' . $appointment->calendar_id . 'aid' . $appointment->ID);
+                } catch (Exception $e) {
+                    //nothing todo
+                }
+            }
+        }
+    }
+
 }

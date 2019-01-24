@@ -39,7 +39,8 @@ class WPGH_DB_Appointments extends WPGH_DB
         $this->version     = '1.0';
 
         //todo delete appointments associated with a calendar
-        add_action( 'wpgh_delete_calendar', array( $this, 'delete_appointments' ) );
+        add_action( 'wpgh_delete_calendar', array( $this, 'delete_appointments_when_calendar_deleted' ) );
+        add_action( 'wpgh_post_delete_contact', array( $this, 'delete_appointments_when_contact_deleted' ) );
     }
 
     /**
@@ -164,13 +165,32 @@ class WPGH_DB_Appointments extends WPGH_DB
      * @param $id int Calendar ID
      * @return mixed
      */
-    public function delete_appointments( $id )
+    public function delete_appointments_when_calendar_deleted( $id )
     {
         global $wpdb;
         $IDS = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $this->table_name WHERE calendar_id = %d", $id ) );
         $result = false;
         foreach ( $IDS as $id ){
            // $id = array_shift( $id );
+            $result = $this->delete( $id->ID );
+        }
+        return $result;
+    }
+
+    /**
+     * Delete appointments associated with the calendars...
+     *
+     * @param $id int Calendar ID
+     * @return mixed
+     */
+    public function delete_appointments_when_contact_deleted( $id )
+    {
+        global $wpdb;
+        $IDS = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $this->table_name WHERE contact_id = %d", $id ) );
+        $result = false;
+        foreach ( $IDS as $id ){
+            // $id = array_shift( $id );
+            WPGH_APPOINTMENTS()->google_calendar->delete_appointment_from_google($id->ID);
             $result = $this->delete( $id->ID );
         }
         return $result;

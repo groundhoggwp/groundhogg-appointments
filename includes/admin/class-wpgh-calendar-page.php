@@ -3,7 +3,6 @@
  * The page gh_calendar
  *  create calendar page
  *
- * 
  */
 
 
@@ -256,32 +255,13 @@ class WPGH_Calendar_Page
 
                 if ( isset( $_GET[ 'appointment' ] ) ) {
                     $appointment_id = intval( $_GET[ 'appointment' ] );
-                    //get appointment
-                    $appointment = $this->db->get($appointment_id);
-                    if( $appointment == null ) {
-                        $this->notices->add( 'NO_APPOINTMENT', __( "Appointment not found!", 'groundhogg' ), 'error' );
-                        return;
+                    $appointment    = $this->db->get($appointment_id);
+                    $status = $this->delete_appointment( $appointment_id );
+                    if ( $status && ! is_wp_error($status)) {
+                        $this->notices->add( 'SUCCESS', __( 'Appointment deleted successfully!', 'groundhogg' ), 'success' );
+                    } else {
+                        $this->notices->add( $status->get_error_code(), $status->get_error_message(), 'error' );
                     }
-
-                    $access_token  = WPGH_APPOINTMENTS()->calendarmeta->get_meta($appointment->calendar_id , 'access_token',true) ;
-                    $google_calendar_id = WPGH_APPOINTMENTS()->calendarmeta->get_meta( $appointment->calendar_id , 'google_calendar_id', true);
-                    if ( $access_token  && $google_calendar_id) {
-                        $client = WPGH_APPOINTMENTS()->google_calendar->get_google_client_form_access_token($appointment->calendar_id);
-                        $service = new Google_Service_Calendar( $client );
-                        try {
-                            $service->events->delete( $google_calendar_id , 'ghcalendarcid'.$appointment->calendar_id.'aid' . $appointment->ID);
-                        } catch (Exception $e) {
-                            //nothing todo
-                        }
-                    }
-
-                    do_action('gh_calendar_appointment_deleted', $appointment_id , 'deleted' );
-                    $status = $this->db->delete($appointment_id);
-                    if ( ! $status ){
-                        wp_die( 'Something went wrong' );
-                    }
-
-                    $this->notices->add( 'success', __( 'Appointment deleted successfully!', 'groundhogg' ), 'success' );
                     wp_redirect( admin_url( 'admin.php?page=gh_calendar&action=add_appointment&calendar=' . $appointment->calendar_id ) );
                     die();
                 }
@@ -344,6 +324,9 @@ class WPGH_Calendar_Page
         wp_redirect( $base_url );
         die();
     }
+
+
+
 
     /**
      * Verify the current user can process the action
@@ -680,6 +663,35 @@ class WPGH_Calendar_Page
 
         include dirname(__FILE__) . '/view-appointment.php';
     }
+
+
+    /**
+     * Delete appointment form google calendar and Groundhogg calendar
+     *
+     * @param $appointment_id
+     * @return bool|void
+     */
+    public function delete_appointment($appointment_id )
+    {
+        $appointment_id = intval( $appointment_id );
+        //get appointment
+        $appointment = $this->db->get($appointment_id);
+        if(! $appointment  ) {
+            new WP_Error ('NO_APPOINTMENT', __( "Appointment not found!", 'groundhogg' ) );
+            return;
+        }
+
+        //DELETE appointment form the google if there are any ..
+        WPGH_APPOINTMENTS()->google_calendar->delete_appointment_from_google($appointment_id);
+        do_action('gh_calendar_appointment_deleted', $appointment_id , 'deleted' );
+        $status = $this->db->delete($appointment_id);
+        if ( ! $status ){
+           new WP_Error( 'ERROR' ,__('Something went wrong! ' , 'groundhogg' ) );
+        }
+        return true;
+
+    }
+
 
     /**
      *  Display add appointment page

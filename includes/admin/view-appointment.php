@@ -8,13 +8,8 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 $appointment_id = intval( $_GET['appointment'] );
 //fetch appointment
 $appointment = WPGH_APPOINTMENTS()->appointments->get($appointment_id);
-if ($appointment == null) {
+if ($appointment === null) {
     $this->notices->add( 'NO_APPOINTMENT', __( "Appointment not found!", 'groundhogg' ), 'error' );
-    return;
-}
-$contact =  WPGH()->contacts->get($appointment->contact_id);
-if ($contact == null){
-    $this->notices->add( 'NO_CONTACT', __( "Contact Details not found!", 'groundhogg' ), 'error' );
     return;
 }
 $calendar = WPGH_APPOINTMENTS()->calendar->get($appointment->calendar_id);
@@ -22,6 +17,12 @@ if ($calendar == null) {
     $this->notices->add( 'NO_CALENDAR', __( "Calendar not found!", 'groundhogg' ), 'error' );
     return;
 }
+$contact =  WPGH()->contacts->get($appointment->contact_id);
+if (! $contact ){
+    $this->notices->add( 'NO_CONTACT', __( "Contact Details not found!", 'groundhogg' ), 'error' );
+    return;
+}
+
 ?>
 <form name="" id="" method="post" action="">
     <?php wp_nonce_field(); ?>
