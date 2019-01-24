@@ -327,23 +327,25 @@ class WPGH_Google_Calendar
                 foreach ( $appointments as $appointment )
                 {
                     $contact    = WPGH()->contacts->get( $appointment->contact_id );
-                    $event      = new Google_Service_Calendar_Event(array(
-                        'id' => 'ghcalendarcid'.$appointment->calendar_id.'aid' . $appointment->ID,
-                        'summary' => $appointment->name,
-                        'description' => WPGH_APPOINTMENTS()->appointmentmeta->get_meta( $appointment->ID , 'note', true ),
-                        'start' => array(
-                            'dateTime' => date('Y-m-d\TH:i:s', $appointment->start_time),
-                            'timeZone' => get_option('timezone_string'),
-                        ),
-                        'end' => array(
-                            'dateTime' => date('Y-m-d\TH:i:s', $appointment->end_time),
-                            'timeZone' => get_option('timezone_string'),
-                        ),
-                        'attendees' => array(
-                            array('email' => $contact->email),
-                        ),
-                    ));
-                    $insert = $service->events->insert( $google_calendar_id , $event ) ;
+                    if ( $contact ) {
+                        $event      = new Google_Service_Calendar_Event(array(
+                            'id' => 'ghcalendarcid'.$appointment->calendar_id.'aid' . $appointment->ID,
+                            'summary' => $appointment->name,
+                            'description' => WPGH_APPOINTMENTS()->appointmentmeta->get_meta( $appointment->ID , 'note', true ),
+                            'start' => array(
+                                'dateTime' => date('Y-m-d\TH:i:s', $appointment->start_time),
+                                'timeZone' => get_option('timezone_string'),
+                            ),
+                            'end' => array(
+                                'dateTime' => date('Y-m-d\TH:i:s', $appointment->end_time),
+                                'timeZone' => get_option('timezone_string'),
+                            ),
+                            'attendees' => array(
+                                array('email' => $contact->email),
+                            ),
+                        ));
+                        $insert = $service->events->insert( $google_calendar_id , $event ) ;
+                    }
                 }
                 wp_die( json_encode( array(
                     'status' => 'success',
