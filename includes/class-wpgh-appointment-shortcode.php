@@ -22,13 +22,7 @@ class WPGH_Appointment_Shortcode
      * Load scripts for  operations
      */
     public function load_scripts() {
-        wp_enqueue_script(  'jquery' );
-        wp_enqueue_style ( 'jquery-ui', WPGH_APPOINTMENT_ASSETS_FOLDER . 'css/jquery-ui.min.css',  array(), filemtime(WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/css/jquery-ui.min.css') );
-        wp_enqueue_style ( 'jquery-ui-calendar', WPGH_APPOINTMENT_ASSETS_FOLDER . 'css/calendar.css',  array(), filemtime(WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/css/calendar.css') );
-        wp_enqueue_script(  'jquery-ui-datepicker' );
-        wp_enqueue_style ( 'calender-css',   WPGH_APPOINTMENT_ASSETS_FOLDER . 'css/frontend.css',  array(), filemtime(WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/css/frontend.css') );
-        wp_enqueue_style( 'wpgh-frontend', WPGH_ASSETS_FOLDER . 'css/frontend.css', array(), filemtime( WPGH_PLUGIN_DIR . 'assets/css/frontend.css' ) );
-        wp_enqueue_script(  'gh-calendar', WPGH_APPOINTMENT_ASSETS_FOLDER . '/js/appointment-frontend.js', array('jquery') , filemtime( WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/js/appointment-frontend.js' ) );
+        wp_enqueue_script(  'gh-calendar', WPGH_APPOINTMENT_ASSETS_FOLDER . 'js/appointment-frontend.js', array('jquery', 'jquery-ui-datepicker' ), filemtime( WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/js/appointment-frontend.js' ) );
         wp_localize_script( 'gh-calendar', 'ghAppointment', array(
             'ajax_url' => admin_url( 'admin-ajax.php' ),
             'invalidDateMsg'    => __( 'Please select a time slot first.', 'groundhogg' ),
@@ -278,6 +272,15 @@ class WPGH_Appointment_Shortcode
      */
     public  function gh_calendar_shortcode( $atts )
     {
+        wp_enqueue_style ( 'jquery-ui', WPGH_APPOINTMENT_ASSETS_FOLDER . 'css/jquery-ui.min.css',  array(), filemtime(WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/css/jquery-ui.min.css') );
+        wp_enqueue_style ( 'jquery-ui-calendar', WPGH_APPOINTMENT_ASSETS_FOLDER . 'css/calendar.css',  array(), filemtime(WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/css/calendar.css') );
+        wp_enqueue_style( 'wpgh-frontend', WPGH_ASSETS_FOLDER . 'css/frontend.css', array(), filemtime( WPGH_PLUGIN_DIR . 'assets/css/frontend.css' ) );
+        wp_enqueue_style ( 'calender-css',   WPGH_APPOINTMENT_ASSETS_FOLDER . 'css/frontend.css',  array(), filemtime(WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/css/frontend.css') );
+
+        wp_enqueue_script(  'jquery' );
+        wp_enqueue_script(  'jquery-ui-datepicker' );
+
+
         $args =  shortcode_atts(array(
             'calendar_id' => 0,
             'appointment_name' => __( 'New Client Appointment', 'groundhogg' )
