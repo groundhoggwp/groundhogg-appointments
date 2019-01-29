@@ -895,7 +895,7 @@ class WPGH_Calendar_Page
         $note               = sanitize_text_field( stripslashes ( $_POST['note'] ) );
         $appointment_name   = sanitize_text_field( stripslashes ( $_POST [ 'appointment_name'] ) ) ;
         $calendar_id        = sanitize_text_field( stripslashes ($_POST [ 'calendar_id'] ) );
-        $start              = strtotime( '+1 minute',$start);
+        $start              = strtotime( '+10 seconds',$start);
         // perform insert operation
         $appointment_id  = $this->db->add( array (
             'contact_id'    => $contact_id,

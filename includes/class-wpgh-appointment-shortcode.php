@@ -180,7 +180,7 @@ class WPGH_Appointment_Shortcode
             'calendar_id'   => $calendar_id,
             'name'          => $appointment_name,
             'status'        => 'pending',
-            'start_time'    =>  strtotime( '+1 minute',$start),
+            'start_time'    =>  strtotime( '+10 seconds',$start),
             'end_time'      => $end
         ));
         // Insert meta
