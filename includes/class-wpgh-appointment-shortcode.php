@@ -150,10 +150,11 @@ class WPGH_Appointment_Shortcode
             wp_die( json_encode( $response ) );
         }
 
-        $first_name         = sanitize_text_field( stripslashes( $_POST[ 'first_name' ] ) );
-        $last_name          = sanitize_text_field( stripslashes( $_POST[ 'last_name' ] ) );
-        $appointment_name   = sanitize_text_field( stripslashes( $_POST [ 'appointment_name'] ) );
-        $calendar_id        = sanitize_text_field( stripslashes( $_POST [ 'calendar_id'] ) );
+        $first_name         = sanitize_text_field( stripslashes( $_POST ['first_name'] ) );
+        $last_name          = sanitize_text_field( stripslashes( $_POST ['last_name'] ) );
+        $appointment_name   = sanitize_text_field( stripslashes( $_POST ['appointment_name'] ) );
+        $calendar_id        = sanitize_text_field( stripslashes( $_POST ['calendar_id'] ) );
+        $phone              = sanitize_text_field( stripslashes( $_POST ['phone']));
 
         $contact_id = 0;
         // get contact id form email -> if contact is not found generate contact
@@ -170,6 +171,9 @@ class WPGH_Appointment_Shortcode
                 'last_name'  => $last_name
             ));
         }
+        WPGH()->contact_meta->update_meta($contact_id,'primary_phone' , $phone);
+        //update phone number ---
+
         // perform insert operation
         $appointment_id  = WPGH_APPOINTMENTS()->appointments->add( array (
             'contact_id'    => $contact_id,
@@ -203,7 +207,6 @@ class WPGH_Appointment_Shortcode
                 $event = new Google_Service_Calendar_Event(array(
                     'id' => 'ghcalendarcid' . $appointment->calendar_id . 'aid' . $appointment->ID,
                     'summary' => $appointment->name,
-
                     'start' => array(
                         'dateTime' => date('Y-m-d\TH:i:s', $appointment->start_time),
                         'timeZone' => get_option('timezone_string'),
@@ -441,6 +444,15 @@ class WPGH_Appointment_Shortcode
             .calendar-form-wrapper .select-time .appointment-time.selected {background-color: <?php  echo $slots_color;?>;  }
             .calendar-form-wrapper .select-time .appointment-time:hover{background-color: <?php  echo $slots_color;?>; }
         </style>
+        <script>
+            // WRITE THE VALIDATION SCRIPT.
+            function isNumber(evt) {
+                var iKeyCode = (evt.which) ? evt.which : evt.keyCode
+                if (iKeyCode != 43 && iKeyCode > 31 && (iKeyCode < 48 || iKeyCode > 57))
+                    return false;
+                return true;
+            }
+        </script>
         <div class="calendar-form-wrapper">
             <form class="gh-calendar-form" method="post">
                 <input type="hidden" name="calendar_id" id = "calendar_id" value="<?php echo $calendar_id; ?>"/>
@@ -478,6 +490,13 @@ class WPGH_Appointment_Shortcode
                             <div class="gh-form-column col-1-of-1">
                                 <div class="gh-form-field">
                                     <input type="email" name="email" id="email" placeholder="Email" required/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="gh-form-row clearfix">
+                            <div class="gh-form-column col-1-of-1">
+                                <div class="gh-form-field">
+                                    <input type="text"  onkeypress="javascript:return isNumber(event)" name="phone" id="phone" placeholder="Contact Number" required/>
                                 </div>
                             </div>
                         </div>
