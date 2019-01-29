@@ -309,6 +309,12 @@ class WPGH_DB_Appointments extends WPGH_DB
         return $last_changed;
     }
 
+
+    /**
+     * @param array $data
+     * @param string $order
+     * @return array|bool|null|object
+     */
     public function get_appointments_by_args( $data = array(), $order = 'ID' ) {
 
         global  $wpdb;

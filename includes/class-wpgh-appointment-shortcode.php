@@ -32,6 +32,103 @@ class WPGH_Appointment_Shortcode
     }
 
     /**
+     * Clean all the selected calendar slots from google calendars.
+     *
+     * @param $calendar_id
+     * @param $google_min
+     * @param $google_max
+     * @param $final_slots
+     * @return array -  returns array of final slots after cleaning them
+     */
+    public function clean_google_slots ( $calendar_id ,$google_min ,$google_max , $final_slots )
+    {
+        $google_appointments =  null;
+        $client = WPGH_APPOINTMENTS()->google_calendar->get_google_client_form_access_token($calendar_id);
+        $service = new Google_Service_Calendar($client);
+        $google_calendar_list = WPGH_APPOINTMENTS()->calendarmeta->get_meta( $calendar_id , 'google_calendar_list',true) ;
+        if (count( $google_calendar_list ) > 0) {
+            foreach ( $google_calendar_list as $google_cal)
+            {
+                try
+                {
+                    $google_calendar = $service->calendars->get( $google_cal);
+                    $optParams = array(
+                        'orderBy' => 'startTime',
+                        'singleEvents' => true,
+                        'timeMin' => $google_min,
+                        'timeMax' => $google_max
+                    );
+                    $results = $service->events->listEvents($google_calendar->getId(), $optParams);
+                    $events = $results->getItems();
+
+                    if ( ! empty($events)) {
+                        foreach ($events as $event) {
+                            //echo $event->getId() . ' - ' . ' - ' . strtotime(date($event->start->dateTime)) . ' - ' . $event->start->dateTime . ' - ' . $event->getDescription() . ' -e- ' . strtotime(date($event->end->dateTime)) . ' - ' . $event->getSummary();
+                            $google_start   = $event->start->dateTime;
+                            $google_end     = $event->end->dateTime;
+                            if ( ! empty($google_start) && ! empty($google_end)) {
+
+                                //  wp_die( $date('c' , strtotime(date($event->start->dateTime))));
+                                $google_appointments[] =  array(
+                                    'name'       => $event->getSummary(),
+                                    'start_time' => (strtotime(date($event->start->dateTime))),
+                                    'end_time'   => (strtotime(date($event->end->dateTime)))
+                                );
+                            }
+                        }
+                    }
+
+                } catch ( Exception $e)
+                {
+
+                    // catch if the calendar does not exist in google calendar
+                }
+            }
+        }
+
+        if (count( $google_appointments ) > 0 ) {
+            $google_all_slots = $final_slots;
+            $google_available_slots = null;
+
+            // first clean
+            foreach ($google_all_slots as $slot) {
+                $slotbooked = false;
+                foreach ($google_appointments as $appointment) {
+                    //if ( ( ( $slot['start'] >= $appointment->start_time && $slot['start'] < $appointment->end_time ) || ( $slot['end'] >= $appointment->start_time && $slot['end'] < $appointment->end_time ) )  ) {
+                    if ( ( ( $slot['start'] >= $appointment['start_time'] && $slot['start'] < $appointment['end_time'] ) || ( $slot['end'] >= $appointment['start_time'] && $slot['end'] < $appointment['end_time'] ) )  ) {
+
+                        $slotbooked = true;
+                        break;
+                    }
+                }
+                if (!$slotbooked) {
+                    $google_available_slots[] = $slot;
+                }
+            }
+
+            //second clean
+            $google_final_slots = null;
+            // cleaning where appointments are smaller then slots
+            foreach( $google_available_slots as $slot){
+                $slotbooked = false;
+                foreach ($google_appointments as $appointment) {
+                    if ( ($appointment['start_time'] >= $slot['start'] && $appointment['start_time'] < $slot['end'])) {
+                        $slotbooked = true;
+                        break;
+                    }
+                }
+                if (!$slotbooked) {
+                    $google_final_slots[] = $slot;
+                }
+            }
+            $final_slots = $google_final_slots;
+            return $final_slots;
+        } else {
+            return $final_slots;
+        }
+    }
+
+    /**
      *  Handle AJAX request to add appointment inside database
      *
      *  Requested by AJAX
@@ -163,13 +260,20 @@ class WPGH_Appointment_Shortcode
             $d = date('H:00' , $time);
             $start_time = strtotime( $d );
         }
+
+        $appointments = null;
         //GET AVAILABLE TIME IN DAY
         $end_time = strtotime( $date .' '.$end_time );
+
+        $google_min = date('c' , wpgh_convert_to_utc_0( $start_time ) );
+        $google_max = date('c' , wpgh_convert_to_utc_0( $end_time ) );
+
         // get appointments
         //$appointments_table_name  = WPGH_APPOINTMENTS()->appointments->table_name;
         //$appointments = $wpdb->get_results( "SELECT * FROM $appointments_table_name as a WHERE a.start_time >= $start_time AND a.end_time <=  $end_time AND a.calendar_id = $calendar_id" );
-        $appointments = WPGH_APPOINTMENTS()->appointments->get_appointments_by_args(array( 'calendar_id' => $calendar_id ) );
-        // generate array to populate ddl
+        $appointments =  WPGH_APPOINTMENTS()->appointments->get_appointments_by_args(array( 'calendar_id' => $calendar_id ) );
+
+        // generate array to populate time slots
         $all_slots = null;
         while ($start_time < $end_time)
         {
@@ -183,14 +287,16 @@ class WPGH_Appointment_Shortcode
             }
             $start_time = strtotime( "+$buffer_time minute", $temp_endtime );
         }
+
         // remove booked appointment form the array
         // cleaning where appointment are bigger then slots
         $available_slots = null;
         foreach ($all_slots as $slot) {
             $slotbooked = false;
             foreach ($appointments as $appointment) {
-                //if ( ( $appointment->start_time >= $slot['start'] && $appointment->start_time < $slot['end'] ) || ($appointment->end_time >= $slot['start'] && $appointment->end_time < $slot['end']) ) {
                 if ( ( ( $slot['start'] >= $appointment->start_time && $slot['start'] < $appointment->end_time ) || ( $slot['end'] >= $appointment->start_time && $slot['end'] < $appointment->end_time ) )  ) {
+                //if ( ( ( $slot['start'] >= $appointment['start_time'] && $slot['start'] < $appointment['end_time'] ) || ( $slot['end'] >= $appointment['start_time'] && $slot['end'] < $appointment['end_time'] ) )  ) {
+
                     $slotbooked = true;
                     break;
                 }
@@ -199,6 +305,8 @@ class WPGH_Appointment_Shortcode
                 $available_slots[] = $slot;
             }
         }
+
+
         $final_slots = null;
         // cleaning where appointments are smaller then slots
         foreach( $available_slots as $slot){
@@ -219,13 +327,19 @@ class WPGH_Appointment_Shortcode
             wp_die( json_encode( $response ) );
         }
 
+
+        $access_token = WPGH_APPOINTMENTS()->calendarmeta->get_meta( $calendar_id , 'access_token',true) ;
+        if ( $access_token ) {
+            $final_slots = $this->clean_google_slots($calendar_id,$google_min,$google_max,$final_slots);
+        }
+
         if ( $final_slots == null ) {
             $response = array(  'status'=>'failed', 'msg' => __('No appointments available.' ,'groundhogg'));
             wp_die( json_encode( $response ) );
         }
 
-        // operation on data
-        $display_slot = null ;
+        // operation on data _ MAKE ME LOOK BUSY - on final_slots
+         $display_slot = null ;
         if ( $busy_slot  ===  0 || $busy_slot >= count( $final_slots ) || current_user_can( 'edit_appointment' ) ) {
             $display_slot = $final_slots;
         } else {
@@ -414,5 +528,6 @@ class WPGH_Appointment_Shortcode
 
     return $return;
 }
+
 
 }

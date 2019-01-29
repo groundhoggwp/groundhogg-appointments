@@ -428,6 +428,7 @@ class WPGH_Calendar_Page
      */
     private function update_calendar()
     {
+
         if ( ! isset( $_POST['owner_id'] ) ||  $_POST['owner_id'] == 0 ){
             $this->notices->add( 'NO_OWNER', __( "Please select a valid user.", 'groundhogg' ), 'error' );
             return;
@@ -462,6 +463,14 @@ class WPGH_Calendar_Page
             $checkbox = array_map( 'sanitize_text_field', $checkbox );
             WPGH_APPOINTMENTS()->calendarmeta->update_meta( $calendar_id,'dow', $checkbox ) ;
         }
+
+        //Update calendar list
+
+        $google_calendar_list = (array)$_POST['google_calendar_list'];
+        $google_calendar_list = array_map( 'sanitize_text_field', $google_calendar_list );
+        WPGH_APPOINTMENTS()->calendarmeta->update_meta( $calendar_id,'google_calendar_list', $google_calendar_list ) ;
+
+
         // start time
         if( isset( $_POST[ 'starttime' ] ) ) {
             if( isset( $_POST[ 'endtime' ] )) {
