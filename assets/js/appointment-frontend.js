@@ -32,12 +32,13 @@ var ghAppointment = ghAppointment || {};
                 appt.selectAppointment( e.target );
             } );
 
+
             this.initDatePicker();
             $('#spinner').hide();
         },
 
         validateEmail: function (sEmail) {
-            var filter = /^([\w-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([\w-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)$/;
+            var filter = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
             if (filter.test(sEmail)) {
                 return true;
             } else {
@@ -45,7 +46,7 @@ var ghAppointment = ghAppointment || {};
             }
         },
 
-        submit: function()
+    submit: function()
         {
             this.hideErrors();
             //check for appointment
@@ -62,15 +63,17 @@ var ghAppointment = ghAppointment || {};
             var $first  =  $('#first_name');
             var $last   =  $('#last_name');
             var $email  =  $('#email');
+            var $phone  =  $('#phone');
 
             var details = {
                 'first' : $first.val(),
                 'last'  : $last.val(),
                 'email' : $email.val(),
+                'phone' : $phone.val(),
             };
 
             /* Check that appointment has been seleced */
-            if ( ! details.first || ! details.last || ! details.email ){
+            if ( ! details.first || ! details.last || ! details.email || !details.phone ){
                 this.setErrors( this.invalidDetailsMsg );
                 this.showErrors();
                 return false;
@@ -95,6 +98,7 @@ var ghAppointment = ghAppointment || {};
                     email:      details.email,
                     first_name: details.first,
                     last_name:  details.last,
+                    phone:      details.phone,
                     calendar_id: appt.id,
                     appointment_name: $('#appointment_name').val(),
                 },
