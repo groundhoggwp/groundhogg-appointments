@@ -103,11 +103,11 @@ class WPGH_Google_Calendar
     {
         /* Get Calendars */
         $calendars = WPGH_APPOINTMENTS()->calendar->get_calendars();
-
-        foreach ( $calendars as $calendar ){
-            $this->sync( $calendar->ID );
+        if( $calendars ) {
+            foreach ($calendars as $calendar) {
+                $this->sync($calendar->ID);
+            }
         }
-
     }
 
     /**

@@ -6,7 +6,7 @@
  * Time: 10:34 PM
  */
 
-class WPGH_Pipeline_Replacements
+class WPGH_Appointment_Replacements
 {
     /**
      * @var WPGH_Replacements
@@ -55,12 +55,12 @@ class WPGH_Pipeline_Replacements
      */
     public function appointment_start_date_time( $contact_id )
     {
-        wp_die();
-
         //get  all the appointments using contact id
-        $appoinmnents = (array) WPGH_APPOINTMENTS()->appointments->get_appointments_by_args(array('contact_id' => $contact_id) );
-        $appointment  = (array) $appoinmnents[0];
-        return date_i18n( 'D, F j, Y, g:i a', $appointment[ 'start_time' ] );
+        $appointments = (array) WPGH_APPOINTMENTS()->appointments->get_appointments_by_args(array('contact_id' => $contact_id) );
+        if ($appointments) {
+            $appointment  = (array) $appointments[0];
+            return date_i18n( 'D, F j, Y, g:i a', $appointment[ 'start_time' ] );
+        }
     }
 
     /**
@@ -73,9 +73,11 @@ class WPGH_Pipeline_Replacements
     public function appointment_end_date_time( $contact_id )
     {
         //get  all the appointments using contact id
-        $appoinmnents = (array) WPGH_APPOINTMENTS()->appointments->get_appointments_by_args(array('contact_id' => $contact_id) );
-        $appointment  = (array) $appoinmnents[0];
-        return date_i18n( 'D, F j, Y, g:i a', $appointment[ 'end_time' ] );
+        $appointments = (array) WPGH_APPOINTMENTS()->appointments->get_appointments_by_args(array('contact_id' => $contact_id) );
+        if ($appointments) {
+            $appointment  = (array) $appointments[0];
+            return date_i18n( 'D, F j, Y, g:i a', $appointment[ 'end_time' ] );
+        }
     }
 
 }

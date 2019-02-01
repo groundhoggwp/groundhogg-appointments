@@ -3,7 +3,7 @@
 Plugin Name: Groundhogg Appointments
 Plugin URI: https://www.groundhogg.io/downloads/booking-calendar/
 Description: Create calendars and appointments.
-Version: 1.0.4
+Version: 1.0.5
 Author: Groundhogg Inc.
 Author URI: http://www.groundhogg.io
 Text Domain: groundhogg
@@ -17,7 +17,7 @@ class GH_APPOINTMENTS
 
     public $ID = 3461;
     public $name = 'appointments';
-    public $version = '1.0.4';
+    public $version = '1.0.5';
     public $author = 'Groundhogg Inc.';
     /**
      * @var WPGH_DB_Calendar_Meta
@@ -114,7 +114,7 @@ class GH_APPOINTMENTS
             self::$instance->role_calendar    = new WPGH_Roles_Calendar();
             self::$instance->benchmark        = new WPGH_Appointment_Benchmark();
             self::$instance->shortcode        = new WPGH_Appointment_Shortcode();
-            self::$instance->pipeline         = new WPGH_Pipeline_Replacements();
+            self::$instance->pipeline         = new WPGH_Appointment_Replacements();
             self::$instance->google_calendar  = new WPGH_Google_Calendar();
 
             if ( is_admin() ){
@@ -184,7 +184,7 @@ class GH_APPOINTMENTS
         require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/class-wpgh-db-appointment.php';
         require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/class-wpgh-db-calendar.php';
         require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/class-wpgh-appointment-shortcode.php';
-        require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/class-wpgh-pipeline-replacements.php';
+        require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/class-wpgh-appointment-replacements.php';
         require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/admin/class-wpgh-calendar-page.php';
         require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/admin/class-wpgh-appointment-settings-tab.php';
         require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/admin/class-wpgh-appointment-benchmark.php';
