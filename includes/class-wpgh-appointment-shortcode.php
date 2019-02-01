@@ -284,7 +284,7 @@ class WPGH_Appointment_Shortcode
             if ($temp_endtime <= $end_time) {
                 $all_slots[] = array(
                     'start'    => $start_time,
-                    'end'      => $temp_endtime,
+                    'end'      => strtotime( "+$buffer_time minute", $temp_endtime ),
                     'name'     => date('H:i', $start_time ).' - '.date('H:i', $temp_endtime ),
                 );
             }
