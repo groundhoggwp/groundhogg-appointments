@@ -144,6 +144,8 @@ class WPGH_Appointment_Shortcode
             wp_die( json_encode( $response ) );
         }
 
+
+
         $email      = sanitize_email( stripslashes( $_POST[ 'email' ] ) );
         if ( ! filter_var( $email, FILTER_VALIDATE_EMAIL ) ){
             $response = array( 'status' => 'failed' , 'msg' => __('Please enter a valid email address.' ,'groundhogg'));
@@ -160,6 +162,7 @@ class WPGH_Appointment_Shortcode
         // get contact id form email -> if contact is not found generate contact
         // check for contact
 
+
         $contact = WPGH()->contacts->get_contacts( array( 'email' => $email ) );
         if ( count($contact )  > 0 ){
             // create new contact if contact not found
@@ -173,6 +176,10 @@ class WPGH_Appointment_Shortcode
         }
         WPGH()->contact_meta->update_meta($contact_id,'primary_phone' , $phone);
         //update phone number ---
+
+        //end minus buffer time
+        $buffer_time    = intval( WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'buffer_time',true) );
+        $end  =  strtotime( "-$buffer_time minute", $end );
 
         // perform insert operation
         $appointment_id  = WPGH_APPOINTMENTS()->appointments->add( array (

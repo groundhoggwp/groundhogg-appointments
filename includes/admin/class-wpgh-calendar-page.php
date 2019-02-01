@@ -896,6 +896,10 @@ class WPGH_Calendar_Page
         $appointment_name   = sanitize_text_field( stripslashes ( $_POST [ 'appointment_name'] ) ) ;
         $calendar_id        = sanitize_text_field( stripslashes ($_POST [ 'calendar_id'] ) );
         $start              = strtotime( '+10 seconds',$start);
+        //end minus buffer time
+        $buffer_time    = intval( WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'buffer_time',true) );
+        $end  =  strtotime( "- $buffer_time minute", $end );
+
         // perform insert operation
         $appointment_id  = $this->db->add( array (
             'contact_id'    => $contact_id,
