@@ -520,7 +520,9 @@ class WPGH_Appointment_Shortcode
         </div>
 
         <?php
+
         $content = ob_get_clean();
+
         return $content;
     }
 

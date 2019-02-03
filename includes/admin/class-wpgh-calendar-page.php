@@ -59,7 +59,7 @@ class WPGH_Calendar_Page
         wp_localize_script('ajax-script-appointment', 'ajax_object',array( 'ajax_url' => admin_url( 'admin-ajax.php' ), 'we_value' => 1233 ) );
         wp_enqueue_script( 'gh-calendar',    WPGH_APPOINTMENT_ASSETS_FOLDER . '/js/appointment-frontend.js',    array('jquery'),     filemtime( WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/js/appointment-frontend.js' ) );
         wp_localize_script( 'gh-calendar', 'ghAppointment', array(
-            'ajax_url' => admin_url( 'admin-ajax.php' ),
+            'ajax_url'          => admin_url( 'admin-ajax.php' ),
             'invalidDateMsg'    => __( 'Please select a time slot first.', 'groundhogg' ),
             'invalidDetailsMsg' => __( 'Please make sure all your details are filled out.', 'groundhogg' ),
             'invalidEmailMsg'   => __( 'Your email address is invalid.', 'groundhogg' ),

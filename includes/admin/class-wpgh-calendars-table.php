@@ -144,7 +144,15 @@ class WPGH_Calendars_Table extends WP_List_Table {
      */
     protected function column_short_code( $calendar )
     {
-        return '<input type="text" class="code" style="font-weight: bold;" onfocus="this.select()" value="[gh_calendar calendar_id='. $calendar->ID .' appointment_name=\'Client Appointment\']" readonly> ';
+    	return WPGH()->html->input( array(
+		    'type'  => 'text',
+		    'name'  => '',
+		    'id'    => '',
+		    'class' => 'regular-text code',
+		    'value' => sprintf( '[gh_calendar="%d" appointment_name="%s"]', $calendar->ID, $calendar->name ) ,
+		    'attributes' => ' onfocus="this.select()" readonly',
+		    'placeholder' => ''
+	    ) );
     }
 
 
