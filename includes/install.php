@@ -87,7 +87,7 @@ add_action( 'wpmu_new_blog', 'wpgh_appt_new_blog_created', 10, 6 );
  * @param  int   $blog_id The Blog ID being deleted
  * @return array          The tables to drop
  */
-function wpgh_wppt_wpmu_drop_tables( $tables, $blog_id ) {
+function wpgh_appt_wpmu_drop_tables( $tables, $blog_id ) {
 
     switch_to_blog( $blog_id );
 
@@ -104,7 +104,7 @@ function wpgh_wppt_wpmu_drop_tables( $tables, $blog_id ) {
 
 }
 
-add_filter( 'wpmu_drop_tables', 'wpgh_wpmu_drop_tables', 10, 2 );
+add_filter( 'wpmu_drop_tables', 'wpgh_appt_wpmu_drop_tables', 10, 2 );
 
 /**
  * Install user roles on sub-sites of a network
@@ -114,7 +114,7 @@ add_filter( 'wpmu_drop_tables', 'wpgh_wpmu_drop_tables', 10, 2 );
  * @since 1.9
  * @return void
  */
-function wpgh_install_roles_on_network() {
+function wpgh_appt_install_roles_on_network() {
 
     WP_Roles();
 
@@ -135,4 +135,4 @@ function wpgh_install_roles_on_network() {
 
 }
 
-add_action( 'admin_init', 'wpgh_install_roles_on_network' );
+add_action( 'admin_init', 'wpgh_appt_install_roles_on_network' );
