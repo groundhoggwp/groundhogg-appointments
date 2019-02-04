@@ -34,7 +34,13 @@ class WPGH_DB_Appointments extends WPGH_DB
     public function __construct() {
 
         global $wpdb;
-        $this->table_name  = $wpdb->prefix . 'gh_appointments';
+
+        if ( wpgh_should_if_multisite() ){
+            $this->table_name  = $wpdb->prefix . 'gh_appointments';
+        } else {
+            $this->table_name  = $wpdb->base_prefix . 'gh_appointments';
+        }
+
         $this->primary_key = 'ID';
         $this->version     = '1.0';
 

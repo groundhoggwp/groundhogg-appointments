@@ -1,6 +1,6 @@
 <?php
 /**
- * Uninstall Groundhogg
+ * Uninstall Groundhogg Appointments
  *
  * Deletes all the plugin data i.e.
  * 		1. Custom Post types.
@@ -22,12 +22,17 @@
 // Exit if accessed directly.
 if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) exit;
 
-include_once dirname( __FILE__ ) . '/groundhogg-appointments.php' ;
+if ( ! class_exists( 'Groundhogg' ) ){
+    include_once dirname( __FILE__ ) . '/../groundhogg/groundhogg.php' ;
+}
 
 if( wpgh_is_option_enabled( 'gh_uninstall_on_delete' ) ) {
 
+    include_once dirname( __FILE__ ) . '/groundhogg-appointments.php' ;
+
     /* delete permissions */
     WPGH_APPOINTMENTS()->role_calendar->remove_caps();
+
     // Delete the databases
     WPGH_APPOINTMENTS()->calendar->drop();
     WPGH_APPOINTMENTS()->calendarmeta->drop();

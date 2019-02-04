@@ -31,7 +31,13 @@ class WPGH_DB_Appointment_Meta extends WPGH_DB  {
      */
     public function __construct() {
         global $wpdb;
-        $this->table_name  = $wpdb->prefix . 'gh_appointmentmeta';
+
+        if ( wpgh_should_if_multisite() ){
+            $this->table_name  = $wpdb->prefix . 'gh_appointmentmeta';
+        } else {
+            $this->table_name  = $wpdb->base_prefix . 'gh_appointmentmeta';
+        }
+
         $this->primary_key = 'meta_id';
         $this->version     = '1.0';
 

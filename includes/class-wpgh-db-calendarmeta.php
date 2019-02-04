@@ -39,7 +39,11 @@ class WPGH_DB_Calendar_Meta extends WPGH_DB  {
 
         global $wpdb;
 
-        $this->table_name  = $wpdb->prefix . 'gh_calendarmeta';
+        if ( wpgh_should_if_multisite() ){
+            $this->table_name  = $wpdb->prefix . 'gh_calendarmeta';
+        } else {
+            $this->table_name  = $wpdb->base_prefix . 'gh_calendarmeta';
+        }
 
         $this->primary_key = 'meta_id';
         $this->version     = '1.0';
@@ -171,6 +175,7 @@ class WPGH_DB_Calendar_Meta extends WPGH_DB  {
         }
         return absint( $calendar_id );
     }
+
     /**
      * Create the table
      *
@@ -179,7 +184,9 @@ class WPGH_DB_Calendar_Meta extends WPGH_DB  {
      */
     public function create_table() {
         global $wpdb;
+
         require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+
         $sql = "CREATE TABLE " . $this->table_name . " (
         meta_id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
         calendar_id bigint(20) unsigned NOT NULL,
@@ -189,7 +196,9 @@ class WPGH_DB_Calendar_Meta extends WPGH_DB  {
         KEY calendar_id (calendar_id),
         KEY meta_key (meta_key)
 		) CHARACTER SET utf8 COLLATE utf8_general_ci;";
+
         dbDelta( $sql );
+
         update_option( $this->table_name . '_db_version', $this->version );
     }
 

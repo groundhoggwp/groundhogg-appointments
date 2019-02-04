@@ -22,6 +22,9 @@ function wpgh_appt_install( $network_wide = false ) {
 
         foreach ( $wpdb->get_col( "SELECT blog_id FROM $wpdb->blogs LIMIT 100" ) as $blog_id ) {
             switch_to_blog( $blog_id );
+
+            echo $blog_id . '<br/>';
+
             wpgh_appt_activate();
             restore_current_blog();
         }
@@ -136,3 +139,22 @@ function wpgh_appt_install_roles_on_network() {
 }
 
 add_action( 'admin_init', 'wpgh_appt_install_roles_on_network' );
+
+/**
+ * Make sure tables were installed correctly.
+ */
+function wpgh_appt_table_installed_check()
+{
+
+    if ( ! WPGH_APPOINTMENTS()->calendar->installed() ){
+
+        WPGH_APPOINTMENTS()->appointments->create_table();
+        WPGH_APPOINTMENTS()->appointmentmeta->create_table();
+        WPGH_APPOINTMENTS()->calendarmeta->create_table();
+        WPGH_APPOINTMENTS()->calendar->create_table();
+
+    }
+
+}
+
+add_action( 'admin_init', 'wpgh_appt_table_installed_check' );
