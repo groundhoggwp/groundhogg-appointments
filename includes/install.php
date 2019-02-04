@@ -67,7 +67,7 @@ function wpgh_appt_activate()
  */
 function wpgh_appt_new_blog_created( $blog_id, $user_id, $domain, $path, $site_id, $meta ) {
 
-    if ( is_plugin_active_for_network( plugin_basename( WPGH_PLUGIN_FILE ) ) ) {
+    if ( is_plugin_active_for_network( plugin_basename( WPGH_APPOINTMENT_PLUGIN_FILE ) ) ) {
 
         switch_to_blog( $blog_id );
         wpgh_appt_activate();
