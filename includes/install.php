@@ -22,9 +22,6 @@ function wpgh_appt_install( $network_wide = false ) {
 
         foreach ( $wpdb->get_col( "SELECT blog_id FROM $wpdb->blogs LIMIT 100" ) as $blog_id ) {
             switch_to_blog( $blog_id );
-
-            echo $blog_id . '<br/>';
-
             wpgh_appt_activate();
             restore_current_blog();
         }
