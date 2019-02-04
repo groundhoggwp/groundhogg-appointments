@@ -3,7 +3,7 @@
 Plugin Name: Groundhogg - Appointments
 Plugin URI: https://www.groundhogg.io/downloads/booking-calendar/
 Description: Create calendars and appointments.
-Version: 1.0.6
+Version: 1.0.7
 Author: Groundhogg Inc.
 Author URI: http://www.groundhogg.io
 Text Domain: groundhogg
@@ -19,7 +19,7 @@ class Groundhogg_Appointments
 
     public $ID = 3461;
     public $name = 'appointments';
-    public $version = '1.0.6';
+    public $version = '1.0.7';
     public $author = 'Groundhogg Inc.';
     /**
      * @var WPGH_DB_Calendar_Meta
@@ -63,11 +63,6 @@ class Groundhogg_Appointments
     public $role_calendar;
 
     /**
-     * @var bool
-     */
-    public static $is_setup = false;
-
-    /**
      * @var WPGH_Appointment_Replacements
      */
     public $replacements;
@@ -93,20 +88,25 @@ class Groundhogg_Appointments
     public $google_calendar;
 
     /**
+     * @var bool
+     */
+    public static $is_setup = false;
+
+    /**
      * create object
      *
      * @return Groundhogg_Appointments
      */
     public static function instance()
     {
-        if ( !self::$is_setup ) {
+        if ( ! self::$is_setup ) {
 
             self::$is_setup = true;
+
             self::$instance = new Groundhogg_Appointments;
 
             self::$instance->setup_constants();
             self::$instance->add_extension();
-
             self::$instance->includes();
 
             self::$instance->calendarmeta     = new WPGH_DB_Calendar_Meta();
@@ -115,9 +115,9 @@ class Groundhogg_Appointments
             self::$instance->appointments     = new WPGH_DB_Appointments();
             self::$instance->role_calendar    = new WPGH_Roles_Calendar();
             self::$instance->benchmark        = new WPGH_Appointment_Benchmark();
-            self::$instance->shortcode        = new WPGH_Appointment_Shortcode();
             self::$instance->replacements     = new WPGH_Appointment_Replacements();
             self::$instance->google_calendar  = new WPGH_Google_Calendar();
+            self::$instance->shortcode        = new WPGH_Appointment_Shortcode();
 
             if ( is_admin() ){
                 self::$instance->page             = new WPGH_Calendar_Page();
@@ -125,6 +125,7 @@ class Groundhogg_Appointments
             }
 
         }
+
         return self::$instance;
     }
 
@@ -200,7 +201,7 @@ function WPGH_APPOINTMENTS()
     return Groundhogg_Appointments::instance();
 }
 
-if (!class_exists('WPGH_Extension_Manager')) {
+if ( ! class_exists( 'Groundhogg' ) ) {
     add_action('groundhogg_loaded', 'WPGH_APPOINTMENTS');
 } else {
 	WPGH_APPOINTMENTS();

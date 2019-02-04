@@ -149,7 +149,7 @@ class WPGH_Calendars_Table extends WP_List_Table {
 		    'name'  => '',
 		    'id'    => '',
 		    'class' => 'regular-text code',
-		    'value' => sprintf( '[gh_calendar="%d" appointment_name="%s"]', $calendar->ID, $calendar->name ) ,
+		    'value' => sprintf( '[gh_calendar calendar_id="%d" appointment_name="%s"]', $calendar->ID, $calendar->name ) ,
 		    'attributes' => ' onfocus="this.select()" readonly',
 		    'placeholder' => ''
 	    ) );

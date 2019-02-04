@@ -1,4 +1,5 @@
 <?php
+
 if ( ! defined( 'ABSPATH' ) ) exit;
 
 class WPGH_Appointment_Shortcode
@@ -10,12 +11,15 @@ class WPGH_Appointment_Shortcode
      */
     public function __construct()
     {
+
         add_action( 'wp_enqueue_scripts', array( $this , 'load_scripts') );
+
         add_action( 'wp_ajax_gh_add_appointment_client', array( $this , 'gh_add_appointment_client' ) );
         add_action( 'wp_ajax_nopriv_gh_add_appointment_client', array( $this , 'gh_add_appointment_client' ) );
         add_action( 'wp_ajax_gh_get_appointment_client', array( $this , 'gh_get_appointment_client' ) );
         add_action( 'wp_ajax_nopriv_gh_get_appointment_client', array( $this , 'gh_get_appointment_client' ) );
-        add_shortcode( 'gh_calendar', array( $this , 'gh_calendar_shortcode' ) ) ;
+
+        add_shortcode( 'gh_calendar', array( $this, 'gh_calendar_shortcode' ) ) ;
     }
 
     /**
@@ -396,6 +400,7 @@ class WPGH_Appointment_Shortcode
      */
     public  function gh_calendar_shortcode( $atts )
     {
+
         wp_enqueue_style ( 'jquery-ui', WPGH_APPOINTMENT_ASSETS_FOLDER . 'css/jquery-ui.min.css',  array(), filemtime(WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/css/jquery-ui.min.css') );
         wp_enqueue_style ( 'jquery-ui-calendar', WPGH_APPOINTMENT_ASSETS_FOLDER . 'css/calendar.css',  array(), filemtime(WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/css/calendar.css') );
         wp_enqueue_style( 'wpgh-frontend', WPGH_ASSETS_FOLDER . 'css/frontend.css', array(), filemtime( WPGH_PLUGIN_DIR . 'assets/css/frontend.css' ) );
