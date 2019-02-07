@@ -785,14 +785,8 @@ class WPGH_Calendar_Page
                         'id' => 'ghcalendarcid' . $appointment->calendar_id . 'aid' . $appointment->ID,
                         'summary' => $appointment->name,
                         'description' => $this->meta->get_meta($appointment->ID, 'note', true),
-                        'start' => array(
-                            'dateTime' => date('Y-m-d\TH:i:s', $appointment->start_time),
-                            'timeZone' => get_option('timezone_string'),
-                        ),
-                        'end' => array(
-                            'dateTime' => date('Y-m-d\TH:i:s', $appointment->end_time),
-                            'timeZone' => get_option('timezone_string'),
-                        ),
+                        'start' => WPGH_APPOINTMENTS()->google_calendar->get_google_time($appointment->start_time),
+                        'end' => WPGH_APPOINTMENTS()->google_calendar->get_google_time( $appointment->end_time ),
                         'attendees' => array(
                             array('email' => $contact->email),
                         ),
@@ -845,14 +839,8 @@ class WPGH_Calendar_Page
                 $service    = new Google_Service_Calendar($client);
                 if ( WPGH_APPOINTMENTS()->google_calendar->is_valid_calendar( $appointment->calendar_id ,$google_calendar_id ,$service )) {
                     $event = new Google_Service_Calendar_Event(array(
-                        'start' => array(
-                            'dateTime' => date('Y-m-d\TH:i:s', $appointment->start_time),
-                            'timeZone' => get_option('timezone_string'),
-                        ),
-                        'end' => array(
-                            'dateTime' => date('Y-m-d\TH:i:s', $appointment->end_time),
-                            'timeZone' => get_option('timezone_string'),
-                        ),
+                        'start' => WPGH_APPOINTMENTS()->google_calendar->get_google_time($appointment->start_time),
+                        'end' => WPGH_APPOINTMENTS()->google_calendar->get_google_time( $appointment->end_time ),
                     ));
                     $updatedEvent = $service->events->patch($google_calendar_id, 'ghcalendarcid' . $appointment->calendar_id . 'aid' . $appointment_id, $event);
                 }
@@ -950,14 +938,8 @@ class WPGH_Calendar_Page
                     'id' => 'ghcalendarcid' . $calendar_id . 'aid' . $appointment_id,
                     'summary' => $appointment_name,
                     'description' => $note,
-                    'start' => array(
-                        'dateTime' => date('Y-m-d\TH:i:s', $start),
-                        'timeZone' => get_option('timezone_string'),
-                    ),
-                    'end' => array(
-                        'dateTime' => date('Y-m-d\TH:i:s', $end),
-                        'timeZone' => get_option('timezone_string'),
-                    ),
+                    'start' => WPGH_APPOINTMENTS()->google_calendar->get_google_time($start),
+                    'end' => WPGH_APPOINTMENTS()->google_calendar->get_google_time( $end ),
                     'attendees' => array(
                         array('email' => $contact->email),
                     ),

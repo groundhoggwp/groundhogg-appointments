@@ -26,9 +26,12 @@ if ( ! class_exists( 'Groundhogg' ) ){
     include_once dirname( __FILE__ ) . '/../groundhogg/groundhogg.php' ;
 }
 
-if( wpgh_is_option_enabled( 'gh_uninstall_on_delete' ) ) {
 
+if ( ! class_exists( 'Groundhogg_Appointments' ) ){
     include_once dirname( __FILE__ ) . '/groundhogg-appointments.php' ;
+}
+
+if( wpgh_is_option_enabled( 'gh_uninstall_on_delete' ) ) {
 
     /* delete permissions */
     WPGH_APPOINTMENTS()->role_calendar->remove_caps();

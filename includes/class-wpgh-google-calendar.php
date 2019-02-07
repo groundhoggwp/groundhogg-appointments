@@ -118,6 +118,7 @@ class WPGH_Google_Calendar
      */
     public function sync( $calendar_id )
     {
+
         $access_token  = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id , 'access_token',true) ;
         $google_calendar_id = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id, 'google_calendar_id', true);
         if ( $access_token && $google_calendar_id) {
@@ -139,12 +140,15 @@ class WPGH_Google_Calendar
                         if (!($event->start->dateTime === null || $event->end->dateTime === null || empty($event->getAttendees()))) {
                             $appointment_name = sanitize_text_field( stripslashes( $event->getSummary() ) );
                             $note   = sanitize_text_field( stripslashes($event->getDescription() ) );
-                            $start  = strtotime( date( $event->start->dateTime ) );
-                            $end    = strtotime( date( $event->end->dateTime ) );
+                            $fetched_start = str_ireplace('Z','',$event->start->dateTime);
+
+                            $fetched_end   = str_ireplace('Z','',$event->end->dateTime);
+                            $start  = strtotime( date( $fetched_start ) );
+                            $end    = strtotime( date( $fetched_end ) );
                             $find   = strpos($event->getId(), 'ghcalendar');
                             if ($find === false) {
                                 //check for attendees if no one found does not sync it
-                                $start  = strtotime('+1 minute', $start);
+                                $start  = strtotime('+10 seconds', $start);
                                 $email  = sanitize_email( stripslashes( $event->getAttendees()[0]['email'] ) );
                                 $contact = WPGH()->contacts->get_contacts( array( 'email' => $email) );
                                 if (count($contact) > 0) {
@@ -179,19 +183,14 @@ class WPGH_Google_Calendar
                                         'id' => 'ghcalendarcid' . $calendar_id . 'aid' . $appointment_id,
                                         'summary' => $appointment_name,
                                         'description' => $note,
-                                        'start' => array(
-                                            'dateTime' => date('Y-m-d\TH:i:s', $start),
-                                            'timeZone' => get_option('timezone_string'),
-                                        ),
-                                        'end' => array(
-                                            'dateTime' => date('Y-m-d\TH:i:s', $end),
-                                            'timeZone' => get_option('timezone_string'),
-                                        ),
+                                        'start' => WPGH_APPOINTMENTS()->google_calendar->get_google_time( $start),
+                                        'end' => WPGH_APPOINTMENTS()->google_calendar->get_google_time( $end ),
                                         'attendees' => array(
                                             array('email' => $email),
                                         ),
                                     ));
                                     $new_event = $service->events->insert($google_calendar_id, $event1);
+
                                 }
 
                             } else {
@@ -264,12 +263,13 @@ class WPGH_Google_Calendar
         // fetch calendar name from DB
         $calendar   = WPGH_APPOINTMENTS()->calendar->get_calendar( $calendar_id );
         $google_calendar->setSummary( $calendar->name );
-        $google_calendar->setTimeZone( get_option('timezone_string') );
+        if ( get_option('timezone_string') ){
+            $google_calendar->setTimeZone( get_option('timezone_string') );
+        }
         $service = new Google_Service_Calendar($client);
         $createdCalendar = $service->calendars->insert( $google_calendar );
         WPGH_APPOINTMENTS()->calendarmeta->update_meta( $calendar_id , 'google_calendar_id' , sanitize_text_field( $createdCalendar->getId() ) );
         return $client;
-
     }
 
     /**
@@ -332,14 +332,8 @@ class WPGH_Google_Calendar
                             'id' => 'ghcalendarcid'.$appointment->calendar_id.'aid' . $appointment->ID,
                             'summary' => $appointment->name,
                             'description' => WPGH_APPOINTMENTS()->appointmentmeta->get_meta( $appointment->ID , 'note', true ),
-                            'start' => array(
-                                'dateTime' => date('Y-m-d\TH:i:s', $appointment->start_time),
-                                'timeZone' => get_option('timezone_string'),
-                            ),
-                            'end' => array(
-                                'dateTime' => date('Y-m-d\TH:i:s', $appointment->end_time),
-                                'timeZone' => get_option('timezone_string'),
-                            ),
+                            'start' => WPGH_APPOINTMENTS()->google_calendar->get_google_time( $appointment->start_time),
+                            'end' => WPGH_APPOINTMENTS()->google_calendar->get_google_time( $appointment->end_time ),
                             'attendees' => array(
                                 array('email' => $contact->email),
                             ),
@@ -378,4 +372,35 @@ class WPGH_Google_Calendar
         }
     }
 
+    /**
+     * Returns array of data to enter into google
+     *
+     * @param $time
+     * @return array
+     */
+    public function get_google_time( $time )
+    {
+        if ( get_option('timezone_string') ) {
+            return array(
+                'dateTime' => date('Y-m-d\TH:i:s', $time ),
+                'timeZone' => get_option('timezone_string'),
+            );
+
+        } else {
+
+            if (get_option('gmt_offset')  == 0) {
+                return array(
+                    'dateTime' => date('Y-m-d\TH:i:s', $time).'Z',
+                );
+            } else {
+                $min    = 60 * get_option('gmt_offset');
+                $sign   = $min < 0 ? "-" : "+";
+                $absmin = abs($min);
+                $tz     = sprintf("%s%02d:%02d", $sign, $absmin/60, $absmin%60);
+                return array(
+                    'dateTime' => date('Y-m-d\TH:i:s', $time).$tz,
+                );
+            }
+        }
+    }
 }
