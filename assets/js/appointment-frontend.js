@@ -132,6 +132,8 @@ var ghAppointment = ghAppointment || {};
 
         refreshTimeSlots: function( date )
         {
+
+
             this.hideTimeSlots();
             this.hideErrors();
             this.removeTimeSlots(); //todo
@@ -147,7 +149,8 @@ var ghAppointment = ghAppointment || {};
                 data: {
                     action: 'gh_get_appointment_client',
                     date : date,
-                    calendar : appt.id
+                    calendar : appt.id,
+                    timeZone: jstz.determine().name(),
                 },
                 success: function (response) {
                     if ( response.status === 'failed' ) {

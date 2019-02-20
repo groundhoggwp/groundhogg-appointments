@@ -26,7 +26,9 @@ class WPGH_Appointment_Shortcode
      * Load scripts for  operations
      */
     public function load_scripts() {
+
         wp_enqueue_script(  'gh-calendar', WPGH_APPOINTMENT_ASSETS_FOLDER . 'js/appointment-frontend.js', array('jquery', 'jquery-ui-datepicker' ), filemtime( WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/js/appointment-frontend.js' ) );
+        //wp_enqueue_script(  'jstz', WPGH_APPOINTMENT_ASSETS_FOLDER . 'js/jstz.min.js', array( ), filemtime( WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/js/jstz.min.js' ) );
         wp_localize_script( 'gh-calendar', 'ghAppointment', array(
             'ajax_url' => admin_url( 'admin-ajax.php' ),
             'invalidDateMsg'    => __( 'Please select a time slot first.', 'groundhogg' ),
@@ -34,6 +36,27 @@ class WPGH_Appointment_Shortcode
             'invalidEmailMsg'   => __( 'Your email address is invalid.', 'groundhogg' ),
         ) );
     }
+
+    /**
+     * convert website time to client browser timezone
+     *
+     * @param $time
+     * @param $timezone
+     * @return false|int
+     */
+    public function get_client_date( $time , $timezone)
+    {
+        $my_time =  get_option('timezone_string');
+        if (! $my_time ) {
+            $my_time = get_option('gmt_offset');
+        }
+        $datetime = new DateTime( date ('Y-m-d H:i:s ' , $time )  ,new DateTimeZone( $my_time ) );
+        //echo $datetime->format('Y-m-d H:i:s') . "\n";
+        $time_zone = new DateTimeZone( $timezone );
+        $datetime->setTimezone( $time_zone );
+        return strtotime(  $datetime->format('Y-m-d H:i:s') );
+    }
+
 
     /**
      * Clean all the selected calendar slots from google calendars.
@@ -242,6 +265,9 @@ class WPGH_Appointment_Shortcode
 
         global $wpdb;
 
+        $client_time_zone =  sanitize_text_field( $_POST['timeZone']  )  ;
+        //var_dump($client_time_zone);
+
         $date           = sanitize_text_field( stripslashes( $_POST['date'] ) );
         $calendar_id    = intval( stripslashes( $_POST['calendar'] ) );
         //get start time and end time from business hours  of a day
@@ -285,12 +311,13 @@ class WPGH_Appointment_Shortcode
         $all_slots = null;
         while ($start_time < $end_time)
         {
+           // $client_time_zone
             $temp_endtime = strtotime( "+$slot_hour hour +$slot_minute minutes",$start_time);
             if ($temp_endtime <= $end_time) {
                 $all_slots[] = array(
                     'start'    => $start_time,
                     'end'      => strtotime( "+$buffer_time minute", $temp_endtime ),
-                    'name'     => date('H:i', $start_time ).' - '.date('H:i', $temp_endtime ),
+                    'name'     => date('H:i', $this->get_client_date( $start_time,$client_time_zone ) ).' - '.date('H:i',  $this->get_client_date( $temp_endtime, $client_time_zone ) ),
                 );
             }
             $start_time = strtotime( "+$buffer_time minute", $temp_endtime );
@@ -394,12 +421,11 @@ class WPGH_Appointment_Shortcode
      */
     public  function gh_calendar_shortcode( $atts )
     {
-
+        wp_enqueue_script(  'jstz', WPGH_APPOINTMENT_ASSETS_FOLDER . 'js/jstz.min.js', array(), filemtime( WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/js/jstz.min.js' ) );
         wp_enqueue_style ( 'jquery-ui', WPGH_APPOINTMENT_ASSETS_FOLDER . 'css/jquery-ui.min.css',  array(), filemtime(WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/css/jquery-ui.min.css') );
         wp_enqueue_style ( 'jquery-ui-calendar', WPGH_APPOINTMENT_ASSETS_FOLDER . 'css/calendar.css',  array(), filemtime(WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/css/calendar.css') );
         wp_enqueue_style( 'wpgh-frontend', WPGH_ASSETS_FOLDER . 'css/frontend.css', array(), filemtime( WPGH_PLUGIN_DIR . 'assets/css/frontend.css' ) );
         wp_enqueue_style ( 'calender-css',   WPGH_APPOINTMENT_ASSETS_FOLDER . 'css/frontend.css',  array(), filemtime(WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/css/frontend.css') );
-
         wp_enqueue_script(  'jquery' );
         wp_enqueue_script(  'jquery-ui-datepicker' );
 
@@ -555,6 +581,5 @@ class WPGH_Appointment_Shortcode
 
     return $return;
 }
-
 
 }
