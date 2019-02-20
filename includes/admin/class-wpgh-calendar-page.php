@@ -56,7 +56,7 @@ class WPGH_Calendar_Page
 
         //wp_enqueue_scripts('moment' ,"http://momentjs.com/downloads/moment.min.js" ,array());
         //wp_enqueue_scripts('moment-tz' ,"http://momentjs.com/downloads/moment-timezone-with-data.min.js",array());
-       // wp_enqueue_script(  'jstz', WPGH_APPOINTMENT_ASSETS_FOLDER . 'js/jstz.min.js', array(), filemtime( WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/js/jstz.min.js' ) );
+        wp_enqueue_script(  'jstz', WPGH_APPOINTMENT_ASSETS_FOLDER . 'js/jstz.min.js', array(), filemtime( WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/js/jstz.min.js' ) );
         wp_enqueue_script( 'jquery-ui-datepicker' );
         wp_enqueue_style(  'jquery-ui' );
         wp_enqueue_script( 'ajax-script-appointment',    WPGH_APPOINTMENT_ASSETS_FOLDER . '/js/appointments.js',    array('jquery'),     filemtime( WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/js/appointments.js' ) );
