@@ -12,8 +12,8 @@ class WPGH_Appointment_Benchmark extends WPGH_Funnel_Step
 
         $this->type     = 'gh_appointments';
         $this->group    = 'benchmark';
-        $this->name     = __( 'Groundhogg Appointment' );
-        $this->icon     = 'form-filled.png' ;
+        $this->name     = __( 'Appointment' );
+        $this->icon     = WPGH_APPOINTMENT_PLUGIN_URI . 'assets/images/calendar.png';
         parent::__construct();
 
         // ation hooks
@@ -52,9 +52,9 @@ class WPGH_Appointment_Benchmark extends WPGH_Funnel_Step
                         <td>
                             <?php
                                 $options = array(
-                                    'create_client'      => __( 'Created by client' ),
+                                    'create_client'      => __( 'Created by Client' ),
                                     'create_admin'       => __( 'Created by Admin' ),
-                                    'reschedule_admin'   => __( 'Reschedule by admin' ),
+                                    'reschedule_admin'   => __( 'Reschedule by Admin' ),
                                     'approved'           => __( 'Appointment Approved' ),
                                     'deleted'            => __( 'Appointment Deleted' ),
                                     'cancelled'          => __( 'Appointment Cancelled' ),
