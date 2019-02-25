@@ -462,6 +462,8 @@ class WPGH_Appointment_Shortcode
             $slots_color = '#29a2d9';
         }
 
+        $contact = WPGH()->tracking->get_contact();
+
         ob_start();
         ?>
         <style>
@@ -508,26 +510,30 @@ class WPGH_Appointment_Shortcode
                         <div class="gh-form-row clearfix">
                             <div class="gh-form-column col-1-of-2">
                                 <div class="gh-form-field">
-                                    <input type="text" name="first_name" id="first_name" placeholder="First Name" required/>
+                                    <?php $value = $contact ? $contact->first_name : '' ;?>
+                                    <input type="text" name="first_name" id="first_name" placeholder="First Name" value="<?php echo $value; ?>" required/>
                                 </div>
                             </div>
                             <div class="gh-form-column col-1-of-2">
                                 <div class="gh-form-field">
-                                    <input type="text" name="last_name" id="last_name" placeholder="Last Name" required/>
+                                    <?php $value = $contact ? $contact->last_name : '' ;?>
+                                    <input type="text" name="last_name" id="last_name" placeholder="Last Name" value="<?php echo $value; ?>" required/>
                                 </div>
                             </div>
                         </div>
                         <div class="gh-form-row clearfix">
                             <div class="gh-form-column col-1-of-1">
                                 <div class="gh-form-field">
-                                    <input type="email" name="email" id="email" placeholder="Email" required/>
+                                    <?php $value = $contact ? $contact->email : '' ;?>
+                                    <input type="email" name="email" id="email" placeholder="Email" value="<?php echo $value; ?>" required/>
                                 </div>
                             </div>
                         </div>
                         <div class="gh-form-row clearfix">
                             <div class="gh-form-column col-1-of-1">
                                 <div class="gh-form-field">
-                                    <input type="text"  onkeypress="javascript:return isNumber(event)" name="phone" id="phone" placeholder="Contact Number" required/>
+                                    <?php $value = $contact ? $contact->get_meta( 'primary_phone' ) : '' ;?>
+                                    <input type="tel" name="phone" id="phone" placeholder="Contact Number" value="<?php echo $value; ?>" required/>
                                 </div>
                             </div>
                         </div>
