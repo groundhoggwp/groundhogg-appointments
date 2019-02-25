@@ -659,6 +659,11 @@ class WPGH_Calendar_Page
         if ( $font_color ) {
             WPGH_APPOINTMENTS()->calendarmeta->add_meta( $calendar_id , 'font_color', $font_color );
         }
+        $buffer_time  = intval( $_POST[ 'buffer_time' ] );
+        WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'buffer_time', $buffer_time );
+
+        $busy_slot = intval( $_POST[ 'busy_slot' ] );
+        WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'busy_slot', $busy_slot );
 
         $this->notices->add( 'success', __( 'New calendar added!', 'groundhogg' ), 'success' ); // not working
         wp_redirect( admin_url( 'admin.php?page=gh_calendar&action=edit&calendar=' . $calendar_id ) );
