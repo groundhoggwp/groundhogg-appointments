@@ -49,24 +49,63 @@ if ( ! defined( 'ABSPATH' ) ) exit;
                     </ul>
                 </td>
             </tr>
+<!--            <tr class="form-field term-contact-wrap">-->
+<!--                <th scope="row">-->
+<!--                    <label >--><?php //_e( 'Start Time:' ,'groundhogg'); ?><!--</label>-->
+<!--                </th>-->
+<!--                <td>-->
+<!--                    <input type="time" id="starttime" name="starttime" value="09:00" autocomplete="off" >-->
+<!--                    <p class="description">--><?php //_e( 'Start time of working hours.', 'groundhogg' ); ?><!--</p>-->
+<!--                </td>-->
+<!--            </tr>-->
+<!--            <tr class="form-field term-contact-wrap">-->
+<!--                <th scope="row">-->
+<!--                    <label >--><?php //_e( 'End Time:' ,'groundhogg'); ?><!--</label>-->
+<!--                </th>-->
+<!--                <td>-->
+<!--                    <input type="time" id="endtime" name="endtime" value="17:00" autocomplete="off" >-->
+<!--                    <p class="description">--><?php //_e( 'End time of working hours.', 'groundhogg' ); ?><!--</p>-->
+<!--                </td>-->
+<!--            </tr>-->
+
             <tr class="form-field term-contact-wrap">
-                <th scope="row">
-                    <label ><?php _e( 'Start Time:' ,'groundhogg'); ?></label>
-                </th>
+                <th scope="row"><label><?php _e( 'Working Hours (slot 1)' ); ?></label></th>
                 <td>
-                    <input type="time" id="starttime" name="starttime" value="09:00" autocomplete="off" >
+                    <input type="time" id="slot1_start_time" name="slot1_start_time" value="08:00" autocomplete="off" >
+                    <?php _e('Start Time','groundhogg'); ?>
+
+                    <input type="time" id="slot1_end_time" name="slot1_end_time" value="11:00" autocomplete="off" >
+                    <?php _e('End Time','groundhogg'); ?>
+                    <p class="description"><?php _e( 'Working hours.', 'groundhogg' ); ?></p>
+                </td>
+            </tr>
+
+
+            <tr class="form-field term-contact-wrap">
+                <th scope="row"><label><?php _e( 'Working Hours (slot 2)' ); ?></label></th>
+                <td>
+                    <input type="time" id="slot3_start_time" name="slot2_start_time" value="12:00" autocomplete="off" >
+                    <?php _e('Start Time','groundhogg'); ?>
+
+                    <input type="time" id="slot3_end_time" name="slot2_end_time" value="15:00" autocomplete="off" >
+                    <?php _e('End Time','groundhogg'); ?>
+                    <p><?php echo WPGH()->html->checkbox(['label'=> "Enable","name"=> "slot2_status" ,'checked'=>$slot2_status ]);?></p>
                     <p class="description"><?php _e( 'Start time of working hours.', 'groundhogg' ); ?></p>
                 </td>
             </tr>
             <tr class="form-field term-contact-wrap">
-                <th scope="row">
-                    <label ><?php _e( 'End Time:' ,'groundhogg'); ?></label>
-                </th>
+                <th scope="row"><label><?php _e( 'Working Hours (slot 3)' ); ?></label></th>
                 <td>
-                    <input type="time" id="endtime" name="endtime" value="17:00" autocomplete="off" >
-                    <p class="description"><?php _e( 'End time of working hours.', 'groundhogg' ); ?></p>
+                    <input type="time" id="slot3_start_time" name="slot3_start_time" value="17:00" autocomplete="off" >
+                    <?php _e('Start Time','groundhogg'); ?>
+
+                    <input type="time" id="slot3_end_time" name="slot3_end_time" value="19:00" autocomplete="off" >
+                    <?php _e('End Time','groundhogg'); ?>
+                    <p><?php echo WPGH()->html->checkbox(['label'=> "Enable","name"=> "slot3_status" ,'checked'=>$slot3_status]);?></p>
+                    <p class="description"><?php _e( 'Start time of working hours.', 'groundhogg' ); ?></p>
                 </td>
             </tr>
+
         </tbody>
     </table>
     <h2><?php _e( 'Appointment' ,'groundhogg'); ?></h2>
@@ -118,10 +157,26 @@ if ( ! defined( 'ABSPATH' ) ) exit;
                 </td>
             </tr>
             <tr>
+                <th scope="row"><label><?php _e( 'Custom Text Button' ,'groundhogg') ?></label></th>
+                <td>
+                    <?php echo WPGH()->html->input( array( 'name' => 'custom_text' ,'placeholder' => 'Custom text' ) );?>
+                    <p><?php echo WPGH()->html->checkbox(['label'=> "Enable","name"=> "custom_text_status" ]);?></p>
+                    <p class="description"><?php _e( 'Enabling this setting displays custom text on booking slots followed by number. Default is time slot.', 'groundhogg' ) ?></p>
+                </td>
+            </tr>
+            <tr>
                 <th scope="row"><label ><?php _e( 'Custom Message' ,'groundhogg' ) ?></label></th>
                 <td>
                     <?php echo WPGH()->html->textarea( array( 'name' => 'message' ,'placeholder' => 'Custom Message' , 'value' => __('Appointment booked successfully.' ,'groundhogg') ) );?>
                     <p class="description"><?php _e( 'This message will be displayed when user booked appointment successfully.', 'groundhogg' ) ?></p>
+                </td>
+            </tr>
+            <tr>
+                <th scope="row"><label><?php _e( 'Thank You Page' ,'groundhogg') ?></label></th>
+                <td>
+                    <?php echo WPGH()->html->input( array( 'name' => 'redirect_link' ,'placeholder' => 'http://www.example.com' ) );?>
+                    <p><?php echo WPGH()->html->checkbox(['label'=> "Enable","name"=> "redirect_link_status" ]);?></p>
+                    <p class="description"><?php _e( 'Enabling this setting redirect user to specified thank you page.', 'groundhogg' ) ?></p>
                 </td>
             </tr>
         </tbody>

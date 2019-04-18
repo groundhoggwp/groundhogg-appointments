@@ -110,6 +110,11 @@ var ghAppointment = ghAppointment || {};
                     } else {
                         $( '.gh-calendar-form' ).replaceWith( response.successMsg );
                         $( '.calendar-form-wrapper' ).addClass( 'appointment-success' );
+
+                        if(response.redirect_link) {
+                            window.location.replace(response.redirect_link);
+                        }
+
                         return true;
                     }
                 }

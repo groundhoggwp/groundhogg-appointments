@@ -62,6 +62,35 @@ if ( ! $busy_slot ){
     $busy_slot = 0;
 }
 
+ $slot1_start = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id, 'slot1_start_time', true);
+ $slot1_end   = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id, 'slot1_end_time',  true);
+ $slot2_start = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id, 'slot2_start_time',true );
+ $slot2_end   = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id, 'slot2_end_time'  ,true);
+ $slot3_start = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id, 'slot3_start_time',true );
+ $slot3_end   = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id, 'slot3_end_time'  ,true);
+
+$custom_text_status = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'custom_text_status',true) ;
+$custom_text    =  WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id, 'custom_text',   true);
+if(!$custom_text_status) {
+    $custom_text_status= 0 ;
+}
+
+$redirect_link_status = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'redirect_link_status',true) ;
+$redirect_link    =  WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id, 'redirect_link',   true);
+if(!$redirect_link_status) {
+    $redirect_link_status = 0 ;
+}
+
+$slot2_status =  WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'slot2_status', true);
+if ( ! $slot2_status ){
+    $slot2_status = 0;
+}
+
+$slot3_status =  WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'slot3_status', true);
+if ( ! $slot3_status ){
+    $slot3_status = 0;
+}
+
 $access_token = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'access_token', true);
 $google_calendar_id   = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id ,'google_calendar_id' ,true);
 $google_calendar_list = (array) WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'google_calendar_list',true);
@@ -111,23 +140,59 @@ $google_calendar_list = (array) WPGH_APPOINTMENTS()->calendarmeta->get_meta($cal
                     </ul>
                 </td>
             </tr>
+<!--            <tr class="form-field term-contact-wrap">-->
+<!--                <th scope="row"><label>--><?php //_e( 'slot 1' ); ?><!--</label></th>-->
+<!--                <td>-->
+<!--                    <input type="time" id="starttime" name="starttime" value="--><?php //echo $start_time; ?><!--" autocomplete="off" >-->
+<!--                    --><?php //_e('Start Time','groundhogg'); ?>
+<!---->
+<!--                    <input type="time" id="endtime" name="endtime" value="--><?php //echo $end_time; ?><!--" autocomplete="off" >-->
+<!--                    --><?php //_e('End Time','groundhogg'); ?>
+<!---->
+<!--                    <p class="description">--><?php //_e( 'Start time of working hours.', 'groundhogg' ); ?><!--</p>-->
+<!--                </td>-->
+<!--            </tr>-->
+
             <tr class="form-field term-contact-wrap">
-                <th scope="row"><label><?php _e( 'Start Time:' ); ?></label></th>
+                <th scope="row"><label><?php _e( 'Working Hours (slot 1)' ); ?></label></th>
                 <td>
-                    <input type="time" id="starttime" name="starttime" value="<?php echo $start_time; ?>" autocomplete="off" >
+                    <input type="time" id="slot1_start_time" name="slot1_start_time" value="<?php echo $slot1_start; ?>" autocomplete="off" >
+                    <?php _e('Start Time','groundhogg'); ?>
+
+                    <input type="time" id="slot1_end_time" name="slot1_end_time" value="<?php echo $slot1_end; ?>" autocomplete="off" >
+                    <?php _e('End Time','groundhogg'); ?>
+                    <p class="description"><?php _e( 'Working hours.', 'groundhogg' ); ?></p>
+                </td>
+            </tr>
+
+
+            <tr class="form-field term-contact-wrap">
+                <th scope="row"><label><?php _e( 'Working Hours (slot 2)' ); ?></label></th>
+                <td>
+                    <input type="time" id="slot3_start_time" name="slot2_start_time" value="<?php echo $slot2_start; ?>" autocomplete="off" >
+                    <?php _e('Start Time','groundhogg'); ?>
+
+                    <input type="time" id="slot3_end_time" name="slot2_end_time" value="<?php echo $slot2_end; ?>" autocomplete="off" >
+                    <?php _e('End Time','groundhogg'); ?>
+                    <p><?php echo WPGH()->html->checkbox(['label'=> "Enable","name"=> "slot2_status" ,'checked'=>$slot2_status ]);?></p>
                     <p class="description"><?php _e( 'Start time of working hours.', 'groundhogg' ); ?></p>
                 </td>
             </tr>
             <tr class="form-field term-contact-wrap">
-                <th scope="row"><label><?php _e( 'End Time:' ); ?></label></th>
+                <th scope="row"><label><?php _e( 'Working Hours (slot 3)' ); ?></label></th>
                 <td>
-                    <input type="time" id="endtime" name="endtime" value="<?php echo $end_time; ?>" autocomplete="off" >
-                    <p class="description"><?php _e( 'End time of working hours.', 'groundhogg' ); ?></p>
+                    <input type="time" id="slot3_start_time" name="slot3_start_time" value="<?php echo $slot3_start; ?>" autocomplete="off" >
+                    <?php _e('Start Time','groundhogg'); ?>
+
+                    <input type="time" id="slot3_end_time" name="slot3_end_time" value="<?php echo $slot3_end; ?>" autocomplete="off" >
+                    <?php _e('End Time','groundhogg'); ?>
+                    <p><?php echo WPGH()->html->checkbox(['label'=> "Enable","name"=> "slot3_status" ,'checked'=>$slot3_status]);?></p>
+                    <p class="description"><?php _e( 'Start time of working hours.', 'groundhogg' ); ?></p>
                 </td>
             </tr>
         </tbody>
     </table>
-    <h2><?php _e( 'Appointment' ,'groundhogg'); ?></h2>
+    <h2><?php _e( 'Appointment Setting' ,'groundhogg'); ?></h2>
     <table class="form-table">
         <tbody>
         <tr>
@@ -154,7 +219,7 @@ $google_calendar_list = (array) WPGH_APPOINTMENTS()->calendarmeta->get_meta($cal
             <th scope="row"><label><?php _e( 'Buffer Time (after)' ,'groundhogg') ?></label></th>
             <td>
                 <?php
-                for ($i=0 ; $i<60 ; $i++) {
+                for ($i=0 ; $i<=60 ; $i++) {
                     $mins[$i] = $i;
                 }
                 echo WPGH()->html->dropdown( array( 'name' =>'buffer_time' , 'options' => $mins , 'selected' => $buffer_time) ) ;
@@ -177,12 +242,29 @@ $google_calendar_list = (array) WPGH_APPOINTMENTS()->calendarmeta->get_meta($cal
             </td>
         </tr>
         <tr>
+            <th scope="row"><label><?php _e( 'Custom Text Button' ,'groundhogg') ?></label></th>
+            <td>
+                <?php echo WPGH()->html->input( array( 'name' => 'custom_text' ,'placeholder' => 'Custom text' , 'value' => $custom_text ) );?>
+                <p><?php echo WPGH()->html->checkbox(['label'=> "Enable","name"=> "custom_text_status" ,'checked'=>$custom_text_status ]);?></p>
+                <p class="description"><?php _e( 'Enabling this setting displays custom text on booking slots followed by number. Default is time slot.', 'groundhogg' ) ?></p>
+            </td>
+        </tr>
+        <tr>
             <th scope="row"><label><?php _e( 'Custom Message' ) ?></label></th>
             <td>
                 <?php echo WPGH()->html->textarea( array( 'name' => 'message' ,'placeholder' => 'Custom Message' , 'value' => $message ) );?>
                 <p class="description"><?php _e( 'This message will be displayed when user or admin booked appointment successfully.', 'groundhogg' ) ?></p>
             </td>
         </tr>
+        <tr>
+            <th scope="row"><label><?php _e( 'Thank You Page' ,'groundhogg') ?></label></th>
+            <td>
+                <?php echo WPGH()->html->input( array( 'name' => 'redirect_link' ,'placeholder' => 'http://www.example.com' , 'value'=>$redirect_link ) );?>
+                <p><?php echo WPGH()->html->checkbox(['label'=> "Enable","name"=> "redirect_link_status" ,'checked'=>$redirect_link_status ]);?></p>
+                <p class="description"><?php _e( 'Enabling this setting redirect user to specified thank you page.', 'groundhogg' ) ?></p>
+            </td>
+        </tr>
+
         </tbody>
     </table>
     <h2><?php _e( 'Calendar Styling' ,'groundhogg'); ?></h2>

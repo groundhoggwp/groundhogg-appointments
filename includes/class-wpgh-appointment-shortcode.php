@@ -250,10 +250,52 @@ class WPGH_Appointment_Shortcode
                 $event = $service->events->insert( $google_calendar_id, $event );
             }
         }
-        $response = array( 'status' => 'success','successMsg' => __($message,'groundhogg') );
+        $redirect_link_status = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'redirect_link_status',true) ;
+        $redirect_link    =  WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id, 'redirect_link',   true);
+        if ($redirect_link_status){
+            $response = array( 'status' => 'success','successMsg' => __($message,'groundhogg') ,'redirect_link' => $redirect_link );
+        } else {
+            $response = array( 'status' => 'success','successMsg' => __($message,'groundhogg') );
+        }
+
+
         do_action('gh_calendar_add_appointment_client',$appointment_id , 'create_client' );
         wp_die( json_encode( $response ) );
     }
+
+    public function get_time_slots($all_slots, $start_time ,$end_time ,$calendar_id , $client_time_zone)
+    {
+        $slot_hour      = intval( WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'slot_hour',true) );
+        $slot_minute    = intval( WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'slot_minute',true) );
+        $buffer_time    = intval( WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'buffer_time',true) );
+        $custom_text_status = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'custom_text_status',true) ;
+        $custom_text    =  WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id, 'custom_text',   true);
+
+        $i=1;
+        while ($start_time < $end_time)
+        {
+           // $client_time_zone
+            $temp_endtime = strtotime( "+$slot_hour hour +$slot_minute minutes",$start_time);
+
+            if ( $custom_text_status) {
+                $name =$custom_text . ' ' . $i;
+                $i++;
+            } else {
+                $name = date('H:i', $this->get_client_date( $start_time,$client_time_zone ) ).' - '.date('H:i',  $this->get_client_date( $temp_endtime, $client_time_zone ) );
+            }
+
+            if ($temp_endtime <= $end_time) {
+                $all_slots[] = array(
+                    'start'    => $start_time,
+                    'end'      => strtotime( "+$buffer_time minute", $temp_endtime ),
+                    'name'     => $name,
+                );
+            }
+            $start_time = strtotime( "+$buffer_time minute", $temp_endtime );
+        }
+        return $all_slots;
+    }
+
 
     /**
      *  GET available Appointment form the database based on calendar id.
@@ -272,12 +314,10 @@ class WPGH_Appointment_Shortcode
         //get start time and end time from business hours  of a day
         $time           = current_time('timestamp' );
         $dow            = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'dow',true);
-        $start_time     = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'start_time',true);
-        $end_time       = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'end_time',true);
-        $slot_hour      = intval( WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'slot_hour',true) );
-        $slot_minute    = intval( WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'slot_minute',true) );
-        $buffer_time    = intval( WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'buffer_time',true) );
+//        $start_time     = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'start_time',true);
+//        $end_time       = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'end_time',true);
         $busy_slot      = intval( WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'busy_slot',true) );
+
 
         $entered_dow    = date ("N", strtotime($date) );
         if ( $entered_dow == 7 ){
@@ -287,16 +327,70 @@ class WPGH_Appointment_Shortcode
             $response = array(  'status'=>'failed', 'msg' => __( 'Sorry, no time slots are available for this date period.','groundhogg'));
             wp_die( json_encode( $response ) );
         }
-        $start_time = strtotime( $date .' '.$start_time );
-        // check if current time is past time or not !
+
+
+
+        $slot1_start = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id, 'slot1_start_time', true);
+        $slot1_end   = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id, 'slot1_end_time',  true);
+        $slot2_start = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id, 'slot2_start_time',true );
+        $slot2_end   = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id, 'slot2_end_time'  ,true);
+        $slot3_start = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id, 'slot3_start_time',true );
+        $slot3_end   = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id, 'slot3_end_time'  ,true);
+
+
+        //back word comp -
+
+        if (!$slot1_start ) {
+            $slot1_start = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'start_time',true);
+        }
+
+        if (!$slot1_end) {
+            $slot1_end = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'end_time',true);
+        }
+
+        $all_slots = null;
+        $slot1_start = strtotime( $date .' '.$slot1_start );
+        $slot1_end = strtotime( $date .' '.$slot1_end );
+        $start_time = $slot1_start;
+        $end_time   = $slot1_end;
         if ($start_time < $time) {
             $d = date('H:00' , $time);
-            $start_time = strtotime( $d );
+            $slot1_start = strtotime( $d );
         }
+        $all_slots = $this->get_time_slots($all_slots ,$slot1_start,$slot1_end,$calendar_id,$client_time_zone);
+
+
+        $slot2_status =  WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'slot2_status', true);
+        if ( $slot2_status ){
+
+            $slot2_start = strtotime( $date .' '.$slot2_start ) ;
+            if ( $slot2_start < $time )  {
+                $d = date('H:00' , $time);
+                $slot2_start = strtotime( $d );
+            }
+
+            $all_slots = $this->get_time_slots($all_slots ,$slot2_start,strtotime( $date .' '.$slot2_end ),$calendar_id,$client_time_zone);
+            $end_time = strtotime( $date .' '.$slot2_end );
+        }
+
+        $slot3_status =  WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'slot3_status', true);
+        if ( $slot3_status ){
+
+            $slot3_start = strtotime( $date .' '.$slot3_start ) ;
+            if ( $slot3_start < $time )  {
+                $d = date('H:00' , $time);
+                $slot3_start = strtotime( $d );
+            }
+
+            $all_slots = $this->get_time_slots($all_slots ,$slot3_start,strtotime( $date .' '.$slot3_end ),$calendar_id,$client_time_zone);
+            $end_time = strtotime( $date .' '.$slot3_end );
+        }
+//        $start_time = strtotime( $date .' '.$start_time );
+        // check if current time is past time or not !
 
         $appointments = null;
         //GET AVAILABLE TIME IN DAY
-        $end_time = strtotime( $date .' '.$end_time );
+//        $end_time = strtotime( $date .' '.$end_time );
 
         $google_min = date('c' , wpgh_convert_to_utc_0( $start_time ) );
         $google_max = date('c' , wpgh_convert_to_utc_0( $end_time ) );
@@ -307,20 +401,28 @@ class WPGH_Appointment_Shortcode
         $appointments =  WPGH_APPOINTMENTS()->appointments->get_appointments_by_args(array( 'calendar_id' => $calendar_id ) );
 
         // generate array to populate time slots
-        $all_slots = null;
-        while ($start_time < $end_time)
-        {
-           // $client_time_zone
-            $temp_endtime = strtotime( "+$slot_hour hour +$slot_minute minutes",$start_time);
-            if ($temp_endtime <= $end_time) {
-                $all_slots[] = array(
-                    'start'    => $start_time,
-                    'end'      => strtotime( "+$buffer_time minute", $temp_endtime ),
-                    'name'     => date('H:i', $this->get_client_date( $start_time,$client_time_zone ) ).' - '.date('H:i',  $this->get_client_date( $temp_endtime, $client_time_zone ) ),
-                );
-            }
-            $start_time = strtotime( "+$buffer_time minute", $temp_endtime );
-        }
+//        $all_slots = $this->get_time_slots($all_slots ,$start_time,$end_time,$calendar_id,$client_time_zone);
+
+
+
+
+
+
+
+
+//        while ($start_time < $end_time)
+//        {
+//           // $client_time_zone
+//            $temp_endtime = strtotime( "+$slot_hour hour +$slot_minute minutes",$start_time);
+//            if ($temp_endtime <= $end_time) {
+//                $all_slots[] = array(
+//                    'start'    => $start_time,
+//                    'end'      => strtotime( "+$buffer_time minute", $temp_endtime ),
+//                    'name'     => date('H:i', $this->get_client_date( $start_time,$client_time_zone ) ).' - '.date('H:i',  $this->get_client_date( $temp_endtime, $client_time_zone ) ),
+//                );
+//            }
+//            $start_time = strtotime( "+$buffer_time minute", $temp_endtime );
+//        }
 
         // remove booked appointment form the array
         // cleaning where appointment are bigger then slots
@@ -391,6 +493,7 @@ class WPGH_Appointment_Shortcode
             array_multisort($sort, SORT_ASC, $display_slot );
         }
         $response = array(  'status'=> 'success', 'slots' => $display_slot );
+
         wp_die( json_encode( $response ) );
     }
 

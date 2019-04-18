@@ -475,35 +475,147 @@ class WPGH_Calendar_Page
         WPGH_APPOINTMENTS()->calendarmeta->update_meta( $calendar_id,'google_calendar_list', $google_calendar_list ) ;
 
 
-        // start time
-        if( isset( $_POST[ 'starttime' ] ) ) {
-            if( isset( $_POST[ 'endtime' ] )) {
-                $end_time  = $_POST[ 'endtime' ];
-            } else {
-                $end_time  = WPGH_APPOINTMENTS()->calendarmeta->get_meta( $calendar_id,'end_time',true );
+//        // start time
+//        if( isset( $_POST[ 'starttime' ] ) ) {
+//            if( isset( $_POST[ 'endtime' ] )) {
+//                $end_time  = $_POST[ 'endtime' ];
+//            } else {
+//                $end_time  = WPGH_APPOINTMENTS()->calendarmeta->get_meta( $calendar_id,'end_time',true );
+//            }
+//
+//            if( strtotime($end_time) < strtotime( $_POST[ 'starttime' ] ) ) {
+//                $this->notices->add( 'INVALID_STARTTIME', __( "End time can not be smaller then start time.", 'groundhogg' ), 'error' );
+//            } else {
+//                WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'start_time', sanitize_text_field( stripslashes ( $_POST['starttime'] ) ) );
+//            }
+//        }
+//        //end time
+//        if( isset( $_POST['endtime'] ) ) {
+//
+//            if( isset( $_POST['starttime'] )) {
+//                $start_time  = $_POST['starttime'];
+//            } else {
+//                $start_time  = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'start_time',true);
+//            }
+//
+//            if( strtotime($start_time) < strtotime( $_POST['endtime'] ) ) {
+//                WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'end_time', sanitize_text_field( stripslashes( $_POST['endtime'] ) ) );
+//            } else {
+//                $this->notices->add( 'INVALID_STARTTIME', __( "End time can not be smaller then start time.", 'groundhogg' ), 'error' );
+//            }
+//        }
+
+
+
+
+
+        // load data from the from or database
+
+        $slot1_start =  $_POST[ 'slot1_start_time' ];
+        $slot1_end   =  $_POST[ 'slot1_end_time' ];
+
+        $slot2_start =  $_POST[ 'slot2_start_time' ];
+        $slot2_end   =  $_POST[ 'slot2_end_time' ];
+
+        $slot3_start =  $_POST[ 'slot3_start_time' ];
+        $slot3_end   =  $_POST[ 'slot3_end_time' ];
+
+
+
+
+        if( isset( $_POST[ 'slot2_status' ] )) {
+            $slot2_check =  $_POST[ 'slot2_status' ];
+
+        } else {
+            $slot2_check = "0";
+        }
+
+        if( isset( $_POST[ 'slot3_status' ] )) {
+            $slot3_check =  $_POST[ 'slot3_status' ];
+
+        } else {
+            $slot3_check = "0";
+        }
+
+
+
+        if($slot2_check){
+            if(! (strtotime( $slot1_end )  <=  strtotime( $slot2_start ) ) ){
+                $this->notices->add( 'INVALID_STARTTIME', __( "Slot1 end time needs to be smaller then slot2  start time .", 'groundhogg' ), 'error' );
+                return;
             }
 
-            if( strtotime($end_time) < strtotime( $_POST[ 'starttime' ] ) ) {
-                $this->notices->add( 'INVALID_STARTTIME', __( "End time can not be smaller then start time.", 'groundhogg' ), 'error' );
-            } else {
-                WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'start_time', sanitize_text_field( stripslashes ( $_POST['starttime'] ) ) );
+            if (! (strtotime( $slot2_start ) < strtotime($slot2_end ) ) ) {
+                $this->notices->add( 'INVALID_STARTTIME', __( "Start time needs to be smaller then end time.", 'groundhogg' ), 'error' );
+                return;
             }
         }
-        //end time
-        if( isset( $_POST['endtime'] ) ) {
 
-            if( isset( $_POST['starttime'] )) {
-                $start_time  = $_POST['starttime'];
-            } else {
-                $start_time  = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'start_time',true);
+
+        if($slot3_check){
+            if(! (strtotime($slot1_end ) <=  strtotime( $slot3_start) ) ){
+                $this->notices->add( 'INVALID_STARTTIME', __( "Slot1 end time needs to be smaller then slot3  start time.", 'groundhogg' ), 'error' );
+                return;
             }
 
-            if( strtotime($start_time) < strtotime( $_POST['endtime'] ) ) {
-                WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'end_time', sanitize_text_field( stripslashes( $_POST['endtime'] ) ) );
-            } else {
-                $this->notices->add( 'INVALID_STARTTIME', __( "End time can not be smaller then start time.", 'groundhogg' ), 'error' );
+            if($slot2_check){
+                if(! (strtotime( $slot2_end )  <=  strtotime( $slot3_start ) ) ){
+                    $this->notices->add( 'INVALID_STARTTIME', __( "Slot2 end time needs to be smaller then slot3  start time.", 'groundhogg' ), 'error' );
+                    return;
+                }
+            }
+
+            if (! (strtotime( $slot3_start ) < strtotime($slot3_end ) ) ){
+                $this->notices->add( 'INVALID_STARTTIME', __( "Start time needs to be smaller then end time.", 'groundhogg' ), 'error' );
+                return;
             }
         }
+
+        if (! (strtotime( $slot1_start ) < strtotime($slot1_end ) ) ){
+            $this->notices->add( 'INVALID_STARTTIME', __( "Start time needs to be smaller then end time.", 'groundhogg' ), 'error' );
+            return;
+        }
+
+
+
+        WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'slot1_start_time',sanitize_text_field( stripslashes(  $slot1_start )));
+        WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'slot1_end_time',  sanitize_text_field( stripslashes(  $slot1_end ) ));
+        WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'slot2_start_time',sanitize_text_field( stripslashes(  $slot2_start )));
+        WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'slot2_end_time' , sanitize_text_field( stripslashes(  $slot2_end )));
+        WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'slot3_start_time',sanitize_text_field( stripslashes(  $slot3_start )));
+        WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'slot3_end_time' , sanitize_text_field( stripslashes(  $slot3_end )));
+        WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'slot2_status',    sanitize_text_field( stripslashes(  $slot2_check )));
+        WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'slot3_status',    sanitize_text_field( stripslashes(  $slot3_check )));
+
+
+        if( isset( $_POST[ 'custom_text_status' ] )) {
+            $custom_text_status =  $_POST[ 'custom_text_status' ];
+
+        } else {
+            $custom_text_status = "0";
+        }
+        WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'custom_text_status',    sanitize_text_field( stripslashes(  $custom_text_status )));
+
+        $custom_text = sanitize_text_field( stripslashes( $_POST['custom_text'] ) );
+        if ($custom_text != '') {
+            WPGH_APPOINTMENTS()->calendarmeta->update_meta( $calendar_id , 'custom_text', $custom_text );
+        }
+
+        if( isset( $_POST[ 'redirect_link_status' ] )) {
+            $redirect_link_status =  $_POST[ 'redirect_link_status' ];
+
+        } else {
+            $redirect_link_status = "0";
+        }
+        WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'redirect_link_status',    sanitize_text_field( stripslashes(  $redirect_link_status )));
+
+        $redirect_link = sanitize_text_field( stripslashes( $_POST['redirect_link'] ) );
+        if ($redirect_link != '') {
+            WPGH_APPOINTMENTS()->calendarmeta->update_meta( $calendar_id , 'redirect_link', $redirect_link );
+        }
+
+
+
         // appointment
         $hour = intval( $_POST['slot_hour'] );
         $min  = intval( $_POST['slot_minute'] );
@@ -620,6 +732,117 @@ class WPGH_Calendar_Page
                 $this->notices->add( 'INVALID_STARTTIME', __( "End time can not be smaller then start time.", 'groundhogg' ), 'error' );
             }
         }
+
+
+        $slot1_start =  $_POST[ 'slot1_start_time' ];
+        $slot1_end   =  $_POST[ 'slot1_end_time' ];
+
+        $slot2_start =  $_POST[ 'slot2_start_time' ];
+        $slot2_end   =  $_POST[ 'slot2_end_time' ];
+
+        $slot3_start =  $_POST[ 'slot3_start_time' ];
+        $slot3_end   =  $_POST[ 'slot3_end_time' ];
+
+
+
+
+        if( isset( $_POST[ 'slot2_status' ] )) {
+            $slot2_check =  $_POST[ 'slot2_status' ];
+
+        } else {
+            $slot2_check = "0";
+        }
+
+        if( isset( $_POST[ 'slot3_status' ] )) {
+            $slot3_check =  $_POST[ 'slot3_status' ];
+
+        } else {
+            $slot3_check = "0";
+        }
+
+
+
+        if($slot2_check){
+            if(! (strtotime( $slot1_end )  <=  strtotime( $slot2_start ) ) ){
+                $this->notices->add( 'INVALID_STARTTIME', __( "Slot1 end time needs to be smaller then slot2  start time .", 'groundhogg' ), 'error' );
+                return;
+            }
+
+            if (! (strtotime( $slot2_start ) < strtotime($slot2_end ) ) ) {
+                $this->notices->add( 'INVALID_STARTTIME', __( "Start time needs to be smaller then end time.", 'groundhogg' ), 'error' );
+                return;
+            }
+        }
+
+
+        if($slot3_check){
+            if(! (strtotime($slot1_end ) <=  strtotime( $slot3_start) ) ){
+                $this->notices->add( 'INVALID_STARTTIME', __( "Slot1 end time needs to be smaller then slot3  start time.", 'groundhogg' ), 'error' );
+                return;
+            }
+
+            if($slot2_check){
+                if(! (strtotime( $slot2_end )  <=  strtotime( $slot3_start ) ) ){
+                    $this->notices->add( 'INVALID_STARTTIME', __( "Slot2 end time needs to be smaller then slot3  start time.", 'groundhogg' ), 'error' );
+                    return;
+                }
+            }
+
+            if (! (strtotime( $slot3_start ) < strtotime($slot3_end ) ) ){
+                $this->notices->add( 'INVALID_STARTTIME', __( "Start time needs to be smaller then end time.", 'groundhogg' ), 'error' );
+                return;
+            }
+        }
+
+        if (! (strtotime( $slot1_start ) < strtotime($slot1_end ) ) ){
+            $this->notices->add( 'INVALID_STARTTIME', __( "Start time needs to be smaller then end time.", 'groundhogg' ), 'error' );
+            return;
+        }
+
+
+
+        WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'slot1_start_time',sanitize_text_field( stripslashes(  $slot1_start )));
+        WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'slot1_end_time',  sanitize_text_field( stripslashes(  $slot1_end ) ));
+        WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'slot2_start_time',sanitize_text_field( stripslashes(  $slot2_start )));
+        WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'slot2_end_time' , sanitize_text_field( stripslashes(  $slot2_end )));
+        WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'slot3_start_time',sanitize_text_field( stripslashes(  $slot3_start )));
+        WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'slot3_end_time' , sanitize_text_field( stripslashes(  $slot3_end )));
+        WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'slot2_status',    sanitize_text_field( stripslashes(  $slot2_check )));
+        WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'slot3_status',    sanitize_text_field( stripslashes(  $slot3_check )));
+
+
+        if( isset( $_POST[ 'custom_text_status' ] )) {
+            $custom_text_status =  $_POST[ 'custom_text_status' ];
+
+        } else {
+            $custom_text_status = "0";
+        }
+        WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'custom_text_status',    sanitize_text_field( stripslashes(  $custom_text_status )));
+
+        $custom_text = sanitize_text_field( stripslashes( $_POST['custom_text'] ) );
+        if ($custom_text != '') {
+            WPGH_APPOINTMENTS()->calendarmeta->update_meta( $calendar_id , 'custom_text', $custom_text );
+        }
+
+        if( isset( $_POST[ 'redirect_link_status' ] )) {
+            $redirect_link_status =  $_POST[ 'redirect_link_status' ];
+
+        } else {
+            $redirect_link_status = "0";
+        }
+        WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'redirect_link_status',    sanitize_text_field( stripslashes(  $redirect_link_status )));
+
+        if ( isset( $_POST['redirect_link'] ) ) {
+
+            $redirect_link = sanitize_text_field( stripslashes( $_POST['redirect_link'] ) );
+            if ($redirect_link != '') {
+                WPGH_APPOINTMENTS()->calendarmeta->update_meta( $calendar_id , 'redirect_link', $redirect_link );
+            }
+
+        }
+
+
+
         $hour = intval( $_POST['slot_hour'] );
         $min  = intval( $_POST['slot_minute'] );
         // Enter time slot info

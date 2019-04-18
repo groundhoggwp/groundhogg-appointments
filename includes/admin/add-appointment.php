@@ -38,8 +38,16 @@ function add_appointment()
     }
     $json               = json_encode($display_data);
     $dow                = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'dow',true);
-    $start_time         = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'start_time', true);
-    $end_time           = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'end_time', true);
+    $start_time         = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'slot1_start_time', true);
+    $end_time           = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'slot1_end_time', true);
+    $slot2_status =  WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'slot2_status', true);
+    if ( $slot2_status ){
+        $end_time = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'slot2_end_time', true);
+    }
+    $slot3_status =  WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'slot3_status', true);
+    if ( $slot3_status ){
+        $end_time = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'slot3_end_time', true);
+    }
     $access_token       = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'access_token', true);
     $google_calendar_id = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id ,'google_calendar_id' ,true);
 
