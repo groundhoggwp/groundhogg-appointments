@@ -71,11 +71,12 @@ if ( ! defined( 'ABSPATH' ) ) exit;
             <tr class="form-field term-contact-wrap">
                 <th scope="row"><label><?php _e( 'Working Hours (slot 1)' ); ?></label></th>
                 <td>
-                    <input type="time" id="slot1_start_time" name="slot1_start_time" value="08:00" autocomplete="off" >
                     <?php _e('Start Time','groundhogg'); ?>
+                    <input type="time" id="slot1_start_time" name="slot1_start_time" value="08:00" autocomplete="off" >
 
-                    <input type="time" id="slot1_end_time" name="slot1_end_time" value="11:00" autocomplete="off" >
+
                     <?php _e('End Time','groundhogg'); ?>
+                    <input type="time" id="slot1_end_time" name="slot1_end_time" value="11:00" autocomplete="off" >
                     <p class="description"><?php _e( 'Working hours.', 'groundhogg' ); ?></p>
                 </td>
             </tr>
@@ -83,24 +84,24 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
             <tr class="form-field term-contact-wrap">
                 <th scope="row"><label><?php _e( 'Working Hours (slot 2)' ); ?></label></th>
-                <td>
+                <td>  <?php _e('Start Time','groundhogg'); ?>
                     <input type="time" id="slot3_start_time" name="slot2_start_time" value="12:00" autocomplete="off" >
-                    <?php _e('Start Time','groundhogg'); ?>
 
-                    <input type="time" id="slot3_end_time" name="slot2_end_time" value="15:00" autocomplete="off" >
                     <?php _e('End Time','groundhogg'); ?>
+                    <input type="time" id="slot3_end_time" name="slot2_end_time" value="15:00" autocomplete="off" >
+
                     <p><?php echo WPGH()->html->checkbox(['label'=> "Enable","name"=> "slot2_status" ,'checked'=>$slot2_status ]);?></p>
                     <p class="description"><?php _e( 'Start time of working hours.', 'groundhogg' ); ?></p>
                 </td>
             </tr>
             <tr class="form-field term-contact-wrap">
                 <th scope="row"><label><?php _e( 'Working Hours (slot 3)' ); ?></label></th>
-                <td>
+                <td>  <?php _e('Start Time','groundhogg'); ?>
                     <input type="time" id="slot3_start_time" name="slot3_start_time" value="17:00" autocomplete="off" >
-                    <?php _e('Start Time','groundhogg'); ?>
 
-                    <input type="time" id="slot3_end_time" name="slot3_end_time" value="19:00" autocomplete="off" >
                     <?php _e('End Time','groundhogg'); ?>
+                    <input type="time" id="slot3_end_time" name="slot3_end_time" value="19:00" autocomplete="off" >
+
                     <p><?php echo WPGH()->html->checkbox(['label'=> "Enable","name"=> "slot3_status" ,'checked'=>$slot3_status]);?></p>
                     <p class="description"><?php _e( 'Start time of working hours.', 'groundhogg' ); ?></p>
                 </td>

@@ -155,12 +155,12 @@ $google_calendar_list = (array) WPGH_APPOINTMENTS()->calendarmeta->get_meta($cal
 
             <tr class="form-field term-contact-wrap">
                 <th scope="row"><label><?php _e( 'Working Hours (slot 1)' ); ?></label></th>
-                <td>
+                <td>   <?php _e('Start Time','groundhogg'); ?>
                     <input type="time" id="slot1_start_time" name="slot1_start_time" value="<?php echo $slot1_start; ?>" autocomplete="off" >
-                    <?php _e('Start Time','groundhogg'); ?>
 
-                    <input type="time" id="slot1_end_time" name="slot1_end_time" value="<?php echo $slot1_end; ?>" autocomplete="off" >
                     <?php _e('End Time','groundhogg'); ?>
+                    <input type="time" id="slot1_end_time" name="slot1_end_time" value="<?php echo $slot1_end; ?>" autocomplete="off" >
+
                     <p class="description"><?php _e( 'Working hours.', 'groundhogg' ); ?></p>
                 </td>
             </tr>
@@ -168,12 +168,12 @@ $google_calendar_list = (array) WPGH_APPOINTMENTS()->calendarmeta->get_meta($cal
 
             <tr class="form-field term-contact-wrap">
                 <th scope="row"><label><?php _e( 'Working Hours (slot 2)' ); ?></label></th>
-                <td>
-                    <input type="time" id="slot3_start_time" name="slot2_start_time" value="<?php echo $slot2_start; ?>" autocomplete="off" >
-                    <?php _e('Start Time','groundhogg'); ?>
+                <td>  <?php _e('Start Time','groundhogg'); ?>
 
-                    <input type="time" id="slot3_end_time" name="slot2_end_time" value="<?php echo $slot2_end; ?>" autocomplete="off" >
+                    <input type="time" id="slot3_start_time" name="slot2_start_time" value="<?php echo $slot2_start; ?>" autocomplete="off" >
                     <?php _e('End Time','groundhogg'); ?>
+                    <input type="time" id="slot3_end_time" name="slot2_end_time" value="<?php echo $slot2_end; ?>" autocomplete="off" >
+
                     <p><?php echo WPGH()->html->checkbox(['label'=> "Enable","name"=> "slot2_status" ,'checked'=>$slot2_status ]);?></p>
                     <p class="description"><?php _e( 'Start time of working hours.', 'groundhogg' ); ?></p>
                 </td>
@@ -181,11 +181,12 @@ $google_calendar_list = (array) WPGH_APPOINTMENTS()->calendarmeta->get_meta($cal
             <tr class="form-field term-contact-wrap">
                 <th scope="row"><label><?php _e( 'Working Hours (slot 3)' ); ?></label></th>
                 <td>
-                    <input type="time" id="slot3_start_time" name="slot3_start_time" value="<?php echo $slot3_start; ?>" autocomplete="off" >
                     <?php _e('Start Time','groundhogg'); ?>
 
-                    <input type="time" id="slot3_end_time" name="slot3_end_time" value="<?php echo $slot3_end; ?>" autocomplete="off" >
+                    <input type="time" id="slot3_start_time" name="slot3_start_time" value="<?php echo $slot3_start; ?>" autocomplete="off" >
                     <?php _e('End Time','groundhogg'); ?>
+                    <input type="time" id="slot3_end_time" name="slot3_end_time" value="<?php echo $slot3_end; ?>" autocomplete="off" >
+
                     <p><?php echo WPGH()->html->checkbox(['label'=> "Enable","name"=> "slot3_status" ,'checked'=>$slot3_status]);?></p>
                     <p class="description"><?php _e( 'Start time of working hours.', 'groundhogg' ); ?></p>
                 </td>
