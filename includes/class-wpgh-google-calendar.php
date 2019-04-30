@@ -148,7 +148,7 @@ class WPGH_Google_Calendar
                             $find   = strpos($event->getId(), 'ghcalendar');
                             if ($find === false) {
                                 //check for attendees if no one found does not sync it
-                                $start  = strtotime('+10 seconds', $start);
+                                $start  = strtotime('+1 seconds', $start);
                                 $email  = sanitize_email( stripslashes( $event->getAttendees()[0]['email'] ) );
                                 $contact = WPGH()->contacts->get_contacts( array( 'email' => $email) );
                                 if (count($contact) > 0) {
@@ -164,8 +164,8 @@ class WPGH_Google_Calendar
                                     'calendar_id' => $calendar_id,
                                     'name' => $appointment_name,
                                     'status' => 'pending',
-                                    'start_time' => $start,    //strtotime()
-                                    'end_time' => $end       //strtotime()
+                                    'start_time' => wpgh_convert_to_utc_0( $start ),    //strtotime()
+                                    'end_time' => wpgh_convert_to_utc_0($end)       //strtotime()
                                 ));
                                 // Insert meta
                                 if ($appointment_id) {
@@ -213,8 +213,8 @@ class WPGH_Google_Calendar
                                 $status = WPGH_APPOINTMENTS()->appointments->update( $appointment_id, array(
                                     'contact_id' => $contact_id,
                                     'name' => $appointment_name,
-                                    'start_time' => $start,
-                                    'end_time' => $end
+                                    'start_time' => wpgh_convert_to_utc_0( $start ),
+                                    'end_time' => wpgh_convert_to_utc_0( $end )
                                 ));
                                 //update notes
                                 if ($status) {
@@ -332,8 +332,10 @@ class WPGH_Google_Calendar
                             'id' => 'ghcalendarcid'.$appointment->calendar_id.'aid' . $appointment->ID,
                             'summary' => $appointment->name,
                             'description' => WPGH_APPOINTMENTS()->appointmentmeta->get_meta( $appointment->ID , 'note', true ),
-                            'start' => WPGH_APPOINTMENTS()->google_calendar->get_google_time( $appointment->start_time),
-                            'end' => WPGH_APPOINTMENTS()->google_calendar->get_google_time( $appointment->end_time ),
+                            'start' => ['dateTime' => date('Y-m-d\TH:i:s', $appointment->start_time).'Z' ],
+                            'end' => ['dateTime' => date('Y-m-d\TH:i:s',  $appointment->end_time ).'Z' ],
+
+
                             'attendees' => array(
                                 array('email' => $contact->email),
                             ),

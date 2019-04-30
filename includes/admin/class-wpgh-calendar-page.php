@@ -994,8 +994,8 @@ class WPGH_Calendar_Page
         $status     = $this->db->update($appointment_id ,  array(
             'contact_id'    => $contact_id,
             'name'          => sanitize_text_field( stripslashes( $_POST[ 'appointmentname' ] ) ),
-            'start_time'    => $start_time,
-            'end_time'      => $end_time
+            'start_time'    => wpgh_convert_to_utc_0( $start_time ),
+            'end_time'      => wpgh_convert_to_utc_0($end_time)
         ));
         //update notes
         if ( isset( $_POST['description'] ) ) {
@@ -1017,8 +1017,11 @@ class WPGH_Calendar_Page
                         'id' => 'ghcalendarcid' . $appointment->calendar_id . 'aid' . $appointment->ID,
                         'summary' => $appointment->name,
                         'description' => $this->meta->get_meta($appointment->ID, 'note', true),
-                        'start' => WPGH_APPOINTMENTS()->google_calendar->get_google_time($appointment->start_time),
-                        'end' => WPGH_APPOINTMENTS()->google_calendar->get_google_time( $appointment->end_time ),
+//                        'start' => WPGH_APPOINTMENTS()->google_calendar->get_google_time($appointment->start_time),
+//                        'end' => WPGH_APPOINTMENTS()->google_calendar->get_google_time( $appointment->end_time ),
+                        'start' => ['dateTime' => date('Y-m-d\TH:i:s', $appointment->start_time).'Z' ],
+                        'end' => ['dateTime' => date('Y-m-d\TH:i:s', $appointment->end_time).'Z' ],
+
                         'attendees' => array(
                             array('email' => $contact->email),
                         ),
@@ -1115,7 +1118,7 @@ class WPGH_Calendar_Page
         $note               = sanitize_text_field( stripslashes ( $_POST['note'] ) );
         $appointment_name   = sanitize_text_field( stripslashes ( $_POST [ 'appointment_name'] ) ) ;
         $calendar_id        = sanitize_text_field( stripslashes ($_POST [ 'calendar_id'] ) );
-        $start              = strtotime( '+10 seconds',$start);
+        $start              = strtotime( '+1 seconds',$start);
         //end minus buffer time
         $buffer_time    = intval( WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'buffer_time',true) );
         $end  =  strtotime( "- $buffer_time minute", $end );
@@ -1127,7 +1130,7 @@ class WPGH_Calendar_Page
             'name'          => $appointment_name,
             'status'        => 'pending',
             'start_time'    => $start,    //strtotime()
-            'end_time'      => ($end)       //strtotime()
+            'end_time'      => $end      //strtotime()
         ));
 
         // Insert meta
@@ -1146,8 +1149,8 @@ class WPGH_Calendar_Page
             'appointment' => array(
                 'id'         => $appointment_id,
                 'title'      => $appointment_name,
-                'start'      => $start*1000,//$start,
-                'end'        => $end * 1000,//$end,
+                'start'      => convert_to_local_time($start) *1000,//$start,
+                'end'        => convert_to_local_time($end) * 1000,//$end,
                 'constraint' => 'businessHours',
                 'editable'   => true,
                 'allDay'     => false,
@@ -1170,8 +1173,10 @@ class WPGH_Calendar_Page
                     'id' => 'ghcalendarcid' . $calendar_id . 'aid' . $appointment_id,
                     'summary' => $appointment_name,
                     'description' => $note,
-                    'start' => WPGH_APPOINTMENTS()->google_calendar->get_google_time($start),
-                    'end' => WPGH_APPOINTMENTS()->google_calendar->get_google_time( $end ),
+//                    'start' => WPGH_APPOINTMENTS()->google_calendar->get_google_time($start),
+//                    'end' => WPGH_APPOINTMENTS()->google_calendar->get_google_time( $end ),
+                    'start' => ['dateTime' => date('Y-m-d\TH:i:s', $start).'Z' ],
+                    'end' => ['dateTime' => date('Y-m-d\TH:i:s', $end).'Z' ],
                     'attendees' => array(
                         array('email' => $contact->email),
                     ),

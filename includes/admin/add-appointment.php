@@ -27,14 +27,15 @@ function add_appointment()
         $display_data[] = array(
             'id'         => $appointment->ID,
             'title'      => $appointment->name,
-            'start'      => $appointment->start_time *1000,
-            'end'        => $appointment->end_time * 1000,
+            'start'      => convert_to_local_time( (int)$appointment->start_time) *1000,
+            'end'        => convert_to_local_time( (int)$appointment->end_time ) * 1000,
             'constraint' => 'businessHours',
             'editable'   => true,
             'allDay'     => false,
             'url'        => admin_url( 'admin.php?page=gh_calendar&action=view_appointment&appointment=' . $appointment->ID ),// link to view appointment page
             'color'      => $color
         );
+
     }
     $json               = json_encode($display_data);
     $dow                = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'dow',true);
