@@ -59,7 +59,7 @@ class WPGH_Upgrade_Appointment{
      */
     private function upgrade_path()
     {
-        $this->update_to_version( '1.3.1' );
+        $this->update_to_version( '1.2.1' );
     }
 
     /**
@@ -108,7 +108,7 @@ class WPGH_Upgrade_Appointment{
      * Perform the upgrades for version 1.3.1
      * Updates all the time stored as a local time to UTC+0
      */
-    public function version_1_3_1()
+    public function version_1_2_1()
     {
         $appoinments = WPGH_APPOINTMENTS()->appointments->get_appointments();
         foreach ($appoinments as $appoinment )
