@@ -238,8 +238,11 @@ class WPGH_Appointment_Shortcode
                 $event = new Google_Service_Calendar_Event(array(
                     'id' => 'ghcalendarcid' . $appointment->calendar_id . 'aid' . $appointment->ID,
                     'summary' => $appointment->name,
-                    'start' => WPGH_APPOINTMENTS()->google_calendar->get_google_time($appointment->start_time),
-                    'end' => WPGH_APPOINTMENTS()->google_calendar->get_google_time($appointment->end_time),
+//                    'start' => WPGH_APPOINTMENTS()->google_calendar->get_google_time($appointment->start_time),
+//                    'end' => WPGH_APPOINTMENTS()->google_calendar->get_google_time($appointment->end_time),
+                    'start' => ['dateTime' => date('Y-m-d\TH:i:s', $appointment->start_time).'Z' ],
+                    'end' => ['dateTime' => date('Y-m-d\TH:i:s', $appointment->end_time).'Z' ],
+
                     'attendees' => array(
                         array('email' => $contact->email),
                     ),
