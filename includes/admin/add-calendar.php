@@ -49,25 +49,6 @@ if ( ! defined( 'ABSPATH' ) ) exit;
                     </ul>
                 </td>
             </tr>
-<!--            <tr class="form-field term-contact-wrap">-->
-<!--                <th scope="row">-->
-<!--                    <label >--><?php //_e( 'Start Time:' ,'groundhogg'); ?><!--</label>-->
-<!--                </th>-->
-<!--                <td>-->
-<!--                    <input type="time" id="starttime" name="starttime" value="09:00" autocomplete="off" >-->
-<!--                    <p class="description">--><?php //_e( 'Start time of working hours.', 'groundhogg' ); ?><!--</p>-->
-<!--                </td>-->
-<!--            </tr>-->
-<!--            <tr class="form-field term-contact-wrap">-->
-<!--                <th scope="row">-->
-<!--                    <label >--><?php //_e( 'End Time:' ,'groundhogg'); ?><!--</label>-->
-<!--                </th>-->
-<!--                <td>-->
-<!--                    <input type="time" id="endtime" name="endtime" value="17:00" autocomplete="off" >-->
-<!--                    <p class="description">--><?php //_e( 'End time of working hours.', 'groundhogg' ); ?><!--</p>-->
-<!--                </td>-->
-<!--            </tr>-->
-
             <tr class="form-field term-contact-wrap">
                 <th scope="row"><label><?php _e( 'Working Hours (slot 1)' ); ?></label></th>
                 <td>
@@ -109,9 +90,16 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
         </tbody>
     </table>
-    <h2><?php _e( 'Appointment' ,'groundhogg'); ?></h2>
+    <h2><?php _e( 'Appointment Setting' ,'groundhogg'); ?></h2>
     <table class="form-table">
         <tbody>
+        <tr>
+            <th scope="row"><label><?php _e( '12 Hour time' ,'groundhogg') ?></label></th>
+            <td>
+                <?php echo WPGH()->html->checkbox(['label'=> "Enable","name"=> "time_12hour"]); ?>
+                <p class="description"><?php _e( 'Enabling this setting displays time in 12 hour format.(e.g 5:00 PM)', 'groundhogg' ) ?></p>
+            </td>
+        </tr>
             <tr>
                 <th scope="row"><label ><?php _e( 'Length of appointment' ,'groundhogg'); ?></label></th>
 

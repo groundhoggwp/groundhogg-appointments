@@ -91,6 +91,11 @@ if ( ! $slot3_status ){
     $slot3_status = 0;
 }
 
+$time_12hour =  WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'time_12hour', true);
+if ( ! $time_12hour ){
+    $time_12hour = 0;
+}
+
 $access_token = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'access_token', true);
 $google_calendar_id   = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id ,'google_calendar_id' ,true);
 $google_calendar_list = (array) WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'google_calendar_list',true);
@@ -196,6 +201,13 @@ $google_calendar_list = (array) WPGH_APPOINTMENTS()->calendarmeta->get_meta($cal
     <h2><?php _e( 'Appointment Setting' ,'groundhogg'); ?></h2>
     <table class="form-table">
         <tbody>
+        <tr>
+            <th scope="row"><label><?php _e( '12 Hour time' ,'groundhogg') ?></label></th>
+            <td>
+               <?php echo WPGH()->html->checkbox(['label'=> "Enable","name"=> "time_12hour" ,'checked'=>$time_12hour ]); ?>
+                <p class="description"><?php _e( 'Enabling this setting displays time in 12 hour format.(e.g 5:00 PM)', 'groundhogg' ) ?></p>
+            </td>
+        </tr>
         <tr>
             <th scope="row"><label><?php _e( 'Length of appointment' ,'groundhogg'); ?></label></th>
             <td>

@@ -474,41 +474,6 @@ class WPGH_Calendar_Page
         $google_calendar_list = array_map( 'sanitize_text_field', $google_calendar_list );
         WPGH_APPOINTMENTS()->calendarmeta->update_meta( $calendar_id,'google_calendar_list', $google_calendar_list ) ;
 
-
-//        // start time
-//        if( isset( $_POST[ 'starttime' ] ) ) {
-//            if( isset( $_POST[ 'endtime' ] )) {
-//                $end_time  = $_POST[ 'endtime' ];
-//            } else {
-//                $end_time  = WPGH_APPOINTMENTS()->calendarmeta->get_meta( $calendar_id,'end_time',true );
-//            }
-//
-//            if( strtotime($end_time) < strtotime( $_POST[ 'starttime' ] ) ) {
-//                $this->notices->add( 'INVALID_STARTTIME', __( "End time can not be smaller then start time.", 'groundhogg' ), 'error' );
-//            } else {
-//                WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'start_time', sanitize_text_field( stripslashes ( $_POST['starttime'] ) ) );
-//            }
-//        }
-//        //end time
-//        if( isset( $_POST['endtime'] ) ) {
-//
-//            if( isset( $_POST['starttime'] )) {
-//                $start_time  = $_POST['starttime'];
-//            } else {
-//                $start_time  = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id,'start_time',true);
-//            }
-//
-//            if( strtotime($start_time) < strtotime( $_POST['endtime'] ) ) {
-//                WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'end_time', sanitize_text_field( stripslashes( $_POST['endtime'] ) ) );
-//            } else {
-//                $this->notices->add( 'INVALID_STARTTIME', __( "End time can not be smaller then start time.", 'groundhogg' ), 'error' );
-//            }
-//        }
-
-
-
-
-
         // load data from the from or database
 
         $slot1_start =  $_POST[ 'slot1_start_time' ];
@@ -586,6 +551,16 @@ class WPGH_Calendar_Page
         WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'slot3_end_time' , sanitize_text_field( stripslashes(  $slot3_end )));
         WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'slot2_status',    sanitize_text_field( stripslashes(  $slot2_check )));
         WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'slot3_status',    sanitize_text_field( stripslashes(  $slot3_check )));
+
+
+        if( isset( $_POST[ 'time_12hour' ] )) {
+            $time_12hour =  $_POST[ 'time_12hour' ];
+
+        } else {
+            $time_12hour = "0";
+        }
+        WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'time_12hour',    sanitize_text_field( stripslashes(  $time_12hour )));
+
 
 
         if( isset( $_POST[ 'custom_text_status' ] )) {
@@ -809,6 +784,14 @@ class WPGH_Calendar_Page
         WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'slot3_end_time' , sanitize_text_field( stripslashes(  $slot3_end )));
         WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'slot2_status',    sanitize_text_field( stripslashes(  $slot2_check )));
         WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'slot3_status',    sanitize_text_field( stripslashes(  $slot3_check )));
+
+        if( isset( $_POST[ 'time_12hour' ] )) {
+            $time_12hour =  $_POST[ 'time_12hour' ];
+
+        } else {
+            $time_12hour = "0";
+        }
+        WPGH_APPOINTMENTS()->calendarmeta->update_meta($calendar_id, 'time_12hour',    sanitize_text_field( stripslashes(  $time_12hour )));
 
 
         if( isset( $_POST[ 'custom_text_status' ] )) {

@@ -73,7 +73,7 @@ class WPGH_Appointment_Shortcode
      */
     public function clean_google_slots($calendar_id, $google_min, $google_max, $final_slots)
     {
-        $google_appointments = null;
+        $google_appointments = [];
         $client = WPGH_APPOINTMENTS()->google_calendar->get_google_client_form_access_token($calendar_id);
         $service = new Google_Service_Calendar($client);
         $google_calendar_list = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id, 'google_calendar_list', true);
@@ -279,6 +279,7 @@ class WPGH_Appointment_Shortcode
         $buffer_time = intval(WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id, 'buffer_time', true));
         $custom_text_status = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id, 'custom_text_status', true);
         $custom_text = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id, 'custom_text', true);
+        $time_12hour = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id, 'time_12hour', true);
 
         $i = 1;
         while ($start_time < $end_time) {
@@ -289,7 +290,11 @@ class WPGH_Appointment_Shortcode
                 $name = $custom_text . ' ' . $i;
                 $i++;
             } else {
-                $name = date('H:i', $this->get_client_date($start_time, $client_time_zone)) . ' - ' . date('H:i', $this->get_client_date($temp_endtime, $client_time_zone));
+                $name = date('H:i', $this->get_client_date($start_time, $client_time_zone)) . ' - ' . date('H:i', $this->get_client_date($temp_endtime, $client_time_zone)) ;
+
+                if( $time_12hour ) {
+                    $name = date('g:i A', $this->get_client_date($start_time, $client_time_zone)) . ' - ' . date('g:i A', $this->get_client_date($temp_endtime, $client_time_zone));
+                }
             }
 
             if ($temp_endtime <= $end_time) {
