@@ -176,6 +176,7 @@ function add_appointment()
                 editable: true,
                 eventLimit: true, // allow "more" link when too many events
                 selectable :false,
+                firstDay: <?php echo get_option('start_of_week'); ?>,
                 minTime : '<?php echo $start_time;  ?>',
                 maxTime : '<?php echo $end_time; ?>',
                 navLinks: true,

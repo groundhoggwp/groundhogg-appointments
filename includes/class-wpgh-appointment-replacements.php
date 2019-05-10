@@ -57,10 +57,15 @@ class WPGH_Appointment_Replacements
     {
         //get  all the appointments using contact id
         $appointments = (array) WPGH_APPOINTMENTS()->appointments->get_appointments_by_args(array('contact_id' => $contact_id) );
+
         if ($appointments) {
-            $appointment  = (array) $appointments[0];
-            return date_i18n( 'D, F j, Y, g:i a', $appointment[ 'start_time' ] );
+            $appointment  = (array) array_pop( $appointments );
+            $local_time = $this->get_contact_appt_timestamp( $contact_id, $appointment[ 'start_time' ] );
+            $format  =  get_option('date_format').', '.get_option('time_format');
+            return date_i18n( $format, $local_time );
         }
+
+        return '';
     }
 
     /**
@@ -74,9 +79,23 @@ class WPGH_Appointment_Replacements
     {
         //get  all the appointments using contact id
         $appointments = (array) WPGH_APPOINTMENTS()->appointments->get_appointments_by_args(array('contact_id' => $contact_id) );
+
         if ($appointments) {
-            $appointment  = (array) $appointments[0];
-            return date_i18n( 'D, F j, Y, g:i a', $appointment[ 'end_time' ] );
+            $appointment  = (array) array_pop( $appointments );
+            $local_time = $this->get_contact_appt_timestamp( $contact_id, $appointment[ 'end_time' ] );
+            $format  =  get_option('date_format'). ', '. get_option('time_format');
+            return date_i18n( $format,  $local_time );
+        }
+        return '';
+    }
+
+    protected function get_contact_appt_timestamp( $contact_id, $time )
+    {
+        $contact = wpgh_get_contact( $contact_id );
+        if ( ! $contact->get_time_zone_offset() ){
+            return wpgh_convert_to_local_time( absint( $time ) );
+        } else {
+            return $contact->get_local_time( absint( $time ) );
         }
     }
 

@@ -3,7 +3,7 @@
 Plugin Name: Groundhogg - Appointments
 Plugin URI: https://www.groundhogg.io/downloads/booking-calendar/
 Description: Create calendars and appointments.
-Version: 1.2.3
+Version: 1.2.4
 Author: Groundhogg Inc.
 Author URI: http://www.groundhogg.io
 Text Domain: groundhogg
@@ -18,8 +18,8 @@ class Groundhogg_Appointments
 {
 
     public $ID = 3461;
-    public $name = 'appointments';
-    public $version = '1.2.3';
+    public $name = 'Booking Calendar';
+    public $version = '1.2.4';
     public $author = 'Groundhogg Inc.';
     /**
      * @var WPGH_DB_Calendar_Meta
@@ -201,7 +201,7 @@ class Groundhogg_Appointments
 	    require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/admin/class-wpgh-appointment-settings-tab.php';
 	    require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/admin/class-wpgh-appointment-benchmark.php';
 	    require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/install.php';
-        require_once WPGH_APPOINTMENT_PLUGIN_DIR . 'includes/class-wpgh-upgrade-appointments.php';
+        require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/class-wpgh-upgrade-appointments.php';
     }
 }
 

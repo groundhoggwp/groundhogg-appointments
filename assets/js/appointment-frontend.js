@@ -127,7 +127,7 @@ var ghAppointment = ghAppointment || {};
 
             this.calendar.datepicker({
                 minDate:0,
-                firstDay: 0,
+                // firstDay: 0,
                 dateFormat:'yy-mm-dd',
                 onSelect: function( dateText ) {
                     appt.refreshTimeSlots( dateText );

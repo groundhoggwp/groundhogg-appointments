@@ -29,12 +29,15 @@ class WPGH_Appointment_Shortcode
 
         wp_enqueue_script('gh-calendar', WPGH_APPOINTMENT_ASSETS_FOLDER . 'js/appointment-frontend.js', array('jquery', 'jquery-ui-datepicker'), filemtime(WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/js/appointment-frontend.js'));
         //wp_enqueue_script(  'jstz', WPGH_APPOINTMENT_ASSETS_FOLDER . 'js/jstz.min.js', array( ), filemtime( WPGH_APPOINTMENT_PLUGIN_DIR . 'assets/js/jstz.min.js' ) );
-        wp_localize_script('gh-calendar', 'ghAppointment', array(
+
+        $object =  apply_filters( 'groundhogg/calendar/shortcode/js_locale', [
             'ajax_url' => admin_url('admin-ajax.php'),
             'invalidDateMsg' => __('Please select a time slot first.', 'groundhogg'),
             'invalidDetailsMsg' => __('Please make sure all your details are filled out.', 'groundhogg'),
             'invalidEmailMsg' => __('Your email address is invalid.', 'groundhogg'),
-        ));
+        ] );
+
+        wp_localize_script('gh-calendar', 'ghAppointment', $object );
     }
 
     /**
@@ -165,15 +168,22 @@ class WPGH_Appointment_Shortcode
         $start = intval($_POST['start_time']);
         $end = intval($_POST['end_time']);
 
+        $messages = apply_filters( 'groundhogg/calendar/shortcode/js_ajax_errors_add_appointment', [
+            'invalid_date'  => __( 'PLease provide a valid date selection.', 'groundhogg' ),
+            'invalid_email' => __('Please enter a valid email address.', 'groundhogg'),
+            'not_created'   => __('Something went wrong. Appointment not created!', 'groundhogg'),
+            'success'       => __('Appointment Booked Successfully.')
+        ] );
+
         if (!$start || !$end) {
-            $response = array('status' => 'failed', 'msg' => __('PLease provide a valid date selection.', 'groundhogg'));
+            $response = array('status' => 'failed', 'msg' => $messages[ 'invalid_date' ] );
             wp_die(json_encode($response));
         }
 
 
         $email = sanitize_email(stripslashes($_POST['email']));
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $response = array('status' => 'failed', 'msg' => __('Please enter a valid email address.', 'groundhogg'));
+            $response = array('status' => 'failed', 'msg' => $messages[ 'invalid_email' ] );
             wp_die(json_encode($response));
         }
 
@@ -216,14 +226,14 @@ class WPGH_Appointment_Shortcode
         ));
         // Insert meta
         if ($appointment_id === false) {
-            $response = array('status' => 'failed', 'msg' => __('Something went wrong. Appointment not created!', 'groundhogg'));
+            $response = array('status' => 'failed', 'msg' => $messages['not_created']);
             wp_die(json_encode($response));
         }
         // generate array for event
         //todo make dynamic (client chooses Msg!)
         $message = WPGH_APPOINTMENTS()->calendarmeta->get_meta($calendar_id, 'message', true);
         if ($message == '') {
-            $message = 'Appointment booked successfully';
+            $message = $messages['success'];
         }
 
         //ADD Appointment into google calendar
@@ -321,6 +331,11 @@ class WPGH_Appointment_Shortcode
     public function gh_get_appointment_client()
     {
 
+        $messages = apply_filters( 'groundhogg/calendar/shortcode/js_ajax_errors_get_appointment', [
+            'no_slots'  => __('Sorry, no time slots are available for this date period.', 'groundhogg'),
+            'no_appointment' => __('No appointments available.', 'groundhogg'),
+        ] );
+
         global $wpdb;
         $client_time_zone = sanitize_text_field($_POST['timeZone']);
         //var_dump($client_time_zone);
@@ -340,7 +355,7 @@ class WPGH_Appointment_Shortcode
             $entered_dow = 0;
         }
         if (in_array($entered_dow, $dow) === false) {
-            $response = array('status' => 'failed', 'msg' => __('Sorry, no time slots are available for this date period.', 'groundhogg'));
+            $response = array('status' => 'failed', 'msg' => $messages['no_slots']);
             wp_die(json_encode($response));
         }
 
@@ -369,8 +384,6 @@ class WPGH_Appointment_Shortcode
         $all_slots = null;
 
         $offset = intval( get_option( 'gmt_offset' ) ) * HOUR_IN_SECONDS;
-
-//        var_dump( $offset );
 
         // UNIX TIME UTC-0
         $slot1_start = strtotime($date . ' ' . $slot1_start ) - $offset;
@@ -465,7 +478,7 @@ class WPGH_Appointment_Shortcode
         }
 
         if ($available_slots == null) {
-            $response = array('status' => 'failed', 'msg' => __('No appointments available.', 'groundhogg'));
+            $response = array('status' => 'failed', 'msg' => $messages['no_appointment']);
             wp_die(json_encode($response));
         }
 
@@ -475,7 +488,7 @@ class WPGH_Appointment_Shortcode
         }
 
         if ($final_slots == null) {
-            $response = array('status' => 'failed', 'msg' => __('No appointments available.', 'groundhogg'));
+            $response = array('status' => 'failed', 'msg' => $messages['no_appointment']);
             wp_die(json_encode($response));
         }
 
@@ -534,6 +547,8 @@ class WPGH_Appointment_Shortcode
         wp_enqueue_script('jquery-ui-datepicker');
 
 
+        $start_of_week = get_option('start_of_week');
+
         $args = shortcode_atts(array(
             'calendar_id' => 0,
             'appointment_name' => __('New Client Appointment', 'groundhogg')
@@ -570,6 +585,9 @@ class WPGH_Appointment_Shortcode
         $contact = WPGH()->tracking->get_contact();
 
         ob_start();
+
+
+
         ?>
         <style>
             .calendar-form-wrapper .wpgh-calendar .ui-widget {
@@ -620,6 +638,11 @@ class WPGH_Appointment_Shortcode
                     return false;
                 return true;
             }
+            var calendar= $( '#appt-calendar' );
+            calendar.datepicker({
+                firstDay: <?php echo $start_of_week ; ?>,
+            });
+
         </script>
         <div class="calendar-form-wrapper">
             <form class="gh-calendar-form" method="post">
@@ -646,14 +669,14 @@ class WPGH_Appointment_Shortcode
                             <div class="gh-form-column col-1-of-2">
                                 <div class="gh-form-field">
                                     <?php $value = $contact ? $contact->first_name : ''; ?>
-                                    <input type="text" name="first_name" id="first_name" placeholder="First Name"
+                                    <input type="text" name="first_name" id="first_name" placeholder="<?php _e( 'First Name' ); ?>"
                                            value="<?php echo $value; ?>" required/>
                                 </div>
                             </div>
                             <div class="gh-form-column col-1-of-2">
                                 <div class="gh-form-field">
                                     <?php $value = $contact ? $contact->last_name : ''; ?>
-                                    <input type="text" name="last_name" id="last_name" placeholder="Last Name"
+                                    <input type="text" name="last_name" id="last_name" placeholder="<?php _e( 'Last Name' ); ?>"
                                            value="<?php echo $value; ?>" required/>
                                 </div>
                             </div>
@@ -662,7 +685,7 @@ class WPGH_Appointment_Shortcode
                             <div class="gh-form-column col-1-of-1">
                                 <div class="gh-form-field">
                                     <?php $value = $contact ? $contact->email : ''; ?>
-                                    <input type="email" name="email" id="email" placeholder="Email"
+                                    <input type="email" name="email" id="email" placeholder="<?php _e( 'Email' ); ?>"
                                            value="<?php echo $value; ?>" required/>
                                 </div>
                             </div>
@@ -671,7 +694,7 @@ class WPGH_Appointment_Shortcode
                             <div class="gh-form-column col-1-of-1">
                                 <div class="gh-form-field">
                                     <?php $value = $contact ? $contact->get_meta('primary_phone') : ''; ?>
-                                    <input type="tel" name="phone" id="phone" placeholder="Contact Number"
+                                    <input type="tel" name="phone" id="phone" placeholder="<?php _e( 'Phone' ); ?>"
                                            value="<?php echo $value; ?>" required/>
                                 </div>
                             </div>
@@ -679,8 +702,9 @@ class WPGH_Appointment_Shortcode
                         <div class="gh-form-row clearfix">
                             <div class="gh-form-column col-1-of-1">
                                 <div class="gh-form-field">
+                                    <?php $book_text = apply_filters( 'groundhogg/calendar/shortcode/confirm_text', __( 'Book Appointment', 'groundhogg' ) ); ?> ); ?>
                                     <input type="submit" name="book_appointment" id="book_appointment"
-                                           value="Book Appointment"/>
+                                           value="<?php esc_attr_e( $book_text ); ?>"/>
                                 </div>
                             </div>
                         </div>
@@ -727,5 +751,4 @@ class WPGH_Appointment_Shortcode
 
         return $return;
     }
-
 }
