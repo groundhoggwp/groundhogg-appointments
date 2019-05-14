@@ -702,7 +702,7 @@ class WPGH_Appointment_Shortcode
                         <div class="gh-form-row clearfix">
                             <div class="gh-form-column col-1-of-1">
                                 <div class="gh-form-field">
-                                    <?php $book_text = apply_filters( 'groundhogg/calendar/shortcode/confirm_text', __( 'Book Appointment', 'groundhogg' ) ); ?> ); ?>
+                                    <?php $book_text = apply_filters( 'groundhogg/calendar/shortcode/confirm_text', __( 'Book Appointment', 'groundhogg' ) ); ?>
                                     <input type="submit" name="book_appointment" id="book_appointment"
                                            value="<?php esc_attr_e( $book_text ); ?>"/>
                                 </div>
