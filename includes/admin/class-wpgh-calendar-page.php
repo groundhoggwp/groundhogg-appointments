@@ -980,8 +980,8 @@ class WPGH_Calendar_Page
         }
 
         // Add start and end date to contact meta
-        WPGH()->contact_meta->update_meta( $contact_id , 'appointment_start' ,wpgh_convert_to_utc_0( $start_time )) ;
-        WPGH()->contact_meta->update_meta( $contact_id , 'appointment_end' , wpgh_convert_to_utc_0($end_time)) ;
+        WPGH()->contact_meta->update_meta( $contact_id , 'appointment_start' ,date('Y-m-d', wpgh_convert_to_utc_0( $start_time )) );
+        WPGH()->contact_meta->update_meta( $contact_id , 'appointment_end' ,  date('Y-m-d', wpgh_convert_to_utc_0($end_time)) ) ;
 
         if( $status ) {
             //update google calendar  ..
@@ -1044,8 +1044,8 @@ class WPGH_Calendar_Page
         $appointment  =  $this->db->get_appointment( $appointment_id );
 
         // Add start and end date to contact meta
-        WPGH()->contact_meta->update_meta($appointment->contact_id , 'appointment_start' ,$start_time) ;
-        WPGH()->contact_meta->update_meta($appointment->contact_id , 'appointment_end' , $end_time) ;
+        WPGH()->contact_meta->update_meta($appointment->contact_id , 'appointment_start' , date('Y-m-d', $start_time) ) ;
+        WPGH()->contact_meta->update_meta($appointment->contact_id , 'appointment_end' , date('Y-m-d', $end_time) );
 
 
         if ($status){
@@ -1125,8 +1125,8 @@ class WPGH_Calendar_Page
         }
 
         // Add start and end date to contact meta
-        WPGH()->contact_meta->update_meta($contact_id , 'appointment_start' ,$start) ;
-        WPGH()->contact_meta->update_meta($contact_id , 'appointment_end' , $end ) ;
+        WPGH()->contact_meta->update_meta($contact_id , 'appointment_start' , date('Y-m-d', $start) );
+        WPGH()->contact_meta->update_meta($contact_id , 'appointment_end' ,date('Y-m-d', $end ) ) ;
 
 
         if ( $note != ''){

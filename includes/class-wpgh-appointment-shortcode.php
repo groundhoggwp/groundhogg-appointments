@@ -226,8 +226,10 @@ class WPGH_Appointment_Shortcode
         ));
 
         // Add start and end date to contact meta
-        WPGH()->contact_meta->update_meta($contact_id , 'appointment_start' ,strtotime('+10 seconds', $start) ) ;
-        WPGH()->contact_meta->update_meta($contact_id , 'appointment_end' , $end ) ;
+
+
+        WPGH()->contact_meta->update_meta($contact_id , 'appointment_start' , date('Y-m-d', strtotime('+1 seconds', $start) ) ) ;
+        WPGH()->contact_meta->update_meta($contact_id , 'appointment_end' , date('Y-m-d',  $end ) ) ;
 
         // Insert meta
         if ($appointment_id === false) {
