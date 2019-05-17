@@ -5,10 +5,8 @@
  *
  */
 
-
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) exit;
-
 
 class WPGH_Calendar_Page
 {
@@ -328,9 +326,6 @@ class WPGH_Calendar_Page
         wp_redirect( $base_url );
         die();
     }
-
-
-
 
     /**
      * Verify the current user can process the action
@@ -888,7 +883,6 @@ class WPGH_Calendar_Page
         include dirname(__FILE__) . '/view-appointment.php';
     }
 
-
     /**
      * Delete appointment form google calendar and Groundhogg calendar
      *
@@ -915,7 +909,6 @@ class WPGH_Calendar_Page
         return true;
 
     }
-
 
     /**
      *  Display add appointment page
@@ -986,6 +979,10 @@ class WPGH_Calendar_Page
             $this->meta->update_meta($appointment_id , 'note', sanitize_text_field(stripslashes( $_POST[ 'description' ] ) ) );
         }
 
+        // Add start and end date to contact meta
+        WPGH()->contact_meta->update_meta( $contact_id , 'appointment_start' ,wpgh_convert_to_utc_0( $start_time )) ;
+        WPGH()->contact_meta->update_meta( $contact_id , 'appointment_end' , wpgh_convert_to_utc_0($end_time)) ;
+
         if( $status ) {
             //update google calendar  ..
             $appointment    =  $this->db->get_appointment( $appointment_id );
@@ -1019,7 +1016,6 @@ class WPGH_Calendar_Page
         return;
     }
 
-
     /**
      * AJAX call to update appointments from admin add appointment section
      *
@@ -1035,8 +1031,9 @@ class WPGH_Calendar_Page
 
         // Handle update appointment
         $appointment_id  = intval( $_POST['id'] );
-        $start_time      = strtotime( sanitize_text_field( stripslashes( $_POST['start_time'] ) ) );
+        $start_time      = strtotime( '+1 seconds', strtotime( sanitize_text_field( stripslashes( $_POST['start_time'] ) ) ));
         $end_time        = strtotime( sanitize_text_field( stripslashes( $_POST['end_time'] ) ) );
+
 
         // update appointment detail
         $status = $this->db->update($appointment_id ,array(
@@ -1044,12 +1041,17 @@ class WPGH_Calendar_Page
             'end_time'      => $end_time,
         ));
 
+        $appointment  =  $this->db->get_appointment( $appointment_id );
+
+        // Add start and end date to contact meta
+        WPGH()->contact_meta->update_meta($appointment->contact_id , 'appointment_start' ,$start_time) ;
+        WPGH()->contact_meta->update_meta($appointment->contact_id , 'appointment_end' , $end_time) ;
+
+
         if ($status){
             do_action('gh_calendar_update_appointment_admin',$appointment_id , 'reschedule_admin' );
             //update appointment on google
-
             // retrieve appointment and update its detail on google calendar.
-            $appointment  =  $this->db->get_appointment( $appointment_id );
             $access_token  = WPGH_APPOINTMENTS()->calendarmeta->get_meta( $appointment->calendar_id , 'access_token',true );
             $google_calendar_id = WPGH_APPOINTMENTS()->calendarmeta->get_meta( $appointment->calendar_id ,'google_calendar_id' ,true );
             if ( $access_token  && $google_calendar_id ) {
@@ -1121,6 +1123,11 @@ class WPGH_Calendar_Page
             $response = array( 'msg' => __('Something went wrong. Appointment not created !' ,'groundhogg'));
             wp_die( json_encode( $response ) );
         }
+
+        // Add start and end date to contact meta
+        WPGH()->contact_meta->update_meta($contact_id , 'appointment_start' ,$start) ;
+        WPGH()->contact_meta->update_meta($contact_id , 'appointment_end' , $end ) ;
+
 
         if ( $note != ''){
             WPGH_APPOINTMENTS()->appointmentmeta->add_meta($appointment_id , 'note' , $note);

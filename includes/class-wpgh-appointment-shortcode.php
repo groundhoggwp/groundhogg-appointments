@@ -221,9 +221,14 @@ class WPGH_Appointment_Shortcode
             'calendar_id' => $calendar_id,
             'name' => $appointment_name,
             'status' => 'pending',
-            'start_time' => strtotime('+10 seconds', $start),
+            'start_time' => strtotime('+1 seconds', $start),
             'end_time' => $end
         ));
+
+        // Add start and end date to contact meta
+        WPGH()->contact_meta->update_meta($contact_id , 'appointment_start' ,strtotime('+10 seconds', $start) ) ;
+        WPGH()->contact_meta->update_meta($contact_id , 'appointment_end' , $end ) ;
+
         // Insert meta
         if ($appointment_id === false) {
             $response = array('status' => 'failed', 'msg' => $messages['not_created']);
