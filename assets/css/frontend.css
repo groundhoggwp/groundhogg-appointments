@@ -13,11 +13,13 @@
 }
 
 .select-time .appointment-time{
-    margin: 5px;
     padding: 7px;
     font-size: 14px;
     font-weight: 600;
     color: #FFF;
+    margin-bottom: 15px;
+    width: 100%;
+    box-sizing: border-box;
     background-color: #29a2d9;
     border-color: #2586b3;
     border-width: 1px 2px 2px 1px;
@@ -35,33 +37,15 @@
 
 .select-time .appointment-time.selected{
     background-color: #76c567;
-    border-color: #32aa55;
+    /*border-color: #32aa55;*/
+    padding: 10px;
 }
 
-.appointment-errors{
-    /*background: rgba(255, 198, 174, 0.56);*/
-    /*color: #FF1212;*/
-    /*border: 1px solid #FF1212;*/
-    /*border-radius: 2px;*/
-    /*padding-left: 4px;*/
-    /*margin: 5px 0 2px 0;*/
-    background-color: #f2dede;
-    border-color: #ebcccc;
-    color: #a94442;
-    padding: .75rem 1.25rem;
-    margin-bottom: 1rem;
-    margin-top: 1rem;
-    border: 1px solid transparent;
-    border-radius: .25rem;
+#appointment-errors {
+    margin-top: 10px;
 }
 
 .appointment-success{
-    /*background: rgba(138, 230, 120, 0.56);*/
-    /*color: #558f49;*/
-    /*border: 1px solid #60a054;*/
-    /*border-radius: 2px;*/
-    /*padding-left: 4px;*/
-    /*margin: 5px 0 2px 0;*/
     background-color: #dff0d8;
     border-color: #d0e9c6;
     color: #3c763d;

@@ -1,219 +1,84 @@
 <?php
 /*
-Plugin Name: Groundhogg - Appointments
-Plugin URI: https://www.groundhogg.io/downloads/booking-calendar/
-Description: Create calendars and appointments.
-Version: 1.2.5
-Author: Groundhogg Inc.
-Author URI: http://www.groundhogg.io
-Text Domain: groundhogg
-Domain Path: /languages
-*/
+ * Plugin Name: Groundhogg - Booking Calendar
+ * Plugin URI:  https://www.groundhogg.io/downloads/booking-calendar/?utm_source=wp-plugins&utm_campaign=plugin-uri&utm_medium=wp-dash
+ * Description: Create calendars and appointments.
+ * Version: 2.0
+ * Author: Groundhogg Inc.
+ * Author URI: https://www.groundhogg.io/?utm_source=wp-plugins&utm_campaign=author-uri&utm_medium=wp-dash
+ * Text Domain: groundhogg
+ * Domain Path: /languages
+ *
+ * Groundhogg is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * any later version.
+ *
+ * Groundhogg is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ */
+
+
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-if ( ! class_exists( 'Groundhogg_Appointments' ) ) :
+define( 'GROUNDHOGG_BOOKING_CALENDAR_VERSION', '2.0' );
+define( 'GROUNDHOGG_BOOKING_CALENDAR_PREVIOUS_STABLE_VERSION', '0.1' );
+define( 'GROUNDHOGG_BOOKING_CALENDAR_NAME', 'Booking Calendar' );
 
-class Groundhogg_Appointments
-{
+define( 'GROUNDHOGG_BOOKING_CALENDAR__FILE__', __FILE__ );
+define( 'GROUNDHOGG_BOOKING_CALENDAR_PLUGIN_BASE', plugin_basename( GROUNDHOGG_BOOKING_CALENDAR__FILE__ ) );
+define( 'GROUNDHOGG_BOOKING_CALENDAR_PATH', plugin_dir_path( GROUNDHOGG_BOOKING_CALENDAR__FILE__ ) );
 
-    public $ID = 3461;
-    public $name = 'Booking Calendar';
-    public $version = '1.2.5';
-    public $author = 'Groundhogg Inc.';
-    /**
-     * @var WPGH_DB_Calendar_Meta
-     */
-    public $calendarmeta;
+define( 'GROUNDHOGG_BOOKING_CALENDAR_URL', plugins_url( '/', GROUNDHOGG_BOOKING_CALENDAR__FILE__ ) );
 
-    /**
-     * @var WPGH_DB_Appointment_Meta
-     */
-    public $appointmentmeta;
+define( 'GROUNDHOGG_BOOKING_CALENDAR_ASSETS_PATH', GROUNDHOGG_BOOKING_CALENDAR_PATH . 'assets/' );
+define( 'GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL', GROUNDHOGG_BOOKING_CALENDAR_URL . 'assets/' );
 
-    /**
-     * @var WPGH_DB_Appointments
-     */
-    public $appointments;
+add_action( 'plugins_loaded', function (){
+    load_plugin_textdomain( GROUNDHOGG_BOOKING_CALENDAR_TEXT_DOMAIN, false, basename( dirname( __FILE__ ) ) . '/languages' );
+} );
 
-    /**
-     * @var WPGH_DB_Calendar
-     */
-    public $calendar;
+define( 'GROUNDHOGG_BOOKING_CALENDAR_TEXT_DOMAIN', 'groundhogg' );
 
-    /**
-     * @var WPGH_Extension
-     */
-    public $extension;
-
-    /**
-     * @var Groundhogg_Appointments
-     */
-    public static $instance;
-
-    /**
-     * @var WPGH_Calendar_Page
-     */
-    public $page;
-
-
-    /**
-     * @var WPGH_Roles_Calendar
-     */
-    public $role_calendar;
-
-    /**
-     * @var WPGH_Appointment_Replacements
-     */
-    public $replacements;
-
-    /**
-     * @var WPGH_Appointment_settings_Tab
-     */
-    public $settings;
-
-    /**
-     * @var WPGH_Appointment_Benchmark
-     */
-    public $benchmark;
-
-    /**
-     * @var WPGH_Appointment_Shortcode
-     */
-    public $shortcode;
-
-    /**
-     * @var WPGH_Google_Calendar
-     */
-    public $google_calendar;
-
-
-    /**
-     * @var WPGH_Upgrade_Appointment
-     */
-    public $upgrade_appointment;
-
-    /**
-     * @var bool
-     */
-    public static $is_setup = false;
-
-    /**
-     * create object
-     *
-     * @return Groundhogg_Appointments
-     */
-    public static function instance()
-    {
-        if ( ! self::$is_setup ) {
-
-            self::$is_setup = true;
-
-            self::$instance = new Groundhogg_Appointments;
-
-            self::$instance->setup_constants();
-            self::$instance->add_extension();
-            self::$instance->includes();
-
-            self::$instance->calendar         = new WPGH_DB_Calendar();
-            self::$instance->calendarmeta     = new WPGH_DB_Calendar_Meta();
-            self::$instance->appointments     = new WPGH_DB_Appointments();
-            self::$instance->appointmentmeta  = new WPGH_DB_Appointment_Meta();
-
-            self::$instance->role_calendar    = new WPGH_Roles_Calendar();
-
-            self::$instance->benchmark        = new WPGH_Appointment_Benchmark();
-            self::$instance->replacements     = new WPGH_Appointment_Replacements();
-            self::$instance->google_calendar  = new WPGH_Google_Calendar();
-            self::$instance->shortcode        = new WPGH_Appointment_Shortcode();
-
-            if ( is_admin() ){
-                self::$instance->page             = new WPGH_Calendar_Page();
-                self::$instance->settings         = new WPGH_Appointment_Settings_Tab();
-                self::$instance->upgrade_appointment = new WPGH_Upgrade_Appointment();
-
-            }
-
-        }
-
-        return self::$instance;
-    }
-
-    /**
-     * Setup the constants
-     */
-
-    private function setup_constants()
-    {
-        if ( ! defined( 'WPGH_APPOINTMENT_ID' ) ) {
-            define('WPGH_APPOINTMENT_ID', $this->ID);
-        }
-        if ( ! defined( 'WPGH_APPOINTMENT_NAME' ) ) {
-            define( 'WPGH_APPOINTMENT_NAME', $this->name );
-        }
-        if ( ! defined( 'WPGH_APPOINTMENT_VERSION' ) ) {
-            define( 'WPGH_APPOINTMENT_VERSION', $this->version );
-        }
-        if ( ! defined( 'WPGH_APPOINTMENT_PLUGIN_URI' ) ) {
-            define( 'WPGH_APPOINTMENT_PLUGIN_URI', plugins_url( '/', __FILE__ ) );
-        }
-        if ( ! defined( 'WPGH_APPOINTMENT_PLUGIN_DIR' ) ) {
-            define( 'WPGH_APPOINTMENT_PLUGIN_DIR', plugin_dir_path(__FILE__ ) );
-        }
-        if ( ! defined( 'WPGH_APPOINTMENT_PLUGIN_FILE' ) ){
-            define( 'WPGH_APPOINTMENT_PLUGIN_FILE', __FILE__ );
-        }
-        if ( ! defined( 'WPGH_APPOINTMENT_ASSETS_FOLDER' ) ){
-            define( 'WPGH_APPOINTMENT_ASSETS_FOLDER', plugin_dir_url( __FILE__ ) . 'assets/' );
-        }
-    }
-
-    /**
-     * Add the extension for licensing.
-     */
-    private function add_extension()
-    {
-        self::$instance->extension = new WPGH_Extension(
-            $this->ID,
-            $this->name,
-            __FILE__,
-            $this->version,
-            $this->author,
-            '',
-            'Run automation based on Groundhogg Appointments.'
-        );
-    }
-
-    /**
-     * includes all  the essential files.
-     */
-    public function includes()
-    {
-	    require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/class-wpgh-db-appointmentmeta.php';
-	    require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/class-wpgh-google-calendar.php';
-	    require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/class-wpgh-roles-calendar.php';
-	    require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/class-wpgh-db-calendarmeta.php';
-	    require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/class-wpgh-db-appointment.php';
-	    require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/class-wpgh-db-calendar.php';
-	    require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/class-wpgh-appointment-shortcode.php';
-	    require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/class-wpgh-appointment-replacements.php';
-	    require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/admin/class-wpgh-calendar-page.php';
-	    require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/admin/class-wpgh-appointment-settings-tab.php';
-	    require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/admin/class-wpgh-appointment-benchmark.php';
-	    require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/install.php';
-        require_once WPGH_APPOINTMENT_PLUGIN_DIR  . 'includes/class-wpgh-upgrade-appointments.php';
-    }
-}
-
-endif;
-
-function WPGH_APPOINTMENTS()
-{
-    return Groundhogg_Appointments::instance();
-}
-
-if ( ! class_exists( 'Groundhogg' ) ) {
-    add_action('groundhogg_loaded', 'WPGH_APPOINTMENTS');
+if ( ! version_compare( PHP_VERSION, '5.6', '>=' ) ) {
+    add_action( 'admin_notices', function(){
+        $message = sprintf( esc_html__( '%s requires PHP version %s+, plugin is currently NOT RUNNING.', 'groundhogg' ), GROUNDHOGG_BOOKING_CALENDAR_NAME, '5.6' );
+        $html_message = sprintf( '<div class="notice notice-error">%s</div>', wpautop( $message ) );
+        echo wp_kses_post( $html_message );
+    } );
+} elseif ( ! version_compare( get_bloginfo( 'version' ), '4.9', '>=' ) ) {
+    add_action( 'admin_notices', function (){
+        $message = sprintf( esc_html__( '%s requires WordPress version %s+. Because you are using an earlier version, the plugin is currently NOT RUNNING.', 'groundhogg' ), GROUNDHOGG_BOOKING_CALENDAR_NAME, '4.9' );
+        $html_message = sprintf( '<div class="notice notice-error">%s</div>', wpautop( $message ) );
+        echo wp_kses_post( $html_message );
+    } );
 } else {
-	WPGH_APPOINTMENTS();
+
+    // Groundhogg is loaded, load now.
+    if ( did_action( 'groundhogg/loaded' ) ){
+
+        require GROUNDHOGG_BOOKING_CALENDAR_PATH . 'includes/plugin.php';
+
+        // Lazy load, wait for Groundhogg!
+    } else {
+        add_action('groundhogg/loaded', function () {
+            require GROUNDHOGG_BOOKING_CALENDAR_PATH . 'includes/plugin.php';
+        });
+
+        // Might not actually be loaded, so we'll check in later.
+        add_action( 'admin_notices', function () {
+
+            // Is not loaded!
+            if ( ! defined( 'GROUNDHOGG_VERSION' ) ){
+                $message = sprintf(esc_html__('Groundhoggg is not currently active, it must be active for %s to work.', 'groundhogg'), GROUNDHOGG_BOOKING_CALENDAR_NAME );
+                $html_message = sprintf('<div class="notice notice-warning">%s</div>', wpautop($message));
+                echo wp_kses_post($html_message);
+            }
+        });
+    }
 }
+
+

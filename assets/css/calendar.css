@@ -1,32 +1,32 @@
-.wpgh-calendar {
+.groundhogg-calendar {
     font-size: 90%;
 }
 
-.wpgh-calendar .ui-widget {
-    font-family: "Helvetica Neue","Trebuchet MS",Tahoma,Verdana,Arial,sans-serif;
-    background: #f7f7f7;
+.groundhogg-calendar .ui-widget {
+    /*font-family: "Helvetica Neue","Trebuchet MS",Tahoma,Verdana,Arial,sans-serif;*/
+    /*background: #f7f7f7;*/
     border: none;
     border-radius: 0;
     -webkit-border-radius: 0;
     -moz-border-radius: 0;
-    box-shadow: 0 1px 1px rgba(37, 37, 37, 0.28);
+    /*box-shadow: 0 1px 1px rgba(37, 37, 37, 0.28);*/
 }
 
-.wpgh-calendar .ui-datepicker {
+.groundhogg-calendar .ui-datepicker {
     padding: 0;
     width: 100%;
 }
 
-.wpgh-calendar .ui-datepicker-header {
+.groundhogg-calendar .ui-datepicker-header {
     border: none;
-    border-bottom: 1px solid #e6e6e6;
+    /*border-bottom: 1px solid #e6e6e6;*/
     background: transparent;
     font-weight: normal;
     font-size: 11px;
     text-transform: uppercase;
 }
 
-.wpgh-calendar .ui-datepicker-header .ui-state-hover {
+.groundhogg-calendar .ui-datepicker-header .ui-state-hover {
     background: transparent;
     border-color: transparent;
     cursor: pointer;
@@ -35,85 +35,102 @@
     -moz-border-radius: 0;
 }
 
-.wpgh-calendar .ui-datepicker .ui-datepicker-title {
+.groundhogg-calendar .ui-datepicker .ui-datepicker-title {
     color: #636363;
-    font-weight: 600;
+    font-weight: bold;
+    font-size: 18px;
     margin-top: 1.5em;
     margin-bottom: 1em;
 }
 
-.wpgh-calendar .ui-datepicker .ui-datepicker-prev-hover,
-.wpgh-calendar .ui-datepicker .ui-datepicker-next-hover,
-.wpgh-calendar .ui-datepicker .ui-datepicker-next,
-.wpgh-calendar .ui-datepicker .ui-datepicker-prev {
+.groundhogg-calendar .ui-datepicker .ui-datepicker-prev-hover,
+.groundhogg-calendar .ui-datepicker .ui-datepicker-next-hover,
+.groundhogg-calendar .ui-datepicker .ui-datepicker-next,
+.groundhogg-calendar .ui-datepicker .ui-datepicker-prev {
     top: 1.7em;
     border:none;
 }
 
-.wpgh-calendar .ui-datepicker .ui-datepicker-prev-hover {
+.groundhogg-calendar .ui-datepicker .ui-datepicker-prev-hover {
     left: 2px;
 }
 
-.wpgh-calendar .ui-datepicker .ui-datepicker-next-hover {
+.groundhogg-calendar .ui-datepicker .ui-datepicker-next-hover {
     right: 2px;
 }
 
-.wpgh-calendar .ui-datepicker .ui-datepicker-next span,
-.wpgh-calendar .ui-datepicker .ui-datepicker-prev span {
-    background-image: url(images/ui-icons_454545_256x240.png);
+.groundhogg-calendar .ui-datepicker .ui-datepicker-next span,
+.groundhogg-calendar .ui-datepicker .ui-datepicker-prev span {
+    /*background-image: url(images/ui-icons_454545_256x240.png);*/
     background-position: -32px -32px;
     margin-top: 0;
     top: 0;
     font-weight: normal;
 }
 
-.wpgh-calendar .ui-datepicker .ui-datepicker-prev span {
+.groundhogg-calendar .ui-datepicker .ui-datepicker-prev span {
     background-position: -96px -32px;
 }
 
-.wpgh-calendar .ui-datepicker .ui-datepicker-prev-hover span {
+.groundhogg-calendar .ui-datepicker .ui-datepicker-prev-hover span {
     background-position: -96px -48px;
 }
 
-.wpgh-calendar .ui-datepicker .ui-datepicker-next-hover span {
+.groundhogg-calendar .ui-datepicker .ui-datepicker-next-hover span {
     background-position: -32px -48px;
 }
 
-.wpgh-calendar .ui-datepicker table {
+.groundhogg-calendar .ui-datepicker table {
     margin: 0;
+    border: none;
 }
 
-.wpgh-calendar .ui-datepicker th {
-    padding: 3em 0;
-    color: #909090;
-    font-size: 10px;
-    font-weight: normal;
+.groundhogg-calendar .ui-datepicker th {
+    /*padding: 3em 0;*/
+    color: #6c6c6c;
+    font-size: 14px;
+    font-weight: 600;
     /*text-shadow: 0 0 1px #b2b2b2;*/
     text-transform: uppercase;
     border: none;
     /*border-top: 1px solid #909090;*/
 }
 
-.wpgh-calendar .ui-datepicker td {
+.groundhogg-calendar .ui-datepicker td {
     border: none;
     padding: 0;
 }
 
-.wpgh-calendar td .ui-state-default {
-    background: transparent;
+.groundhogg-calendar td {
+    text-align: center;
+    background: none;
+}
+
+.groundhogg-calendar td.ui-datepicker-unselectable .ui-state-default {
+    background: none;
+    border-radius: 0;
+}
+
+.groundhogg-calendar td .ui-state-default {
+    display: inline-block;
+    background: #efefef;
+    border-radius: 50%;
+    height: 50px;
+    width: 50px;
     border: none;
     text-align: center;
     padding: 1em 0;
-    margin: 0;
-    font-weight: normal;
+    margin: 10px auto 0 auto;
+    font-weight: bold;
     color: #636363;
-    font-size: 12px;
+    font-size: 14px;
 }
 
-.wpgh-calendar td .ui-state-active,
-.wpgh-calendar td .ui-state-hover {
+.groundhogg-calendar td .ui-state-hover {
     background: #e4e4e4;
-    border-radius: 4px;
-    -webkit-border-radius: 4px;
-    -moz-border-radius: 4px;
+}
+
+.groundhogg-calendar td .ui-state-active {
+    color: #5c9d4f;
+    background: rgba(118, 197, 103, 0.18);
 }

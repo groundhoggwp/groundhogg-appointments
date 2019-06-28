@@ -10,10 +10,10 @@ var appointment;
                 appointment.addAppointment();
             } );
 
-            $( '#verify_code' ).on( 'click', function(e){
-                e.preventDefault();
-                appointment.verifyCode();
-            } );
+            // $( '#verify_code' ).on( 'click', function(e){
+            //     e.preventDefault();
+            //     appointment.verifyCode();
+            // } );
         },
         addAppointment: function(){
             var start_time          = null;
@@ -73,8 +73,6 @@ var appointment;
 
         },
         verifyCode : function () {
-
-
 
             var code        = $('#auth_code').val();
             var calendar    = $('#calendar').val();

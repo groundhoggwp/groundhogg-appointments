@@ -338,6 +338,7 @@ class WPGH_Appointment_Shortcode
     public function gh_get_appointment_client()
     {
 
+
         $messages = apply_filters( 'groundhogg/calendar/shortcode/js_ajax_errors_get_appointment', [
             'no_slots'  => __('Sorry, no time slots are available for this date period.', 'groundhogg'),
             'no_appointment' => __('No appointments available.', 'groundhogg'),
