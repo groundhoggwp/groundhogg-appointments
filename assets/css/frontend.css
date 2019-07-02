@@ -1,11 +1,7 @@
-.ui-datepicker-current-day{
-    border-style: solid;
-    font-weight: bold;
-    color: #ffffff;
-}
+html {overflow-y: hidden;}
 
-.ui-datepicker-calendar{
-    text-align: center;
+body.groundhogg-calendar-body {
+    background-color: #FFF !important;
 }
 
 .hidden {
@@ -83,4 +79,37 @@ hr.time-slot-divider{
     width: 100%;
     display: block;
     padding: 7px;
+}
+
+.loader-overlay{
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.51);
+    z-index: 9999;
+    cursor: pointer;
+}
+
+.loader-wrap{
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 99999;
+}
+
+.loader-wrap p {
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
 }

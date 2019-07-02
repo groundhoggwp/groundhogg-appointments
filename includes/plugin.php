@@ -61,12 +61,14 @@ class Plugin extends Extension
         $this->roles = new Roles();
         $this->installer = new Installer();
         $this->shortcode = new Shortcode();
+
+        new Rewrites();
     }
 
     public function register_admin_pages( $admin_menu )
     {
-        $admin_menu->calendartest = new Test_Page();
-        $admin_menu->calendarpage = new Calendar_Page();
+//        $admin_menu->calendartest = new Test_Page();
+        $admin_menu->calendar = new Calendar_Page();
     }
 
 
@@ -104,12 +106,7 @@ class Plugin extends Extension
     public function register_frontend_scripts( $is_minified, $IS_MINIFIED )
     {
         wp_register_script( 'jstz', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'js/jstz.min.js', [], GROUNDHOGG_BOOKING_CALENDAR_VERSION );
-        wp_register_script( 'groundhogg-appointments-shortcode', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . '/js/shortcode.js', [ 'jstz', 'jquery', 'jquery-ui-datepicker' ], GROUNDHOGG_BOOKING_CALENDAR_VERSION );
-        wp_localize_script( 'groundhogg-appointments-shortcode', 'BookingCalendar', [
-            'ajax_url' => admin_url( 'admin-ajax.php' ),
-            'invalidDateMsg' => __( 'Please select a time slot first.', 'groundhogg' ),
-            'invalidDetailsMsg' => __( 'Please make sure all your details are filled out.', 'groundhogg' ),
-            'invalidEmailMsg' => __( 'Your email address is invalid.', 'groundhogg' ), ] );
+        wp_register_script( 'groundhogg-appointments-frontend', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . '/js/frontend.new.js', [ 'jstz', 'jquery', 'jquery-ui-datepicker' ], GROUNDHOGG_BOOKING_CALENDAR_VERSION );
     }
 
     public function register_admin_styles()

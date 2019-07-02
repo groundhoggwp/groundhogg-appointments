@@ -575,6 +575,7 @@ class Calendar_Page extends Admin_Page
         $calendar->update_meta( 'redirect_link_status', absint( get_request_var( 'redirect_link_status' ) ) );
         $calendar->update_meta( 'redirect_link', esc_url( get_request_var( 'redirect_link' ) ) );
 
+        $calendar->update_meta( 'slot_title', sanitize_text_field( get_request_var('slot_title' ) ) );
         // save styling
         $colors = [
             'main_color',

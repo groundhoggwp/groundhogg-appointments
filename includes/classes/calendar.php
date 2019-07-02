@@ -247,6 +247,38 @@ class Calendar extends Base_Object_With_Meta
     }
 
     /**
+     * Get the disabled days.
+     *
+     * @return array
+     * @throws Exception
+     */
+    public function get_dates_no_slots()
+    {
+
+        $start = new \DateTime();
+        $end = $this->get_max_booking_period( false );
+
+        $disabled_dates = [];
+
+        $str = sprintf( 'P%dD', 1 );
+
+        $interval = new \DateInterval( $str );
+
+        while ( $start < $end ){
+
+            $periods = $this->get_todays_available_periods( $start->getTimestamp() );
+
+            if ( ! $periods ){
+                $disabled_dates[] = $start->format( 'Y-m-d' );
+            }
+
+            $start->add( $interval );
+        }
+
+        return $disabled_dates;
+    }
+
+    /**
      * Gets the appointment lengths as an array [ hours, minutes ]
      *
      * @return array
@@ -654,8 +686,6 @@ class Calendar extends Base_Object_With_Meta
      */
     public function get_day_number( $day )
     {
-
-
         $days = [
             'monday' => 1,
             'tuesday' => 2,
@@ -667,7 +697,6 @@ class Calendar extends Base_Object_With_Meta
         ];
 
         return $days[ $day ];
-
     }
 
 }

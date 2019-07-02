@@ -3,17 +3,40 @@
 }
 
 .groundhogg-calendar .ui-widget {
-    /*font-family: "Helvetica Neue","Trebuchet MS",Tahoma,Verdana,Arial,sans-serif;*/
-    /*background: #f7f7f7;*/
     border: none;
     border-radius: 0;
     -webkit-border-radius: 0;
     -moz-border-radius: 0;
-    /*box-shadow: 0 1px 1px rgba(37, 37, 37, 0.28);*/
 }
+
+/*
+body.groundhogg-calendar-body {
+    background-color: #FFF !important;
+}
+
+#booking-calendar .ui-datepicker {
+    font-family: inherit;
+}
+
+.ui-datepicker-current-day{
+    border-style: solid;
+    font-weight: bold;
+    color: #ffffff;
+}
+
+.ui-datepicker-next span:after {
+    content: "\2193";
+    background-image: none;
+}
+
+.ui-datepicker-calendar{
+    text-align: center;
+}*/
 
 .groundhogg-calendar .ui-datepicker {
     padding: 0;
+    font-family: inherit !important;
+    background: #ffffff !important;
     width: 100%;
 }
 
@@ -43,42 +66,86 @@
     margin-bottom: 1em;
 }
 
-.groundhogg-calendar .ui-datepicker .ui-datepicker-prev-hover,
-.groundhogg-calendar .ui-datepicker .ui-datepicker-next-hover,
-.groundhogg-calendar .ui-datepicker .ui-datepicker-next,
-.groundhogg-calendar .ui-datepicker .ui-datepicker-prev {
-    top: 1.7em;
-    border:none;
+.ui-datepicker-prev span,
+.ui-datepicker-next span {
+    background-image: none !important;
 }
 
-.groundhogg-calendar .ui-datepicker .ui-datepicker-prev-hover {
-    left: 2px;
+.ui-datepicker-prev:before,
+.ui-datepicker-next:before {
+    font-size: 24px;
+    position: absolute;
+    /*top: 10px;*/
+    /*right: 20px;*/
+    /*bottom: 10px;*/
+    /*left: 20px;*/
+    display: flex;
+    font-weight: bold;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1em;
+     margin-bottom: 1em;
 }
 
-.groundhogg-calendar .ui-datepicker .ui-datepicker-next-hover {
-    right: 2px;
+.ui-datepicker-prev:before {
+    content: "\2190";
 }
 
-.groundhogg-calendar .ui-datepicker .ui-datepicker-next span,
-.groundhogg-calendar .ui-datepicker .ui-datepicker-prev span {
-    /*background-image: url(images/ui-icons_454545_256x240.png);*/
-    background-position: -32px -32px;
-    margin-top: 0;
-    top: 0;
-    font-weight: normal;
+.ui-datepicker-next:before {
+    content: "\2192";
 }
 
-.groundhogg-calendar .ui-datepicker .ui-datepicker-prev span {
-    background-position: -96px -32px;
-}
+/*.groundhogg-calendar .ui-datepicker .ui-datepicker-prev-hover,*/
+/*.groundhogg-calendar .ui-datepicker .ui-datepicker-next-hover{*/
+    /*width: 6px;*/
+    /*height: 16px;*/
+    /*display: block;*/
+    /*text-indent: 0;*/
+    /*overflow: hidden;*/
+    /*background-repeat: no-repeat;*/
+/*}*/
 
-.groundhogg-calendar .ui-datepicker .ui-datepicker-prev-hover span {
-    background-position: -96px -48px;
-}
+/*.ui-datepicker-prev span:after {*/
+    /*content: "\8250";*/
+    /*position: relative;*/
+/*}*/
 
-.groundhogg-calendar .ui-datepicker .ui-datepicker-next-hover span {
-    background-position: -32px -48px;
-}
+/*.groundhogg-calendar .ui-datepicker .ui-datepicker-prev-hover,*/
+/*.groundhogg-calendar .ui-datepicker .ui-datepicker-next-hover,*/
+/*.groundhogg-calendar .ui-datepicker .ui-datepicker-next,*/
+/*.groundhogg-calendar .ui-datepicker .ui-datepicker-prev {*/
+    /*top: 1.7em;*/
+    /*border:none;*/
+/*}*/
+
+/*.groundhogg-calendar .ui-datepicker .ui-datepicker-prev-hover {*/
+    /*left: 2px;*/
+/*}*/
+
+/*.groundhogg-calendar .ui-datepicker .ui-datepicker-next-hover {*/
+    /*right: 2px;*/
+/*}*/
+
+/*.groundhogg-calendar .ui-datepicker .ui-datepicker-next span,*/
+/*.groundhogg-calendar .ui-datepicker .ui-datepicker-prev span {*/
+    /*!*background-image: url(images/ui-icons_454545_256x240.png);*!*/
+    /*background-position: -32px -32px;*/
+    /*margin-top: 0;*/
+    /*top: 0;*/
+    /*font-weight: normal;*/
+/*}*/
+
+/*.groundhogg-calendar .ui-datepicker .ui-datepicker-prev span {*/
+    /*background-position: -96px -32px;*/
+/*}*/
+
+/*.groundhogg-calendar .ui-datepicker .ui-datepicker-prev-hover span {*/
+    /*background-position: -96px -48px;*/
+/*}*/
+
+/*.groundhogg-calendar .ui-datepicker .ui-datepicker-next-hover span {*/
+    /*background-position: -32px -48px;*/
+/*}*/
 
 .groundhogg-calendar .ui-datepicker table {
     margin: 0;

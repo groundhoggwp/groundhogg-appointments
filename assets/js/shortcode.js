@@ -9,6 +9,7 @@ var BookingCalendar = BookingCalendar || {};
         detailsForm: null,
         errors: null,
         bookingData: null,
+
         init: function () {
 
             this.id = $('#calendar_id').val();
@@ -207,7 +208,9 @@ var BookingCalendar = BookingCalendar || {};
         },
 
         showForm: function () {
-            this.detailsForm.removeClass('hidden');
+            // this.detailsForm.removeClass('hidden');
+
+            $('#details-form').removeClass('hidden');
         },
 
         /**
@@ -231,7 +234,7 @@ var BookingCalendar = BookingCalendar || {};
     });
 
     $(function () {
-        appt.init();
+       // appt.init();
     });
 
 })(jQuery, BookingCalendar);
