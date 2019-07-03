@@ -1,4 +1,48 @@
-(function ($, cal) {
+(function ($, cal, gh) {
+
+    $.fn.serializeFormJSON = function () {
+
+        var o = {};
+        var a = this.serializeArray();
+        $.each(a, function () {
+            if (o[this.name]) {
+                if (!o[this.name].push) {
+                    o[this.name] = [o[this.name]];
+                }
+                o[this.name].push(this.value || '');
+            } else {
+                o[this.name] = this.value || '';
+            }
+        });
+        return o;
+    };
+
+    var CachedEvent = {};
+
+    window.addEventListener( 'message', function (event) {
+        if ( typeof event.data.action !== "undefined" && event.data.action === "getFrameSize") {
+            CachedEvent = event;
+            postSizing( event )
+        }
+    });
+
+    function postSizing( event ) {
+
+        if ( typeof event == "undefined" ){
+            event = CachedEvent;
+        }
+        // console.log( CachedEvent );
+
+        var body = document.body, html = document.documentElement;
+        var height = Math.max(body.scrollHeight, body.offsetHeight,
+            html.clientHeight, html.scrollHeight, html.offsetHeight);
+        var width = '100%';
+        event.source.postMessage({ height: height, width: width, id: event.data.id }, "*");
+    }
+
+    $(document).on( 'click', function () {
+        postSizing();
+    } );
 
     $.extend(cal, {
 
@@ -7,34 +51,28 @@
         spinnerOverlay: null,
 
         init: function () {
-
             var self = this;
-
             this.spinner = $('.loader-wrap');
             this.spinnerOverlay = $('.loader-overlay');
-
-            this.initCalendar();
-
             // Outer
             this.timeSlots = $('#time-slots');
             // inner
             this.slots = $('#time-slots-inner');
-
             this.detailsForm = $('#details-form');
-            this.errors = $('#appointment-errors');
+            // this.errors = $('#appointment-errors');
+
+            this.initCalendar();
 
             this.bookingData = {};
 
-
             /* Submit button */
-            $('.details-form').on('submit', function (e) {
-                e.preventDefault();
-                self.submit();
-            });
+            $( '.details-form' ).on('submit', function (e) {
+                var $form = $(this);
 
-            $(document).on('submit', '.appointment-time', function (e) {
+                console.log($form);
+
                 e.preventDefault();
-                self.selectAppointment(e.target);
+                self.submit( $form );
             });
 
             $(document).on('click', '.appointment-time', function (e) {
@@ -44,67 +82,62 @@
         },
 
         /* Check that appointment has been seleced */
-        submit: function () {
+        submit: function ( $form ) {
+
             var self = this;
+
             this.hideErrors();
-            var email = $('#email');
 
-            if (!email.val()) {
-                alert('Please Enter email.');
-                return false;
-            }
+            // //check for appointment
+            // if (!self.bookingData.start_date || !self.bookingData.end_date) {
+            //     self.setErrors(self.invalidDateMsg);
+            //     self.showErrors();
+            //     return false;
+            // }
 
-            //check for appointment
-            if (!self.bookingData.start_date || !self.bookingData.end_date) {
-                self.setErrors(self.invalidDateMsg);
-                self.showErrors();
-                return false;
-
-            }
+            var data = $form.serializeFormJSON();
+            data._ghnonce = gh._ghnonce;
+            data.form_data = $form.serializeArray();
+            data.action = 'groundhogg_add_appointment';
+            data.booking_data = {
+                start_time: self.bookingData.start_date,
+                end_time: self.bookingData.end_date,
+                calendar_id: self.calendar_id,
+                time_zone: jstz.determine().name(),
+            };
 
             /* Check first last & email */
+            /* Passed all checks, make the request... */
 
+            self.showSpinner();
 
-            alert (self.bookingData.start_date + ' - ' + self.bookingData.end_date );
+            $.ajax({
+                type: "post",
+                url: self.ajaxurl,
+                dataType: 'json',
+                data: data,
+                success: function (response) {
+                    if (response.success ) {
+                        var $calendarWrap = $('.calendar-form-wrapper');
+                        $calendarWrap.hide();
+                        $calendarWrap.after( '<div class="gh-message-wrapper gh-form-success-wrapper">' + response.data.message + '</div>' );
+                        if (response.redirect_link) {
+                            window.location.replace(response.data.redirect_link);
+                        }
+                    } else {
+                        $form.before( response.data.html );
+                    }
 
-            // /* Passed all checks, make the request... */
-            // $.ajax({
-            //     type: "post",
-            //     url: appt.ajax_url,
-            //     dataType: 'json',
-            //     data: {
-            //         action: 'gh_add_appointment_client',
-            //         start_time: appt.bookingData.start_date,
-            //         end_time: appt.bookingData.end_date,
-            //         email: details.email,
-            //         first_name: details.first,
-            //         last_name: details.last,
-            //         phone: details.phone,
-            //         calendar_id: appt.id,
-            //         appointment_name: $('#appointment_name').val(),
-            //     },
-            //     success: function (response) {
-            //         if (response.status === 'failed') {
-            //             appt.setErrors(response.msg);
-            //             appt.showErrors();
-            //             return false;
-            //         } else {
-            //             $('.gh-calendar-form').replaceWith(response.successMsg);
-            //             $('.calendar-form-wrapper').addClass('appointment-success');
-            //
-            //             if (response.redirect_link) {
-            //                 window.location.replace(response.redirect_link);
-            //             }
-            //
-            //             return true;
-            //         }
-            //     }
-            // });
-            //
-            // return false;
+                    postSizing();
+                    self.hideSpinner();
+                    return false;
+                }
+            });
+
+            return false;
         },
 
-        formatDate: function(date) {
+        formatDate: function (date) {
             var d = date,
                 month = '' + (d.getMonth() + 1),
                 day = '' + d.getDate(),
@@ -135,10 +168,10 @@
                  * @returns {*[]}
                  */
                 beforeShowDay: function (date) {
-                    if ( $.inArray( self.formatDate(date), self.disabled_days ) != -1 ) {
-                        return [false, "","unavailable"];
-                    } else{
-                        return [true,"","available"];
+                    if ($.inArray(self.formatDate(date), self.disabled_days) != -1) {
+                        return [false, "", "unavailable"];
+                    } else {
+                        return [true, "", "available"];
                     }
                 }
             });
@@ -149,10 +182,6 @@
 
         },
 
-        /**
-         *
-         * @param e Node
-         */
         selectAppointment: function (e) {
             // get data from hidden field
 
@@ -164,7 +193,7 @@
 
             /* Remove selected class from all buttons */
             $('.appointment-time').removeClass('selected');
-            $e.addClass('selected');
+            $e.addClass( 'selected' );
             this.showForm();
         },
 
@@ -209,25 +238,23 @@
                     timeZone: jstz.determine().name(),
                 },
                 success: function (response) {
-                    if (Array.isArray(response.data.slots)) {
+                    if (Array.isArray( response.data.slots ) ) {
                         self.removeTimeSlots();
-                        self.setTimeSlots(response.data.slots);
+                        self.setTimeSlots(response.data.slots );
                         self.showTimeSlots();
                         self.hideErrors();
                         self.hideSpinner();
                         self.displayDate(date);
-
-
                     } else {
-                        self.setErrors(response.data);
-                        self.showErrors();
+                        self.setErrors( response.data.html );
                         self.hideTimeSlots();
                         self.hideSpinner();
                     }
+
+                    postSizing();
                 }
             });
         },
-
 
         displayDate: function (date) {
             var d = new Date(date);
@@ -266,21 +293,17 @@
             this.spinnerOverlay.hide();
         },
 
-        showErrors: function () {
-            // this.hideTimeSlots();
-            this.errors.removeClass('hidden');
-        },
-
         hideErrors: function () {
-            this.errors.addClass('hidden');
+            $( '.gh-form-errors-wrapper' ).remove();
         },
 
         setErrors: function (html) {
-            this.errors.html(html);
+            $( '.gh-calendar-form' ).after( html );
         },
 
         showForm: function () {
             this.detailsForm.removeClass('hidden');
+            postSizing();
         },
 
     });
@@ -289,4 +312,4 @@
         cal.init();
     });
 
-})(jQuery, BookingCalendar);
+})(jQuery, BookingCalendar, Groundhogg);

@@ -113,3 +113,16 @@ hr.time-slot-divider{
     -ms-transform: translate(-50%, -50%);
     transform: translate(-50%, -50%);
 }
+
+@media only screen and (max-width: 520px) {
+    .gh-calendar-form .gh-form-row {white-space: normal;}
+    .gh-calendar-form .gh-form-column.col-1-of-1{width: 100%;}
+    .gh-calendar-form .gh-form-column.col-1-of-2{width: 100%;}
+    .gh-calendar-form .gh-form-column.col-1-of-3{width: 100%;}
+    .gh-calendar-form .gh-form-column.col-1-of-4{width: 100%;}
+    .gh-calendar-form .gh-form-column.col-2-of-3{width: 100%;}
+    .gh-calendar-form .gh-form-column.col-3-of-4{width: 100%;}
+    .gh-calendar-form .gh-form-column {
+        padding-right: 0;
+    }
+}

@@ -128,7 +128,7 @@ class Appointment extends Base_Object_With_Meta
         $status = parent::update( $data );
 
         if ( !$status ) {
-            return $status;
+            return false;
         }
 
         if ( $this->get_calendar()->google_enabled() ) {
@@ -137,7 +137,6 @@ class Appointment extends Base_Object_With_Meta
                 return false;
             }
         }
-
         return true;
     }
 

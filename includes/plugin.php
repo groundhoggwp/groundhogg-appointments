@@ -106,7 +106,7 @@ class Plugin extends Extension
     public function register_frontend_scripts( $is_minified, $IS_MINIFIED )
     {
         wp_register_script( 'jstz', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'js/jstz.min.js', [], GROUNDHOGG_BOOKING_CALENDAR_VERSION );
-        wp_register_script( 'groundhogg-appointments-frontend', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . '/js/frontend.new.js', [ 'jstz', 'jquery', 'jquery-ui-datepicker' ], GROUNDHOGG_BOOKING_CALENDAR_VERSION );
+        wp_register_script( 'groundhogg-appointments-frontend', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . '/js/frontend.new.js', [ 'jstz', 'jquery', 'jquery-ui-datepicker', 'groundhogg-frontend' ], GROUNDHOGG_BOOKING_CALENDAR_VERSION );
     }
 
     public function register_admin_styles()
@@ -119,7 +119,7 @@ class Plugin extends Extension
     {
         wp_register_style( 'jquery-ui', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'css/jquery-ui.min.css', [], GROUNDHOGG_BOOKING_CALENDAR_VERSION );
         wp_register_style( 'jquery-ui-datepicker', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'css/calendar.css', [ 'jquery-ui' ], GROUNDHOGG_BOOKING_CALENDAR_VERSION );
-        wp_register_style( 'groundhogg-calendar-frontend', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'css/frontend.css', [ 'jquery-ui-datepicker' ], GROUNDHOGG_BOOKING_CALENDAR_VERSION );
+        wp_register_style( 'groundhogg-calendar-frontend', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'css/frontend.css', [ 'jquery-ui-datepicker', 'groundhogg-form' ], GROUNDHOGG_BOOKING_CALENDAR_VERSION );
 
     }
 

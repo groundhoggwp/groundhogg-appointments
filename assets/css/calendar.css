@@ -88,11 +88,12 @@ body.groundhogg-calendar-body {
 }
 
 .ui-datepicker-prev:before {
-    content: "\2190";
+    content: "\27A4";
+    transform: rotate( 180deg );
 }
 
 .ui-datepicker-next:before {
-    content: "\2192";
+    content: "\27A4";
 }
 
 /*.groundhogg-calendar .ui-datepicker .ui-datepicker-prev-hover,*/

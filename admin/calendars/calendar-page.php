@@ -74,7 +74,7 @@ class Calendar_Page extends Admin_Page
             wp_send_json_error();
         }
 
-        $calendar = get_contactdata( absint( get_request_var( 'calendar_id' ) ) );
+        $calendar = new Calendar( absint( get_request_var( 'calendar_id' ) ) );
         if ( !$calendar->exists() ) {
             wp_send_json_error( __( 'Calendar not found!', 'groundhogg' ) );
         }
@@ -163,7 +163,6 @@ class Calendar_Page extends Admin_Page
         if ( !current_user_can( 'edit_appointment' ) ) {
             wp_send_json_error();
         }
-
 
         // Handle update appointment
         $appointment = new Appointment( absint( get_request_var( 'id' ) ) );
@@ -311,6 +310,11 @@ class Calendar_Page extends Admin_Page
      */
     public function process_add()
     {
+
+        if ( !current_user_can( 'add_calendar' ) ) {
+            $this->wp_die_no_access();
+        }
+
         $name = sanitize_text_field( get_request_var( 'name' ) );
         $description = sanitize_textarea_field( get_request_var( 'description' ) );
 
@@ -360,6 +364,11 @@ class Calendar_Page extends Admin_Page
      */
     public function process_edit_appointment()
     {
+        if ( !current_user_can( 'edit_appointment' ) ) {
+            $this->wp_die_no_access();
+        }
+
+
         $appointment_id = absint( get_request_var( 'appointment' ) );
         if ( !$appointment_id ) {
             return new \WP_Error( 'no_appointment', __( 'Appointment not found!', 'groundhogg' ) );
@@ -405,7 +414,6 @@ class Calendar_Page extends Admin_Page
         if ( !$status ) {
             $this->add_notice( new \WP_Error( 'error', 'Something went wrong...' ) );
         } else {
-
             $this->add_notice( 'success', __( "Appointment updated!", 'groundhogg' ), 'success' );
         }
 
@@ -490,6 +498,11 @@ class Calendar_Page extends Admin_Page
      */
     protected function update_availability()
     {
+
+        if ( !current_user_can( 'edit_calendar' ) ) {
+            $this->wp_die_no_access();
+        }
+
         $calendar_id = absint( get_request_var( 'calendar' ) );
 
         $calendar = new Calendar( $calendar_id );

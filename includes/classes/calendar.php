@@ -246,6 +246,16 @@ class Calendar extends Base_Object_With_Meta
         return $this->get_day_available_periods( $today );
     }
 
+    public function has_linked_form()
+    {
+        return (bool) $this->get_linked_form();
+    }
+
+    public function get_linked_form()
+    {
+        return absint( $this->get_meta( 'override_form_id' ) );
+    }
+
     /**
      * Get the disabled days.
      *

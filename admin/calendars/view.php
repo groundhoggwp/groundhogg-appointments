@@ -178,7 +178,7 @@ $google_calendar_id = $calendar->get_google_calendar_id();
                 right: 'month,agendaWeek,agendaDay,listMonth'
             },
             businessHours: display,
-            defaultView: 'agendaWeek',
+            defaultView: 'month', //agendaWeek
             slotDuration: '00:15:00',
             editable: true,
             eventLimit: true, // allow "more" link when too many events
