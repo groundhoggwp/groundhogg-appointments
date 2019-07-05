@@ -5,6 +5,7 @@ namespace GroundhoggBookingCalendar\Classes;
 use Exception;
 use Google_Service_Calendar;
 use Groundhogg\Base_Object_With_Meta;
+use function Groundhogg\get_array_var;
 use function Groundhogg\get_db;
 use function Groundhogg\isset_not_empty;
 use Groundhogg\Plugin;
@@ -12,6 +13,7 @@ use function GroundhoggBookingCalendar\convert_to_client_timezone;
 use function GroundhoggBookingCalendar\in_between;
 use function GroundhoggBookingCalendar\in_between_inclusive;
 use GroundhoggBookingCalendar\DB\Appointments;
+use function GroundhoggBookingCalendar\send_reminder_notification;
 use function GuzzleHttp\Psr7\str;
 
 class Calendar extends Base_Object_With_Meta
@@ -264,7 +266,6 @@ class Calendar extends Base_Object_With_Meta
      */
     public function get_dates_no_slots()
     {
-
         $start = new \DateTime();
         $end = $this->get_max_booking_period( false );
 
@@ -274,11 +275,11 @@ class Calendar extends Base_Object_With_Meta
 
         $interval = new \DateInterval( $str );
 
-        while ( $start < $end ){
+        while ( $start < $end ) {
 
             $periods = $this->get_todays_available_periods( $start->getTimestamp() );
 
-            if ( ! $periods ){
+            if ( !$periods ) {
                 $disabled_dates[] = $start->format( 'Y-m-d' );
             }
 
@@ -291,15 +292,24 @@ class Calendar extends Base_Object_With_Meta
     /**
      * Gets the appointment lengths as an array [ hours, minutes ]
      *
-     * @return array
+     * @param $as_int bool
+     *
+     * @return array|int
      */
-    public function get_appointment_length()
+    public function get_appointment_length( $as_int = false )
     {
-        return [
+
+        $parts = [
             'hours' => absint( $this->get_meta( 'slot_hour' ) ),
             'minutes' => absint( $this->get_meta( 'slot_minute' ) ),
             'buffer' => absint( $this->get_meta( 'buffer_time' ) )
         ];
+
+        if ( $as_int ) {
+            return ( $parts[ 'hours' ] * HOUR_IN_SECONDS ) + ( $parts[ 'minutes' ] * MINUTE_IN_SECONDS );
+        }
+
+        return $parts;
     }
 
     /**
@@ -341,14 +351,14 @@ class Calendar extends Base_Object_With_Meta
         $num = $this->get_meta( 'max_booking_period_count' );
         $type = $this->get_meta( 'max_booking_period_type' );
 
-        if ( ! $num || ! $type ){
+        if ( !$num || !$type ) {
             $num = 1;
             $type = 'month';
         }
 
         $interval = new \DateTime( date( 'Y-m-d H:i:s', strtotime( "+{$num} {$type}" ) ) );
 
-        if ( $as_string ){
+        if ( $as_string ) {
             return $interval->format( 'Y-m-d' );
         }
 
@@ -368,9 +378,12 @@ class Calendar extends Base_Object_With_Meta
         if ( !$slots ) {
             return [];
         }
-
         $slots = $this->validate_appointments( $slots );
         $slots = $this->clean_google_slots( $slots );
+
+        if ( !current_user_can( 'edit_appointment' ) ) {
+            $slots = $this->make_me_look_busy( $slots, strtotime( $date ) );
+        }
         $slots = $this->get_slots_name( $slots, $timezone );
         return $slots;
     }
@@ -487,7 +500,7 @@ class Calendar extends Base_Object_With_Meta
 
                 $slot_end = $start_date->format( 'U' );
 
-                if ( $slot_end < $end_date->format( 'U' ) ) {
+                if ( $slot_end <= $end_date->format( 'U' ) ) {
                     $slots[] = [
                         'start' => $slot_start,
                         'end' => $slot_end,
@@ -593,7 +606,6 @@ class Calendar extends Base_Object_With_Meta
         return $google_appointments;
     }
 
-
     protected function clean_google_slots( $slots )
     {
         $google_slots = $this->get_google_appointment( absint( $slots[ 0 ][ 'start' ] ), absint( $slots [ sizeof( $slots ) - 1 ] [ 'end' ] ) );
@@ -673,7 +685,6 @@ class Calendar extends Base_Object_With_Meta
         return $clean_slots;
     }
 
-
     protected function sort_slots( $slot )
     {
         $sort = [];
@@ -687,6 +698,50 @@ class Calendar extends Base_Object_With_Meta
         }
         array_multisort( $sort, SORT_ASC, $slot );
         return $slot;
+    }
+
+    /**
+     * Return number of slots based on value entered in meta
+     *
+     * @param $slots array
+     * @param $date int
+     * @return array
+     */
+    protected function make_me_look_busy( $slots, $date )
+    {
+        $no_of_slots = absint( $this->get_meta( 'busy_slot', true ) );
+        if ( !$no_of_slots ) {
+            return $slots;
+        }
+
+        if ( $no_of_slots >= count( $slots ) ) {
+            return $slots;
+        }
+
+
+        $busy_slots = [];
+        $this->shuffle_appointments( $slots, $date );
+        for ( $i = 0; $i < $no_of_slots; $i++ ) {
+            $busy_slots[] = $slots[ $i ];
+        }
+        return $this->sort_slots( $busy_slots );
+    }
+
+
+    /**
+     * shuffle array to get random appointment from appointment list.
+     * @param $items
+     * @param $seed
+     */
+    public function shuffle_appointments( &$items, $seed )
+    {
+        @mt_srand( $seed );
+        for ( $i = count( $items ) - 1; $i > 0; $i-- ) {
+            $j = @mt_rand( 0, $i );
+            $tmp = $items[ $i ];
+            $items[ $i ] = $items[ $j ];
+            $items[ $j ] = $tmp;
+        }
     }
 
     /**
@@ -707,6 +762,86 @@ class Calendar extends Base_Object_With_Meta
         ];
 
         return $days[ $day ];
+    }
+
+    /**
+     * Get the set of notification emails.
+     *
+     * @param string $which which email to retrieve, otherwise get ALL emails
+     *
+     * @return array|int
+     */
+    public function get_notification_emails( $which = '' )
+    {
+        $emails = $this->get_meta( 'emails' );
+
+        if ( !$which ) {
+            return $emails;
+        }
+
+        return get_array_var( $emails, $which );
+    }
+
+    /**
+     * Get the list of reminder emails...
+     *
+     * @return array
+     */
+    public function get_reminder_emails()
+    {
+        $reminders = $this->get_meta( 'reminders' );
+
+        if ( !is_array( $reminders ) ) {
+            $reminders = []; // Todo Add defaults?
+        }
+
+        foreach ( $reminders as &$reminder ) {
+            $reminder[ 'number' ] = absint( $reminder[ 'number' ] );
+            $reminder[ 'email_id' ] = absint( $reminder[ 'email_id' ] );
+        }
+
+        return $reminders;
+    }
+
+    /**
+     * Add a new appointment to this calendar.
+     *
+     * @param $args array list of args for the appointment
+     * @return Appointment|false
+     */
+    public function schedule_appointment( $args )
+    {
+
+        $args = wp_parse_args( $args, [
+            'contact_id' => 0,
+            'calendar_id' => $this->get_id(),
+            'name' => $this->get_name(),
+            'status' => 'pending',
+            'start_time' => time(),
+            'end_time' => time() + $this->get_appointment_length( true ),
+            'notes' => ''
+        ] );
+
+        do_action( 'groundhogg/calendar/schedule_appointment/before', $this, $args );
+
+        $note = $args[ 'notes' ];
+        unset( $args[ 'notes' ] );
+        $appointment = new Appointment( $args );
+
+        $appointment->update_meta( 'note', $note );
+
+        if ( !$appointment->exists() ) {
+            return false;
+        }
+
+        $appointment->book();
+
+        $appointment->add_in_google();
+
+        do_action( 'groundhogg/calendar/schedule_appointment/after', $this, $appointment );
+
+        return $appointment;
+
     }
 
 }

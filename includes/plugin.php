@@ -39,6 +39,8 @@ class Plugin extends Extension
         include dirname( __FILE__ ) . '/functions.php';
     }
 
+
+
     /**
      * Get the ID number for the download in EDD Store
      *
@@ -67,10 +69,8 @@ class Plugin extends Extension
 
     public function register_admin_pages( $admin_menu )
     {
-//        $admin_menu->calendartest = new Test_Page();
         $admin_menu->calendar = new Calendar_Page();
     }
-
 
     /**
      * Register the new DB.
@@ -85,9 +85,10 @@ class Plugin extends Extension
         $db_manager->calendarmeta = new Calendar_Meta();
     }
 
-
     public function register_admin_scripts( $is_minified, $IS_MINIFIED )
     {
+        wp_register_script( 'groundhogg-appointments-reminders', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'js/reminders.js', [ 'jquery', 'groundhogg-admin-modal' ], GROUNDHOGG_BOOKING_CALENDAR_VERSION, true );
+
         wp_register_script( 'jstz', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'js/jstz.min.js', [], GROUNDHOGG_BOOKING_CALENDAR_VERSION );
         wp_register_script( 'groundhogg-appointments-admin', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . '/js/admin.new.js', [ 'jquery', 'groundhogg-admin-functions' ], GROUNDHOGG_BOOKING_CALENDAR_VERSION );
 //        wp_register_script( 'groundhogg-appointments-shortcode', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . '/js/shortcode.js', ['jquery', 'jquery-ui-datepicker' ],GROUNDHOGG_BOOKING_CALENDAR_VERSION  );

@@ -71,16 +71,15 @@ if ( !$appointment->exists() ) {
                 ] ); ?>
                 <div class="row-actions">
                     <a class="button btn-approve"
-                       href="<?php echo wp_nonce_url( admin_url( 'admin.php?page=gh_calendar&action=approve&appointment=' . $appointment->get_id() ) ); ?>"><?php _e( 'Approve' ); ?></a>
+                       href="<?php echo wp_nonce_url( admin_url( 'admin.php?page=gh_calendar&action=approve_appointment&appointment=' . $appointment->get_id() ) ); ?>"><?php _e( 'Approve' ); ?></a>
                     <a class="button btn-cancel"
-                       href="<?php echo wp_nonce_url( admin_url( 'admin.php?page=gh_calendar&action=cancel&appointment=' . $appointment->get_id() ) ); ?>"><?php _e( 'Cancel' ); ?></a>
+                       href="<?php echo wp_nonce_url( admin_url( 'admin.php?page=gh_calendar&action=cancel_appointment&appointment=' . $appointment->get_id() ) ); ?>"><?php _e( 'Cancel' ); ?></a>
                 </div>
             </td>
         </tr>
         <tr>
             <th scope="row"><label for="start_date"><?php _e( 'Appointment Start Time', 'groundhogg' ) ?></label></th>
             <td>
-
                 <?php
                 echo html()->date_picker( [
                     'class' => 'input',
@@ -143,5 +142,6 @@ if ( !$appointment->exists() ) {
         </tbody>
     </table>
     <?php submit_button( __( 'Update Appointment' ), 'primary', 'update_appointment', false ); ?>
-    <span id="delete-link"><a class="delete" href="<?php echo wp_nonce_url( admin_url( 'admin.php?page=gh_calendar&action=delete_appointment&appointment=' . $appointment->get_id() ) ); ?>"><?php _e( 'Delete' ); ?></a></span>
+    <span id="delete-link"><a class="delete"
+                              href="<?php echo wp_nonce_url( admin_url( 'admin.php?page=gh_calendar&action=delete_appointment&appointment=' . $appointment->get_id() ) ); ?>"><?php _e( 'Delete' ); ?></a></span>
 </form>

@@ -2,7 +2,13 @@
 namespace GroundhoggBookingCalendar;
 
 
+use Groundhogg\Email;
+use Groundhogg\Event;
+use Groundhogg\Event_Process;
 use function Groundhogg\get_array_var;
+use function Groundhogg\get_db;
+use GroundhoggBookingCalendar\Classes\Appointment;
+use GroundhoggBookingCalendar\Classes\Reminder;
 
 function convert_to_client_timezone($time, $timezone='' ){
     if ( ! $timezone ){
@@ -99,4 +105,61 @@ function adjust_brightness( $hex, $steps )
     }
 
     return $return;
+}
+
+/**
+ * Setup the step for an event as the Reminder notification type
+ *
+ * @param $event Event
+ */
+function setup_reminder_notification_object( $event )
+{
+    if ( $event->get_event_type() === Reminder::NOTIFICATION_TYPE ){
+
+        // Step ID will be the ID of the email
+        // Funnel ID will be the ID of the appointment
+        $event->step = new Reminder( $event->get_funnel_id(), $event->get_step_id() );
+    }
+}
+
+add_action( 'groundhogg/event/post_setup', '\GroundhoggBookingCalendar\setup_reminder_notification_object' );
+
+/**
+ * Schedule a 1 off reminder notification
+ *
+ * @param $email_id int the ID of the email to send
+ * @param $appointment_id int|string the ID of the appointment being referenced
+ * @param int $time time time to send at, defaults to time()
+ *
+ * @return bool whether the scheduling was successful.
+ */
+function send_reminder_notification( $email_id=0, $appointment_id=0, $time=0 )
+{
+    $appointment = new Appointment( $appointment_id );
+    $email = new Email( $email_id );
+
+    if ( ! $appointment->exists() || ! $email->exists() ){
+        return false;
+    }
+
+    if ( ! $time ){
+        $time = time();
+    }
+
+    $event = new Event([
+        'time'          => $time,
+        'funnel_id'     => $appointment_id,
+        'step_id'       => $email->get_id(),
+        'contact_id'    => $appointment->get_contact_id(),
+        'event_type'    => Reminder::NOTIFICATION_TYPE,
+        'status'        => 'waiting',
+    ]);
+
+    if ( ! $event->exists() ){
+        return false;
+    }
+
+    do_action( 'groundhogg/calendar/reminder_scheduled', $event );
+    return true;
+
 }

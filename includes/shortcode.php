@@ -56,11 +56,10 @@ class Shortcode extends Supports_Errors
      */
     public function create_appointment( $contact )
     {
-        $appointment = new Appointment( [
+
+        // NEW
+        $appointment = $this->calendar->schedule_appointment( [
             'contact_id' => $contact->get_id(),
-            'calendar_id' => $this->calendar->get_id(),
-            'name' => $this->calendar->get_name(),
-            'status' => 'pending',
             'start_time' => absint( get_array_var( $this->booking_data, 'start_time' ) ),
             'end_time' => absint( get_array_var( $this->booking_data, 'end_time' ) ),
         ] );
@@ -70,10 +69,7 @@ class Shortcode extends Supports_Errors
             return;
         }
 
-        $appointment->update_meta( 'notes', sanitize_textarea_field( get_request_var( 'notes' ) ) );
-
-        //add appointment inside google calendar //
-        $appointment->add_in_google();
+//        $appointment->update_meta( 'notes', sanitize_textarea_field( get_request_var( 'notes' ) ) );
 
         $redirect_link_status = $this->calendar->get_meta( 'redirect_link_status', true );
         $redirect_link = $this->calendar->get_meta( 'redirect_link', true );
@@ -152,14 +148,14 @@ class Shortcode extends Supports_Errors
 
             $contact = get_contactdata( $email );
             if ( !$contact ) {
-                $contact = new Contact([
+                $contact = new Contact( [
                     'email' => $email,
-                    'first_name' => sanitize_text_field(get_request_var('first_name')),
-                    'last_name' => sanitize_text_field(get_request_var('last_name')),
-                ]);
-                $contact->update_meta('primary_phone', sanitize_text_field(get_request_var( 'phone' ))) ;
+                    'first_name' => sanitize_text_field( get_request_var( 'first_name' ) ),
+                    'last_name' => sanitize_text_field( get_request_var( 'last_name' ) ),
+                ] );
+                $contact->update_meta( 'primary_phone', sanitize_text_field( get_request_var( 'phone' ) ) );
             }
-            $this->create_appointment($contact);
+            $this->create_appointment( $contact );
 
         }
 

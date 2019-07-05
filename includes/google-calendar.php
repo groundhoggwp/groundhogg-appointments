@@ -186,7 +186,7 @@ class Google_Calendar
                  */
                 $contact = get_contactdata( $email );
 
-                if (!$contact) {
+                if ( !$contact ) {
                     $contact = new Contact( [
                         'email' => $email
                     ] );
@@ -225,12 +225,12 @@ class Google_Calendar
                     $appointment = new Appointment( absint( str_replace( 'ghcalendarcid' . $calendar->get_id() . 'aid', '', $event->getId() ) ) );
 
                     // update query
-                    $status = $appointment->update([
+                    $status = $appointment->update( [
                         'contact_id' => $contact->get_id(),
                         'name' => sanitize_text_field( stripslashes( $event->getSummary() ) ),
                         'start_time' => Plugin::$instance->utils->date_time->convert_to_utc_0( $start ),    //strtotime()
                         'end_time' => Plugin::$instance->utils->date_time->convert_to_utc_0( $end )       //strtotime()
-                    ]);
+                    ] );
 
                     $appointment->add_meta( 'note', sanitize_text_field( stripslashes( $event->getDescription() ) ) );
 

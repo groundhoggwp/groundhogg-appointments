@@ -19,16 +19,16 @@
 
     var CachedEvent = {};
 
-    window.addEventListener( 'message', function (event) {
-        if ( typeof event.data.action !== "undefined" && event.data.action === "getFrameSize") {
+    window.addEventListener('message', function (event) {
+        if (typeof event.data.action !== "undefined" && event.data.action === "getFrameSize") {
             CachedEvent = event;
-            postSizing( event )
+            postSizing(event)
         }
     });
 
-    function postSizing( event ) {
+    function postSizing(event) {
 
-        if ( typeof event == "undefined" ){
+        if (typeof event == "undefined") {
             event = CachedEvent;
         }
         // console.log( CachedEvent );
@@ -37,12 +37,12 @@
         var height = Math.max(body.scrollHeight, body.offsetHeight,
             html.clientHeight, html.scrollHeight, html.offsetHeight);
         var width = '100%';
-        event.source.postMessage({ height: height, width: width, id: event.data.id }, "*");
+        event.source.postMessage({height: height, width: width, id: event.data.id}, "*");
     }
 
-    $(document).on( 'click', function () {
+    $(document).on('click', function () {
         postSizing();
-    } );
+    });
 
     $.extend(cal, {
 
@@ -66,13 +66,10 @@
             this.bookingData = {};
 
             /* Submit button */
-            $( '.details-form' ).on('submit', function (e) {
+            $('.details-form').on('submit', function (e) {
                 var $form = $(this);
-
-                console.log($form);
-
                 e.preventDefault();
-                self.submit( $form );
+                self.submit($form);
             });
 
             $(document).on('click', '.appointment-time', function (e) {
@@ -82,7 +79,7 @@
         },
 
         /* Check that appointment has been seleced */
-        submit: function ( $form ) {
+        submit: function ($form) {
 
             var self = this;
 
@@ -117,15 +114,15 @@
                 dataType: 'json',
                 data: data,
                 success: function (response) {
-                    if (response.success ) {
+                    if (response.success) {
                         var $calendarWrap = $('.calendar-form-wrapper');
                         $calendarWrap.hide();
-                        $calendarWrap.after( '<div class="gh-message-wrapper gh-form-success-wrapper">' + response.data.message + '</div>' );
-                        if (response.redirect_link) {
-                            window.location.replace(response.data.redirect_link);
+                        $calendarWrap.after('<div class="gh-message-wrapper gh-form-success-wrapper">' + response.data.message + '</div>');
+                        if ( response.data.redirect_link ) {
+                            window.top.location.replace(response.data.redirect_link);
                         }
                     } else {
-                        $form.before( response.data.html );
+                        $form.before(response.data.html);
                     }
 
                     postSizing();
@@ -193,7 +190,7 @@
 
             /* Remove selected class from all buttons */
             $('.appointment-time').removeClass('selected');
-            $e.addClass( 'selected' );
+            $e.addClass('selected');
             this.showForm();
         },
 
@@ -238,15 +235,15 @@
                     timeZone: jstz.determine().name(),
                 },
                 success: function (response) {
-                    if (Array.isArray( response.data.slots ) ) {
+                    if (Array.isArray(response.data.slots)) {
                         self.removeTimeSlots();
-                        self.setTimeSlots(response.data.slots );
+                        self.setTimeSlots(response.data.slots);
                         self.showTimeSlots();
                         self.hideErrors();
                         self.hideSpinner();
                         self.displayDate(date);
                     } else {
-                        self.setErrors( response.data.html );
+                        self.setErrors(response.data.html);
                         self.hideTimeSlots();
                         self.hideSpinner();
                     }
@@ -294,11 +291,11 @@
         },
 
         hideErrors: function () {
-            $( '.gh-form-errors-wrapper' ).remove();
+            $('.gh-form-errors-wrapper').remove();
         },
 
         setErrors: function (html) {
-            $( '.gh-calendar-form' ).after( html );
+            $('.gh-calendar-form').after(html);
         },
 
         showForm: function () {

@@ -4,12 +4,15 @@ namespace GroundhoggBookingCalendar\Classes;
 
 
 use Groundhogg\Base_Object_With_Meta;
+use Groundhogg\Event;
 use function Groundhogg\get_contactdata;
+use function Groundhogg\get_db;
 use Groundhogg\Plugin;
 use GroundhoggBookingCalendar\DB\Calendar_Meta;
 use \Google_Service_Calendar_Event;
 use \Google_Service_Calendar;
 use \Exception;
+use function GroundhoggBookingCalendar\send_reminder_notification;
 
 class Appointment extends Base_Object_With_Meta
 {
@@ -150,6 +153,7 @@ class Appointment extends Base_Object_With_Meta
 
 //             create google client
             $client = \GroundhoggBookingCalendar\Plugin::$instance->google_calendar->get_google_client_form_access_token( $this->get_calendar_id() );
+
             $service = new Google_Service_Calendar( $client );
             if ( \GroundhoggBookingCalendar\Plugin::$instance->google_calendar->is_valid_calendar( $this->get_calendar_id(), $google_calendar_id, $service ) ) {
 
@@ -201,6 +205,7 @@ class Appointment extends Base_Object_With_Meta
                 ) );
                 $event = $service->events->insert( $google_calendar_id, $event );
             }
+
         }
     }
 
@@ -281,5 +286,111 @@ class Appointment extends Base_Object_With_Meta
         ];
 
     }
+
+    /**
+     *
+     * Book the appointment
+     * Schedules all the reminder emails....
+     */
+    public function book()
+    {
+        // EMAIL TIME...
+        do_action( 'groundhogg/calendar/appointment/book/before' );
+        $this->schedule_reminders( Reminder::BOOKED );
+        do_action( 'groundhogg/calendar/appointment/book/after' );
+
+    }
+
+    public function reschedule( $args )
+    {
+        // update appointment
+
+        $args = wp_parse_args( $args, [
+            'contact_id' => $this->get_contact_id(),
+            'calendar_id' => $this->get_calendar_id(),
+            'name' => $this->get_name(),
+            'status' => $this->get_status(),
+            'start_time' => $this->get_start_time(),
+            'end_time' => $this->get_end_time(),
+            'notes' => $this->get_meta( 'notes' ,true)
+        ] );
+
+        $notes = $args['notes'] ;
+
+        unset($args['notes']);
+
+
+        $this->update_meta('note',$notes);
+        $status = $this->update($args);
+        if (!$status) {
+           return false;
+       }
+
+
+        // delete all the waiting events for the appointment
+        $events  = get_db('events')->query([
+            'funnel_id'     => $this->get_id(),
+            'contact_id'    => $this->get_contact_id(),
+            'event_type'    => Reminder::NOTIFICATION_TYPE,
+            'status'        => 'waiting',
+        ]);
+
+        foreach ( $events as $event ){
+            $eve  = new Event( absint($event->ID ));
+            $eve->update(['status' => 'cancelled',]);
+        }
+        // Schedule Appointment Booked Email...
+        do_action( 'groundhogg/calendar/appointment/reschedule/before' );
+        $this->schedule_reminders( Reminder::RESCHEDULED );
+        do_action( 'groundhogg/calendar/appointment/reschedule/after' );
+
+        return true;
+    }
+
+    public function cancel()
+    {
+
+    }
+
+    public function approve()
+    {
+
+    }
+
+
+    protected  function schedule_reminders( $which )
+    {
+
+        // Schedule Appointment Booked Email...
+        if ( $booked_email_id = $this->get_calendar()->get_notification_emails( $which ) ){
+            send_reminder_notification( absint( $booked_email_id ) , absint($this->get_id() ), time() );
+        }
+
+        // Schedule Email Reminders...
+        $reminders = $this->get_calendar()->get_reminder_emails();
+
+        foreach ( $reminders as $reminder ) {
+
+            // Calc time...
+            switch ( $reminder[ 'when' ] ){
+                default:
+                case 'before':
+                    $time = strtotime( sprintf( "-%d %s", $reminder[ 'number' ], $reminder[ 'period' ] ), $this->get_start_time() );
+                    if ( $time > time() ){
+                        send_reminder_notification( $reminder[ 'email_id' ], $this->get_id(), $time );
+                    }
+                    break;
+                case 'after':
+                    $time = strtotime( sprintf( "+%d %s", $reminder[ 'number' ], $reminder[ 'period' ] ), $this->get_end_time() );
+                    if ( $time > time() ){
+                        send_reminder_notification( $reminder[ 'email_id' ], $this->get_id(), $time );
+                    }
+                    break;
+            }
+
+        }
+
+    }
+
 
 }

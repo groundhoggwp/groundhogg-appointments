@@ -50,6 +50,20 @@ if ( $calendar == null ) {
                 <p class="description"><?php _e( 'Calendar descriptions are only visible to admins and will never be seen by contacts.', 'groundhogg' ) ?></p>
             </td>
         </tr>
+        <tr>
+            <th><?php _e( 'Custom Form', 'groundhogg' ); ?></th>
+            <td>
+                <?php echo html()->dropdown( [
+                    'options' => get_form_list(),
+                    'name' => 'override_form_id',
+                    'id' => 'override_form_id',
+                    'selected' => absint( $calendar->get_meta( 'override_form_id' ) )
+                ] );
+
+                echo html()->description( __( 'Use a custom form built using the form builder in a funnel instead of the default form.', 'groundhogg' ) );
+                ?>
+            </td>
+        </tr>
         </tbody>
     </table>
     <h2><?php _e( 'Appointment Settings', 'groundhogg' ); ?></h2>
@@ -182,17 +196,6 @@ if ( $calendar == null ) {
     <h2><?php _e( 'Calendar Styling', 'groundhogg' ); ?></h2>
     <table class="form-table">
         <tbody>
-        <tr>
-            <th><?php _e( 'Custom Form', 'groundhogg' ); ?></th>
-            <td>
-                <?php echo html()->dropdown( [
-                    'options' => get_form_list(),
-                    'name' => 'override_form_id',
-                    'id' => 'override_form_id',
-                    'selected' => absint( $calendar->get_meta( 'override_form_id' ) )
-                ] )?>
-            </td>
-        </tr>
         <tr>
             <th scope="row"><label><?php _e( 'Main Calendar Color' ) ?></label></th>
             <td>

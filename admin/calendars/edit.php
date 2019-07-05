@@ -10,6 +10,7 @@ html()->tabs( [
     'view' => __( 'View', 'groundhogg' ), // Show calendar and add appointments
     'settings' => __( 'Settings', 'groundhogg' ), // Show calendar settings
     'availability' => __( 'Availability', 'groundhogg' ), // Show calendar settings
+    'emails' => __( 'Emails', 'groundhogg' ), // Show calendar reminders
     'list' => __( 'List', 'groundhogg' ) // show appointments in list table.
 ] );
 
@@ -20,11 +21,13 @@ switch ( $tab ):
         include_once dirname(__FILE__) . '/view.php';
         break;
     case 'settings':
-
         include_once dirname(__FILE__) . '/settings.php';
         break;
     case 'availability':
         include_once dirname(__FILE__) . '/availability.php';
+        break;
+    case 'emails':
+        include_once dirname(__FILE__) . '/emails.php';
         break;
     case 'list':
 
