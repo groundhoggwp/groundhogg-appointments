@@ -12,6 +12,7 @@ use GroundhoggBookingCalendar\DB\Appointments;
 use GroundhoggBookingCalendar\DB\Calendar_Meta;
 use GroundhoggBookingCalendar\DB\Calendars;
 use GroundhoggBookingCalendar\Admin\Calendars\Calendar_Page;
+use GroundhoggBookingCalendar\Steps\Booking_Calendar;
 
 
 class Plugin extends Extension
@@ -21,6 +22,11 @@ class Plugin extends Extension
      * @var Google_Calendar
      */
     public $google_calendar;
+
+    /**
+     * @var Replacements
+     */
+    public $replacements;
 
     /**
      * Override the parent instance.
@@ -39,7 +45,18 @@ class Plugin extends Extension
         include dirname( __FILE__ ) . '/functions.php';
     }
 
-
+    /**
+     * Register the codes...
+     *
+     * @param \Groundhogg\Replacements $replacements
+     */
+    public function add_replacements( $replacements )
+    {
+        $codes = $this->replacements->get_replacements();
+        foreach ( $codes as $code ){
+            $replacements->add( $code[ 'code' ],  $code[ 'callback' ],  $code[ 'description' ] );
+        }
+    }
 
     /**
      * Get the ID number for the download in EDD Store
@@ -63,6 +80,7 @@ class Plugin extends Extension
         $this->roles = new Roles();
         $this->installer = new Installer();
         $this->shortcode = new Shortcode();
+        $this->replacements = new Replacements();
 
         new Rewrites();
     }
@@ -70,6 +88,16 @@ class Plugin extends Extension
     public function register_admin_pages( $admin_menu )
     {
         $admin_menu->calendar = new Calendar_Page();
+    }
+
+    /**
+     * register the new benchmark.
+     *
+     * @param \Groundhogg\Steps\Manager $manager
+     */
+    public function register_funnel_steps( $manager )
+    {
+        $manager->add_step( new Booking_Calendar());
     }
 
     /**
@@ -195,6 +223,70 @@ class Plugin extends Extension
         ];
 
         return $sections;
+    }
+
+    /**
+     * Add email templates...
+     *
+     * @param $templates array
+     * @return mixed
+     */
+    public function register_email_templates( $email_templates )
+    {
+
+        ob_start();
+
+        include GROUNDHOGG_BOOKING_CALENDAR_PATH . '/templates/emails/approved.php';
+
+        $email_templates['approved']['title'] = _x( "Appointment Approved", 'email_template_name', 'groundhogg' );
+        $email_templates['approved']['description'] = _x( "Email sent when appointment is approved.", 'email_template_description', 'groundhogg' );
+        $email_templates['approved']['content'] = ob_get_contents();
+
+        ob_clean();
+
+
+        ob_start();
+
+        include GROUNDHOGG_BOOKING_CALENDAR_PATH . '/templates/emails/booked.php';
+
+        $email_templates['booked']['title'] = _x( "Appointment Booked", 'email_template_name', 'groundhogg' );
+        $email_templates['booked']['description'] = _x( "Email sent when appointment is booked.", 'email_template_description', 'groundhogg' );
+        $email_templates['booked']['content'] = ob_get_contents();
+
+        ob_clean();
+
+        ob_start();
+
+        include GROUNDHOGG_BOOKING_CALENDAR_PATH . '/templates/emails/cancelled.php';
+
+        $email_templates['cancelled']['title'] = _x( "Appointment Cancelled", 'email_template_name', 'groundhogg' );
+        $email_templates['cancelled']['description'] = _x( "Email sent when appointment is cancelled.", 'email_template_description', 'groundhogg' );
+        $email_templates['cancelled']['content'] = ob_get_contents();
+
+        ob_clean();
+
+
+        ob_start();
+
+        include GROUNDHOGG_BOOKING_CALENDAR_PATH . '/templates/emails/rescheduled.php';
+
+        $email_templates['rescheduled']['title'] = _x( "Appointment Rescheduled", 'email_template_name', 'groundhogg' );
+        $email_templates['rescheduled']['description'] = _x( "Email sent when appointment is rescheduled.", 'email_template_description', 'groundhogg' );
+        $email_templates['rescheduled']['content'] = ob_get_contents();
+
+        ob_clean();
+
+        ob_start();
+
+        include GROUNDHOGG_BOOKING_CALENDAR_PATH . '/templates/emails/reminder.php';
+
+        $email_templates['reminder']['title'] = _x( "Appointment Reminder", 'email_template_name', 'groundhogg' );
+        $email_templates['reminder']['description'] = _x( "Email sent when appointment is reminder.", 'email_template_description', 'groundhogg' );
+        $email_templates['reminder']['content'] = ob_get_contents();
+
+        ob_clean();
+
+        return $email_templates;
     }
 
 

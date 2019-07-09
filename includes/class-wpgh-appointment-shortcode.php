@@ -521,21 +521,7 @@ class WPGH_Appointment_Shortcode
         wp_die(json_encode($response));
     }
 
-    /**
-     * shuffle array to get random appointment from appointment list.
-     * @param $items
-     * @param $seed
-     */
-    public function my_shuffle(&$items, $seed)
-    {
-        @mt_srand($seed);
-        for ($i = count($items) - 1; $i > 0; $i--) {
-            $j = @mt_rand(0, $i);
-            $tmp = $items[$i];
-            $items[$i] = $items[$j];
-            $items[$j] = $tmp;
-        }
-    }
+
 
     /**
      * Main shortcode function

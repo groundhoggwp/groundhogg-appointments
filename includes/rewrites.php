@@ -30,6 +30,12 @@ class Rewrites extends Abstract_Rewrites
             'top'
         );
 
+        add_rewrite_rule(
+            '^gh/appointment/([^/]*)/([^/]*)/?$',
+            'index.php?pagenow=appointment&appointment_id=$matches[1]&action=$matches[2]',
+            'top'
+        );
+
     }
 
     /**
@@ -39,7 +45,9 @@ class Rewrites extends Abstract_Rewrites
     public function add_query_vars( $vars )
     {
         $vars[] = 'pagenow';
+        $vars[] = 'action';
         $vars[] = 'calendar_id';
+        $vars[] = 'appointment_id';
 
         return $vars;
     }
@@ -51,6 +59,12 @@ class Rewrites extends Abstract_Rewrites
     public function parse_query( $query )
     {
         $this->map_query_var( $query, 'calendar_id', 'absint' );
+
+        // Appointment ID is encrypted for security!
+        $this->map_query_var( $query, 'appointment_id', 'urldecode' );
+        $this->map_query_var( $query, 'appointment_id', '\Groundhogg\decrypt' );
+        $this->map_query_var( $query, 'appointment_id', 'absint' );
+
         return $query;
     }
 
@@ -72,6 +86,10 @@ class Rewrites extends Abstract_Rewrites
 
             case 'calendar_hosted':
                 $template = $template_loader->get_template_part( 'hosted', '', false );
+                break;
+
+            case 'appointment':
+                $template = $template_loader->get_template_part( 'appointment', '', false );
                 break;
         }
 

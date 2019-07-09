@@ -64,6 +64,18 @@ if ( $calendar == null ) {
                 ?>
             </td>
         </tr>
+        <tr>
+            <th><?php _e( 'Default Note', 'groundhogg' ); ?></th>
+            <td>
+                <?php echo html()->textarea( [
+                    'name' => 'default_note',
+                    'placeholder' => __( 'Default note for all appointment', 'groundhogg' ),
+                    'value' => $calendar->get_meta('default_note') ? $calendar->get_meta('default_note') : ''
+                ] );
+                echo html()->description( __( 'This default note will be added in note section of appointment when appointment booked by users.', 'groundhogg' ) );
+                ?>
+            </td>
+        </tr>
         </tbody>
     </table>
     <h2><?php _e( 'Appointment Settings', 'groundhogg' ); ?></h2>
@@ -138,34 +150,38 @@ if ( $calendar == null ) {
                 <p class="description"><?php _e( 'Enter how many time slots client can see! (Enter 0 to display all time slots)', 'groundhogg' ) ?></p>
             </td>
         </tr>
-        <tr>
-            <th scope="row"><label><?php _e( 'Time Slots Title', 'groundhogg' ) ?></label></th>
-            <td>
-                <?php echo html()->input( [
-                    'name' => 'slot_title',
-                    'placeholder' => __( 'Available Times', 'groundhogg' ),
-                    'value' => $calendar->get_meta( 'slot_title', true ) ? $calendar->get_meta( 'slot_title', true ) : __( 'Time Slot', 'groundhogg' )
-                ] ); ?>
-                <p class="description"><?php _e( 'This title will be displayed above time slots.', 'groundhogg' ) ?></p>
-            </td>
-        </tr>
-        <tr>
-            <th scope="row"><label><?php _e( 'Custom Text Button', 'groundhogg' ) ?></label></th>
-            <td>
-                <?php echo html()->input( [
-                    'name' => 'custom_text',
-                    'placeholder' => __( 'Custom text', 'groundhogg' ),
-                    'value' => $calendar->get_meta( 'custom_text', true )
-                ] ); ?>
-                <p><?php echo html()->checkbox( [
-                        'label' => 'Enable',
-                        'name' => 'custom_text_status',
-                        'checked' => $calendar->get_meta( 'custom_text_status', true ) ? $calendar->get_meta( 'custom_text_status', true ) : 0
-                    ] ); ?>
-                </p>
-                <p class="description"><?php _e( 'Enabling this setting displays custom text on booking slots followed by number. Default is time slot.', 'groundhogg' ) ?></p>
-            </td>
-        </tr>
+<!--        NOT USED IN 2.0-->
+<!--        <tr>-->
+<!--            <th scope="row"><label>--><?php //_e( 'Time Slots Title', 'groundhogg' ) ?><!--</label></th>-->
+<!--            <td>-->
+<!--                --><?php //echo html()->input( [
+//                    'name' => 'slot_title',
+//                    'placeholder' => __( 'Available Times', 'groundhogg' ),
+//                    'value' => $calendar->get_meta( 'slot_title', true ) ? $calendar->get_meta( 'slot_title', true ) : __( 'Time Slot', 'groundhogg' )
+//                ] ); ?>
+<!--                <p class="description">--><?php //_e( 'This title will be displayed above time slots.', 'groundhogg' ) ?><!--</p>-->
+<!--            </td>-->
+<!--        </tr>-->
+
+<!--        REMOVED IN 2.0 not available while saving meta -->
+
+<!--        <tr>-->
+<!--            <th scope="row"><label>--><?php //_e( 'Custom Text Button', 'groundhogg' ) ?><!--</label></th>-->
+<!--            <td>-->
+<!--                --><?php //echo html()->input( [
+//                    'name' => 'custom_text',
+//                    'placeholder' => __( 'Custom text', 'groundhogg' ),
+//                    'value' => $calendar->get_meta( 'custom_text', true )
+//                ] ); ?>
+<!--                <p>--><?php //echo html()->checkbox( [
+//                        'label' => 'Enable',
+//                        'name' => 'custom_text_status',
+//                        'checked' => $calendar->get_meta( 'custom_text_status', true ) ? $calendar->get_meta( 'custom_text_status', true ) : 0
+//                    ] ); ?>
+<!--                </p>-->
+<!--                <p class="description">--><?php //_e( 'Enabling this setting displays custom text on booking slots followed by number. Default is time slot.', 'groundhogg' ) ?><!--</p>-->
+<!--            </td>-->
+<!--        </tr>-->
         <tr>
             <th scope="row"><label><?php _e( 'Thank You Page', 'groundhogg' ) ?></label></th>
             <td>
@@ -193,42 +209,45 @@ if ( $calendar == null ) {
         wp_editor( $calendar->get_meta( 'message' ) ? $calendar->get_meta( 'message' ) : __( 'Appointment booked Successfully!', 'groundhogg' ), 'message', [ 'editor_height' => 200, 'editor_width' => 500 ] );
         ?>
     </div>
-    <h2><?php _e( 'Calendar Styling', 'groundhogg' ); ?></h2>
-    <table class="form-table">
-        <tbody>
-        <tr>
-            <th scope="row"><label><?php _e( 'Main Calendar Color' ) ?></label></th>
-            <td>
-                <?php echo html()->color_picker( [
-                    'name' => 'main_color',
-                    'value' => $calendar->get_meta( 'main_color', true ) ? $calendar->get_meta( 'main_color', true ) : '#f7f7f7'
-                ] ); ?>
-                <p class="description"><?php _e( 'The main color of the calendar and time slots.', 'groundhogg' ) ?></p>
-            </td>
-        </tr>
-        <tr>
-            <th scope="row"><label><?php _e( 'Font Color' ) ?></label></th>
-            <td>
-                <?php echo html()->color_picker( [
-                    'name' => 'font_color',
-                    'value' => $calendar->get_meta( 'font_color', true ) ? $calendar->get_meta( 'font_color', true ) : '#292929'
-                ] );
-                ?>
-                <p class="description"><?php _e( 'The color of the fonts of the calender and time slots.', 'groundhogg' ) ?></p>
-            </td>
-        </tr>
-        <tr>
-            <th scope="row"><label><?php _e( 'Time Slots selected' ) ?></label></th>
-            <td>
-                <?php echo html()->color_picker( [
-                    'name' => 'slots_color',
-                    'value' => $calendar->get_meta( 'slots_color', true ) ? $calendar->get_meta( 'slots_color', true ) : '#29a2d9'
-                ] ); ?>
-                <p class="description"><?php _e( 'The color of the selected time slot.', 'groundhogg' ) ?></p>
-            </td>
-        </tr>
-        </tbody>
-    </table>
+
+<!--    NOT USED IN 2.0 -->
+
+<!--    <h2>--><?php //_e( 'Calendar Styling', 'groundhogg' ); ?><!--</h2>-->
+<!--    <table class="form-table">-->
+<!--        <tbody>-->
+<!--        <tr>-->
+<!--            <th scope="row"><label>--><?php //_e( 'Main Calendar Color' ) ?><!--</label></th>-->
+<!--            <td>-->
+<!--                --><?php //echo html()->color_picker( [
+//                    'name' => 'main_color',
+//                    'value' => $calendar->get_meta( 'main_color', true ) ? $calendar->get_meta( 'main_color', true ) : '#f7f7f7'
+//                ] ); ?>
+<!--                <p class="description">--><?php //_e( 'The main color of the calendar and time slots.', 'groundhogg' ) ?><!--</p>-->
+<!--            </td>-->
+<!--        </tr>-->
+<!--        <tr>-->
+<!--            <th scope="row"><label>--><?php //_e( 'Font Color' ) ?><!--</label></th>-->
+<!--            <td>-->
+<!--                --><?php //echo html()->color_picker( [
+//                    'name' => 'font_color',
+//                    'value' => $calendar->get_meta( 'font_color', true ) ? $calendar->get_meta( 'font_color', true ) : '#292929'
+//                ] );
+//                ?>
+<!--                <p class="description">--><?php //_e( 'The color of the fonts of the calender and time slots.', 'groundhogg' ) ?><!--</p>-->
+<!--            </td>-->
+<!--        </tr>-->
+<!--        <tr>-->
+<!--            <th scope="row"><label>--><?php //_e( 'Time Slots selected' ) ?><!--</label></th>-->
+<!--            <td>-->
+<!--                --><?php //echo html()->color_picker( [
+//                    'name' => 'slots_color',
+//                    'value' => $calendar->get_meta( 'slots_color', true ) ? $calendar->get_meta( 'slots_color', true ) : '#29a2d9'
+//                ] ); ?>
+<!--                <p class="description">--><?php //_e( 'The color of the selected time slot.', 'groundhogg' ) ?><!--</p>-->
+<!--            </td>-->
+<!--        </tr>-->
+<!--        </tbody>-->
+<!--    </table>-->
     <h2><?php _e( 'Google Calendar', 'groundhogg' ); ?></h2>
     <table class="form-table">
         <tbody>

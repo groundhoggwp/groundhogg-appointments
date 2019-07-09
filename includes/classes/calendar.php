@@ -372,6 +372,8 @@ class Calendar extends Base_Object_With_Meta
      */
     public function get_appointment_slots( $date = '', $timezone = '' )
     {
+
+
         $slots = $this->get_all_available_slots( strtotime( $date ) );
         $slots = $this->sort_slots( $slots );
 
@@ -559,55 +561,65 @@ class Calendar extends Base_Object_With_Meta
 
 
     /**
+     *
+     * Fetch all the appointments between start and end-time from google calendar.
+     *
      * @param $min_time int
      * @param $max_time int
      * @return array
      */
     protected function get_google_appointment( $min_time, $max_time )
     {
-        $google_min = date( 'c', ( $min_time ) );
-        $google_max = date( 'c', ( $max_time ) );
-        $google_appointments = [];
-        $client = \GroundhoggBookingCalendar\Plugin::$instance->google_calendar->get_google_client_form_access_token( $this->get_id() );
-        $service = new Google_Service_Calendar( $client );
-        $google_calendar_list = $this->get_meta( 'google_calendar_list', true );
-        if ( count( $google_calendar_list ) > 0 ) {
-            foreach ( $google_calendar_list as $google_cal ) {
-                try {
-                    $google_calendar = $service->calendars->get( $google_cal );
-                    $optParams = array(
-                        'orderBy' => 'startTime',
-                        'singleEvents' => true,
-                        'timeMin' => $google_min,
-                        'timeMax' => $google_max
-                    );
-                    $results = $service->events->listEvents( $google_calendar->getId(), $optParams );
-                    $events = $results->getItems();
+        $access_token = $this->get_access_token();
+        $google_calendar_id = $this->get_google_calendar_id();
+        if ( $access_token && $google_calendar_id ) {
 
-                    if ( !empty( $events ) ) {
-                        foreach ( $events as $event ) {
-                            $google_start = $event->start->dateTime;
-                            $google_end = $event->end->dateTime;
-                            if ( !empty( $google_start ) && !empty( $google_end ) ) {
-                                $google_appointments[] = array(
-                                    'display' => $event->getSummary(),
-                                    'start' => strtotime( '+1 seconds', Plugin::$instance->utils->date_time->convert_to_utc_0( strtotime( date( $event->start->dateTime ) ) ) ),
-                                    'end' => Plugin::$instance->utils->date_time->convert_to_utc_0( strtotime( date( $event->end->dateTime ) ) )
-                                );
+            $google_min = date( 'c', ( $min_time ) );
+            $google_max = date( 'c', ( $max_time ) );
+            $google_appointments = [];
+            $client = \GroundhoggBookingCalendar\Plugin::$instance->google_calendar->get_google_client_form_access_token( $this->get_id() );
+            $service = new Google_Service_Calendar( $client );
+            $google_calendar_list = $this->get_meta( 'google_calendar_list', true );
+            if ( count( $google_calendar_list ) > 0 ) {
+                foreach ( $google_calendar_list as $google_cal ) {
+                    try {
+                        $google_calendar = $service->calendars->get( $google_cal );
+                        $optParams = array(
+                            'orderBy' => 'startTime',
+                            'singleEvents' => true,
+                            'timeMin' => $google_min,
+                            'timeMax' => $google_max
+                        );
+                        $results = $service->events->listEvents( $google_calendar->getId(), $optParams );
+                        $events = $results->getItems();
+
+                        if ( !empty( $events ) ) {
+                            foreach ( $events as $event ) {
+                                $google_start = $event->start->dateTime;
+                                $google_end = $event->end->dateTime;
+                                if ( !empty( $google_start ) && !empty( $google_end ) ) {
+                                    $google_appointments[] = array(
+                                        'display' => $event->getSummary(),
+                                        'start' => strtotime( '+1 seconds', Plugin::$instance->utils->date_time->convert_to_utc_0( strtotime( date( $event->start->dateTime ) ) ) ),
+                                        'end' => Plugin::$instance->utils->date_time->convert_to_utc_0( strtotime( date( $event->end->dateTime ) ) )
+                                    );
+                                }
                             }
                         }
-                    }
 
-                } catch ( Exception $e ) {
-                    // catch if the calendar does not exist in google calendar
+                    } catch ( Exception $e ) {
+                        // catch if the calendar does not exist in google calendar
+                    }
                 }
             }
+            return $google_appointments;
         }
-        return $google_appointments;
+        return [];
     }
 
     protected function clean_google_slots( $slots )
     {
+
         $google_slots = $this->get_google_appointment( absint( $slots[ 0 ][ 'start' ] ), absint( $slots [ sizeof( $slots ) - 1 ] [ 'end' ] ) );
 
         if ( empty( $google_slots ) ) {
@@ -828,7 +840,15 @@ class Calendar extends Base_Object_With_Meta
         unset( $args[ 'notes' ] );
         $appointment = new Appointment( $args );
 
-        $appointment->update_meta( 'note', $note );
+        $notes = '';
+        if ($appointment->get_calendar()->get_meta('default_note')) {
+            $notes = $appointment->get_calendar()->get_meta('default_note');
+            $notes .= sprintf( "\n\n========== \n\n");
+        }
+        $notes .= $note;
+
+
+        $appointment->update_meta( 'notes', $notes );
 
         if ( !$appointment->exists() ) {
             return false;
@@ -839,6 +859,8 @@ class Calendar extends Base_Object_With_Meta
         $appointment->add_in_google();
 
         do_action( 'groundhogg/calendar/schedule_appointment/after', $this, $appointment );
+
+        do_action( 'groundhogg/calendar/appointment/book', $appointment->get_id(), Reminder::BOOKED );
 
         return $appointment;
 

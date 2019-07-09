@@ -154,8 +154,8 @@ class Appointments_Table extends WP_List_Table
      */
     protected function column_stat_time( $appointment )
     {
-        return date ('Y/m/d \@ h:i A' , Plugin::$instance->utils->date_time->convert_to_local_time( $appointment->get_start_time() ) );
-
+        $format = sprintf( "%s %s", get_option( 'date_format' ), get_option( 'time_format' ) );
+        return date_i18n( $format,  Plugin::$instance->utils->date_time->convert_to_local_time( $appointment->get_start_time() ) );
     }
 
     /**
@@ -164,7 +164,9 @@ class Appointments_Table extends WP_List_Table
      */
     protected function column_end_time( $appointment )
     {
-        return date ('Y/m/d \@ h:i A' , Plugin::$instance->utils->date_time->convert_to_local_time( $appointment->get_end_time() ) );
+
+        $format = sprintf( "%s %s", get_option( 'date_format' ), get_option( 'time_format' ) );
+        return date_i18n( $format,  Plugin::$instance->utils->date_time->convert_to_local_time( $appointment->get_end_time() ) );
     }
 
 

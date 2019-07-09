@@ -122,41 +122,15 @@ class Shortcode extends Supports_Errors
             return;
         };
 
-        // IF HAS A LINKED FORM
-        if ( $this->calendar->has_linked_form() ) {
+        if ( get_request_var( 'event' ) === 'reschedule' ) {
 
-            // ADD SUBMISSION HANDLER
-            add_action( 'groundhogg/form/submission_handler/after', [ $this, 'hook_into_submission' ], 10, 3 );
-
-            // PROCESS FORM
-            if ( is_user_logged_in() ) {
-                do_action( 'wp_ajax_groundhogg_ajax_form_submit' );
-            } else {
-                do_action( 'wp_ajax_nopriv_groundhogg_ajax_form_submit' );
-            }
-
+            //reschedule appointment
+            $this->reschedule_appointment();
 
         } else {
-            // PROCESS DEFAULT FORM
 
-            $email = sanitize_email( stripslashes( $_POST[ 'email' ] ) );
-            if ( !filter_var( $email, FILTER_VALIDATE_EMAIL ) ) {
-                $this->add_error( new \WP_Error( 'invalid_email', 'Please enter valid email.' ) );
-                return;
-            }
-            // get contact by email
-
-            $contact = get_contactdata( $email );
-            if ( !$contact ) {
-                $contact = new Contact( [
-                    'email' => $email,
-                    'first_name' => sanitize_text_field( get_request_var( 'first_name' ) ),
-                    'last_name' => sanitize_text_field( get_request_var( 'last_name' ) ),
-                ] );
-                $contact->update_meta( 'primary_phone', sanitize_text_field( get_request_var( 'phone' ) ) );
-            }
-            $this->create_appointment( $contact );
-
+            // Manage form submission for adding appointment
+            $this->add_appointment();
         }
 
         // Add start and end date to contact meta
@@ -197,12 +171,19 @@ class Shortcode extends Supports_Errors
     public function gh_calendar_shortcode( $atts )
     {
         $atts = shortcode_atts( [
-            'id' => 0
+            'id' => 0,
+            'reschedule' => 0
         ], $atts );
 
         wp_enqueue_script( 'fullframe' );
 
-        return html()->wrap( '', 'iframe', [ 'src' => site_url( 'gh/calendar/' . $atts[ 'id' ] ), 'width' => '100%' ] );
+        $url = site_url( 'gh/calendar/' . $atts[ 'id' ] );
+
+        if ( get_array_var( $atts, 'reschedule' ) ) {
+            $url = wp_nonce_url( add_query_arg( 'reschedule', $atts[ 'reschedule' ], $url ), 'appointment_reschedule' );
+        }
+
+        return html()->wrap( '', 'iframe', [ 'src' => $url, 'width' => '100%' ] );
     }
 
 
@@ -238,4 +219,68 @@ class Shortcode extends Supports_Errors
             wp_send_json_error( [ 'errors' => $this->get_errors(), 'html' => $this->print_errors() ] );
         }
     }
+
+    protected function add_appointment()
+    {
+        // IF HAS A LINKED FORM
+        if ( $this->calendar->has_linked_form() ) {
+
+            // ADD SUBMISSION HANDLER
+            add_action( 'groundhogg/form/submission_handler/after', [ $this, 'hook_into_submission' ], 10, 3 );
+
+            // PROCESS FORM
+            if ( is_user_logged_in() ) {
+                do_action( 'wp_ajax_groundhogg_ajax_form_submit' );
+            } else {
+                do_action( 'wp_ajax_nopriv_groundhogg_ajax_form_submit' );
+            }
+
+
+        } else {
+            // PROCESS DEFAULT FORM
+
+            $email = sanitize_email( get_request_var( 'email' ) );
+            if ( !filter_var( $email, FILTER_VALIDATE_EMAIL ) ) {
+                $this->add_error( new \WP_Error( 'invalid_email', 'Please enter valid email.' ) );
+                return;
+            }
+            // get contact by email
+
+            $contact = get_contactdata( $email );
+            if ( !$contact ) {
+                $contact = new Contact( [
+                    'email' => $email,
+                    'first_name' => sanitize_text_field( get_request_var( 'first_name' ) ),
+                    'last_name' => sanitize_text_field( get_request_var( 'last_name' ) ),
+                ] );
+                $contact->update_meta( 'primary_phone', sanitize_text_field( get_request_var( 'phone' ) ) );
+            }
+            $this->create_appointment( $contact );
+        }
+    }
+
+
+    protected function reschedule_appointment()
+    {
+        $appointment = new Appointment( get_request_var( 'appointment' ) );
+
+        if ( !$appointment->exists() ) {
+
+            $this->add_error( new \WP_Error( 'no_appointment', 'Appointment not found!' ) );
+            return;
+        }
+
+        $status = $appointment->reschedule( [
+            'start_time' => absint( get_array_var( $this->booking_data, 'start_time' ) ),
+            'end_time' => absint( get_array_var( $this->booking_data, 'end_time' ) ),
+        ] );
+
+        if ( !$status ) {
+            $this->add_error( new \WP_Error( 'failed', 'appointment id ' . get_request_var( 'appointment' ) ) );
+            return;
+        }
+
+        wp_send_json_success( [ 'message' => __( 'Your appointment rescheduled successfully!', 'groundhogg' ) ] );
+    }
+
 }

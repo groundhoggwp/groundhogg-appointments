@@ -28,11 +28,8 @@ managed_page_head( $calendar->get_name(), 'view' );
     <div class="box">
         <!-- BOOKING CALENDAR GOES HERE -->
         <?php
-
-
-        echo do_shortcode('[gh_calendar id="14" appointment_name="Local -calendar"]' );
-
-//        echo do_shortcode( sprintf( '[gh_calendar id="%d"]', $calendar->get_id() ) ); ?>
+        echo do_shortcode( sprintf( '[gh_calendar id="%d"]', $calendar->get_id() ) );
+        ?>
     </div>
     <?php
 

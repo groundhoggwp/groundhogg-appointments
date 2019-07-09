@@ -4,9 +4,11 @@ namespace GroundhoggBookingCalendar\Admin\Calendars;
 
 use Exception;
 use Groundhogg\Admin\Admin_Page;
+use Groundhogg\Email;
 use function Groundhogg\get_array_var;
 use function Groundhogg\get_contactdata;
 use function Groundhogg\get_db;
+use function Groundhogg\get_email_templates;
 use function Groundhogg\get_request_var;
 use function Groundhogg\groundhogg_url;
 use GroundhoggBookingCalendar\Classes\Appointment;
@@ -100,7 +102,6 @@ class Calendar_Page extends Admin_Page
             'end_time' => absint( $end ),
             'notes' => sanitize_textarea_field( get_request_var( 'notes' ) )
         ] );
-
 
 
         if ( !$appointment->exists() ) {
@@ -337,6 +338,73 @@ class Calendar_Page extends Admin_Page
             return new \WP_Error( 'no_calendar', __( 'Something went wrong while creating calendar.', 'groundhogg' ) );
         }
 
+        /* SET DEFAULTS */
+
+        // max booking period in availability
+        $calendar->update_meta( 'max_booking_period_count', absint( get_request_var( 'max_booking_period_count', 3 ) ) );
+        $calendar->update_meta( 'max_booking_period_type', sanitize_text_field( get_request_var( 'max_booking_period_type', 'months' ) ) );
+
+        //set default settings
+
+        $calendar->update_meta( 'slot_hour', 1 );
+
+        // Create default emails...
+        $templates = get_email_templates();
+
+        // Booked
+        $booked = new Email( [
+            'title' => $templates[ 'booked' ][ 'title' ],
+            'subject' => $templates[ 'booked' ][ 'title' ],
+            'content' => $templates[ 'booked' ][ 'content' ],
+            'status' => 'ready',
+        ] );
+
+        $approved = new Email( [
+            'title' => $templates[ 'approved' ][ 'title' ],
+            'subject' => $templates[ 'approved' ][ 'title' ],
+            'content' => $templates[ 'approved' ][ 'content' ],
+            'status' => 'ready',
+        ] );
+
+        $cancelled = new Email( [
+            'title' => $templates[ 'cancelled' ][ 'title' ],
+            'subject' => $templates[ 'cancelled' ][ 'title' ],
+            'content' => $templates[ 'cancelled' ][ 'content' ],
+            'status' => 'ready',
+        ] );
+
+        $rescheduled = new Email( [
+            'title' => $templates[ 'rescheduled' ][ 'title' ],
+            'subject' => $templates[ 'rescheduled' ][ 'title' ],
+            'content' => $templates[ 'rescheduled' ][ 'content' ],
+            'status' => 'ready',
+        ] );
+
+        $reminder = new Email( [
+            'title' => $templates[ 'reminder' ][ 'title' ],
+            'subject' => $templates[ 'reminder' ][ 'title' ],
+            'content' => $templates[ 'reminder' ][ 'content' ],
+            'status' => 'ready',
+        ] );
+
+        $calendar->update_meta( 'emails', [
+            'appointment_booked'        => $booked->get_id(),
+            'appointment_approved'      => $approved->get_id(),
+            'appointment_rescheduled'   => $rescheduled->get_id(),
+            'appointment_cancelled'     => $cancelled->get_id(),
+        ] );
+
+        // set one hour before reminder by default
+
+        $calendar->update_meta( 'reminders', [
+            [
+                'when' => 'before',
+                'period' => 'hours',
+                'number' => 1,
+                'email_id' => $reminder->get_id()
+            ]
+        ] );
+
         $this->add_notice( 'success', __( 'New calendar created successfully!', 'groundhogg' ), 'success' );
         return admin_url( 'admin.php?page=gh_calendar&action=edit&calendar=' . $calendar->get_id() . '&tab=settings' );
 
@@ -431,7 +499,7 @@ class Calendar_Page extends Admin_Page
             'name' => sanitize_text_field( get_request_var( 'appointmentname' ) ),
             'start_time' => $start_time,
             'end_time' => $end_time,
-            'notes'=>sanitize_textarea_field( get_request_var( 'notes' ) )
+            'notes' => sanitize_textarea_field( get_request_var( 'notes' ) )
         ] );
 
 
@@ -442,10 +510,6 @@ class Calendar_Page extends Admin_Page
         }
 
         return true;
-
-        // Add start and end date to contact meta
-//        WPGH()->contact_meta->update_meta($contact_id, 'appointment_start', date('Y-m-d', wpgh_convert_to_utc_0($start_time))); //TODO CONTACT META
-//        WPGH()->contact_meta->update_meta($contact_id, 'appointment_end', date('Y-m-d', wpgh_convert_to_utc_0($end_time))); //TODO CONTACT META
     }
 
 
@@ -464,9 +528,7 @@ class Calendar_Page extends Admin_Page
             wp_die( __( "Appointment not found!", 'groundhogg' ) );
         }
 
-        $status = $appointment->update( [
-            'status' => 'approved'
-        ] );
+        $status = $appointment->approve();
         if ( !$status ) {
             return new \WP_Error( 'update_failed', __( 'Status not updated.', 'groundhogg' ) );
         } else {
@@ -492,9 +554,7 @@ class Calendar_Page extends Admin_Page
             wp_die( __( "Appointment not found!", 'groundhogg' ) );
         }
 
-        $status = $appointment->update( [
-            'status' => 'cancelled'
-        ] );
+        $status = $appointment->cancel();
         if ( !$status ) {
             return new \WP_Error( 'update_failed', __( 'Status not updated.', 'groundhogg' ) );
         } else {
@@ -533,7 +593,7 @@ class Calendar_Page extends Admin_Page
             $this->add_notice( 'success', __( 'Appointment deleted!', 'groundhogg' ), 'success' );
         }
 
-        return admin_url( 'admin.php?page=gh_calendar&calendar=' . $calendar_id . '&action=edit' );
+        return admin_url( 'admin.php?page=gh_calendar&calendar=' . $calendar_id . '&action=edit&tab=list' );
     }
 
     /**
@@ -655,9 +715,6 @@ class Calendar_Page extends Admin_Page
 
         }
 
-//        $num = $this->get_meta( 'max_booking_period_count' );
-//        $type = $this->get_meta( 'max_booking_period_type' );
-
         $calendar->update_meta( 'max_booking_period_count', absint( get_request_var( 'max_booking_period_count', 3 ) ) );
         $calendar->update_meta( 'max_booking_period_type', sanitize_text_field( get_request_var( 'max_booking_period_type', 'months' ) ) );
 
@@ -706,21 +763,12 @@ class Calendar_Page extends Admin_Page
         // save success message
         $calendar->update_meta( 'message', wp_kses_post( get_request_var( 'message' ) ) );
 
+        //save default note
+        $calendar->update_meta( 'default_note', sanitize_textarea_field( get_request_var('default_note'))  );
+
         // save thank you page
         $calendar->update_meta( 'redirect_link_status', absint( get_request_var( 'redirect_link_status' ) ) );
         $calendar->update_meta( 'redirect_link', esc_url( get_request_var( 'redirect_link' ) ) );
-
-        $calendar->update_meta( 'slot_title', sanitize_text_field( get_request_var( 'slot_title' ) ) );
-        // save styling
-        $colors = [
-            'main_color',
-            'slots_color',
-            'font_color',
-        ];
-
-        foreach ( $colors as $color ) {
-            $calendar->update_meta( $color, sanitize_hex_color( get_request_var( $color ) ) );
-        }
 
         $form_override = absint( get_request_var( 'override_form_id', 0 ) );
         $calendar->update_meta( 'override_form_id', $form_override );
@@ -731,6 +779,21 @@ class Calendar_Page extends Admin_Page
         $calendar->update_meta( 'google_calendar_list', $google_calendar_list );
 
         $this->add_notice( 'success', _x( 'Settings updated.', 'notice', 'groundhogg' ), 'success' );
+
+
+//          /* unused in 2.0 */
+//        $calendar->update_meta( 'slot_title', sanitize_text_field( get_request_var( 'slot_title' ) ) ); // NOT USED IN 2.0
+//        // save styling
+//        $colors = [
+//            'main_color',
+//            'slots_color',
+//            'font_color',
+//        ];
+//
+//        foreach ( $colors as $color ) {
+//            $calendar->update_meta( $color, sanitize_hex_color( get_request_var( $color ) ) );
+//        }
+
     }
 
 
@@ -744,6 +807,5 @@ class Calendar_Page extends Admin_Page
         echo "<script>window.open(\"" . $authUrl . "\",\"_self\");</script>";
         return true;
     }
-
 
 }

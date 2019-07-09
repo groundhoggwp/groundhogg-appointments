@@ -4,6 +4,7 @@ namespace GroundhoggBookingCalendar\Classes;
 
 
 use Groundhogg\Base_Object_With_Meta;
+use function Groundhogg\encrypt;
 use Groundhogg\Event;
 use function Groundhogg\get_contactdata;
 use function Groundhogg\get_db;
@@ -298,99 +299,145 @@ class Appointment extends Base_Object_With_Meta
         do_action( 'groundhogg/calendar/appointment/book/before' );
         $this->schedule_reminders( Reminder::BOOKED );
         do_action( 'groundhogg/calendar/appointment/book/after' );
-
     }
 
     public function reschedule( $args )
     {
         // update appointment
-
         $args = wp_parse_args( $args, [
             'contact_id' => $this->get_contact_id(),
             'calendar_id' => $this->get_calendar_id(),
             'name' => $this->get_name(),
-            'status' => $this->get_status(),
+            'status' => 'pending',
             'start_time' => $this->get_start_time(),
             'end_time' => $this->get_end_time(),
-            'notes' => $this->get_meta( 'notes' ,true)
+            'notes' => $this->get_meta( 'notes', true )
         ] );
 
-        $notes = $args['notes'] ;
-
-        unset($args['notes']);
-
-
-        $this->update_meta('note',$notes);
-        $status = $this->update($args);
-        if (!$status) {
-           return false;
-       }
-
-
-        // delete all the waiting events for the appointment
-        $events  = get_db('events')->query([
-            'funnel_id'     => $this->get_id(),
-            'contact_id'    => $this->get_contact_id(),
-            'event_type'    => Reminder::NOTIFICATION_TYPE,
-            'status'        => 'waiting',
-        ]);
-
-        foreach ( $events as $event ){
-            $eve  = new Event( absint($event->ID ));
-            $eve->update(['status' => 'cancelled',]);
+        $notes = $args[ 'notes' ];
+        unset( $args[ 'notes' ] );
+        $this->update_meta( 'note', $notes );
+        $status = $this->update( $args );
+        if ( !$status ) {
+            return false;
         }
+
+
+        //cancel events form the event queue
+        $this->cancel_reminders();
+
         // Schedule Appointment Booked Email...
         do_action( 'groundhogg/calendar/appointment/reschedule/before' );
         $this->schedule_reminders( Reminder::RESCHEDULED );
         do_action( 'groundhogg/calendar/appointment/reschedule/after' );
-
+        do_action( 'groundhogg/calendar/appointment/reschedule' , $this->get_id() , Reminder::RESCHEDULED  );
         return true;
     }
 
     public function cancel()
     {
+        $status = $this->update( [
+            'status' => 'cancelled'
+        ] );
+
+        if ( !$status ) {
+            return false;
+        }
+
+        $this->cancel_reminders();
+
+        do_action( 'groundhogg/calendar/appointment/cancelled/before' );
+        $this->schedule_reminders( Reminder::CANCELLED );
+        do_action( 'groundhogg/calendar/appointment/cancelled/after' );
+
+        do_action( 'groundhogg/calendar/appointment/cancelled' , $this->get_id() , Reminder::CANCELLED  );
+
+        return true;
 
     }
 
     public function approve()
     {
+        $status = $this->update( [
+            'status' => 'approved'
+        ] );
 
+        if ( !$status ) {
+            return false;
+        }
+
+        $this->cancel_reminders();
+
+        do_action( 'groundhogg/calendar/appointment/approve/before' );
+        $this->schedule_reminders( Reminder::APPROVED );
+        do_action( 'groundhogg/calendar/appointment/approve/after' );
+
+        do_action( 'groundhogg/calendar/appointment/approve' , $this->get_id() , Reminder::APPROVED  );
+        return true;
     }
 
 
-    protected  function schedule_reminders( $which )
+    protected function schedule_reminders( $which )
     {
-
         // Schedule Appointment Booked Email...
-        if ( $booked_email_id = $this->get_calendar()->get_notification_emails( $which ) ){
-            send_reminder_notification( absint( $booked_email_id ) , absint($this->get_id() ), time() );
+        if ( $booked_email_id = $this->get_calendar()->get_notification_emails( $which ) ) {
+            send_reminder_notification( absint( $booked_email_id ), absint( $this->get_id() ), time() );
         }
 
-        // Schedule Email Reminders...
-        $reminders = $this->get_calendar()->get_reminder_emails();
+        if ( !( $which === Reminder::CANCELLED ) ) {
 
-        foreach ( $reminders as $reminder ) {
+            // Schedule Email Reminders...
+            $reminders = $this->get_calendar()->get_reminder_emails();
+            foreach ( $reminders as $reminder ) {
 
-            // Calc time...
-            switch ( $reminder[ 'when' ] ){
-                default:
-                case 'before':
-                    $time = strtotime( sprintf( "-%d %s", $reminder[ 'number' ], $reminder[ 'period' ] ), $this->get_start_time() );
-                    if ( $time > time() ){
-                        send_reminder_notification( $reminder[ 'email_id' ], $this->get_id(), $time );
-                    }
-                    break;
-                case 'after':
-                    $time = strtotime( sprintf( "+%d %s", $reminder[ 'number' ], $reminder[ 'period' ] ), $this->get_end_time() );
-                    if ( $time > time() ){
-                        send_reminder_notification( $reminder[ 'email_id' ], $this->get_id(), $time );
-                    }
-                    break;
+                // Calc time...
+                switch ( $reminder[ 'when' ] ) {
+                    default:
+                    case 'before':
+                        $time = strtotime( sprintf( "-%d %s", $reminder[ 'number' ], $reminder[ 'period' ] ), $this->get_start_time() );
+                        if ( $time > time() ) {
+                            send_reminder_notification( $reminder[ 'email_id' ], $this->get_id(), $time );
+                        }
+                        break;
+                    case 'after':
+                        $time = strtotime( sprintf( "+%d %s", $reminder[ 'number' ], $reminder[ 'period' ] ), $this->get_end_time() );
+                        if ( $time > time() ) {
+                            send_reminder_notification( $reminder[ 'email_id' ], $this->get_id(), $time );
+                        }
+                        break;
+                }
+
             }
-
         }
 
     }
 
+    protected function cancel_reminders()
+    {
+        // delete all the waiting events for the appointment
+        $events = get_db( 'events' )->query( [
+            'funnel_id' => $this->get_id(),
+            'contact_id' => $this->get_contact_id(),
+            'event_type' => Reminder::NOTIFICATION_TYPE,
+            'status' => 'waiting',
+        ] );
 
+        if ( !empty( $events ) ) {
+            foreach ( $events as $event ) {
+                $eve = new Event( absint( $event->ID ) );
+                $eve->update( [ 'status' => 'cancelled', ] );
+            }
+        }
+    }
+
+    /**
+     * Return a manage link to the appoitment.
+     *
+     * @param string $action
+     * @return string
+     */
+    public function manage_link( $action='cancel' )
+    {
+        return site_url( sprintf( 'gh/appointment/%s/%s', urlencode( encrypt( $this->get_id() ) ), $action ) );
+    }
 }

@@ -5,6 +5,7 @@ namespace GroundhoggBookingCalendar;
 use Groundhogg\Contact;
 use function Groundhogg\get_request_var;
 use function Groundhogg\html;
+use GroundhoggBookingCalendar\Classes\Appointment;
 use GroundhoggBookingCalendar\Classes\Calendar;
 
 $calendar_id = get_query_var( 'calendar_id' );
@@ -20,10 +21,6 @@ if ( !$calendar->exists() ) {
  */
 function default_form()
 {
-/**
- * @var $contact Contact
- */
-$contact = \Groundhogg\Plugin::$instance->tracking->get_current_contact();
 
 ?>
 <div class="gh-form-wrapper">
@@ -39,7 +36,6 @@ $contact = \Groundhogg\Plugin::$instance->tracking->get_current_contact();
                             'id' => 'first_name',
                             'class' => 'gh-input',
                             'placeholder' => _e( 'First Name' ),
-//                            'value' => $contact->get_first_name() ? $contact->get_first_name() : '',
                             'required' => true
                         ] );
                         ?>
@@ -54,7 +50,6 @@ $contact = \Groundhogg\Plugin::$instance->tracking->get_current_contact();
                             'id' => 'last_name',
                             'class' => 'gh-input',
                             'placeholder' => _e( 'Last Name' ),
-//                            'value' => $contact->get_last_name() ? $contact->get_last_name() : '',
                             'required' => true
                         ] );
                         ?>
@@ -71,7 +66,6 @@ $contact = \Groundhogg\Plugin::$instance->tracking->get_current_contact();
                             'id' => 'email',
                             'class' => 'gh-input',
                             'placeholder' => _e( 'Email' ),
-//                            'value' => $contact->get_email() ? $contact->get_email() : '',
                             'required' => true
                         ] );
                         ?>
@@ -88,7 +82,6 @@ $contact = \Groundhogg\Plugin::$instance->tracking->get_current_contact();
                             'id' => 'phone',
                             'class' => 'gh-input',
                             'placeholder' => _e( 'Phone' ),
-//                            'value' => $contact->get_phone_number() ? $contact->get_phone_number() : '',
                             'required' => true
                         ] );
                         ?>
@@ -192,7 +185,6 @@ add_action( 'wp_enqueue_scripts', '\GroundhoggBookingCalendar\enqueue_calendar_s
                     <div class="gh-form-column col-1-of-3">
                         <div id="time-slots" class="select-time hidden">
                             <p class="time-slot-select-text"><b><?php _e( $title, 'groundhogg' ); ?></b></p>
-
                             <hr class="time-slot-divider"/>
                             <div id="time-slots-inner"></div>
                         </div>
@@ -203,7 +195,40 @@ add_action( 'wp_enqueue_scripts', '\GroundhoggBookingCalendar\enqueue_calendar_s
         <div id="details-form" class="gh-form-wrapper hidden">
             <hr>
             <?php
-            if ( $calendar->has_linked_form() ) {
+            // Rescheduling...
+            if ( get_request_var( 'reschedule' ) ) {
+
+                $appointment_id = absint( get_request_var( 'reschedule' ) );
+
+                echo "<form class='gh-form details-form' method='post' target='_parent'> ";
+
+                echo html()->input( [
+                    'type' => 'hidden',
+                    'name' => 'appointment',
+                    'value' => $appointment_id
+                ] );
+
+                echo html()->input( [
+                    'type' => 'hidden',
+                    'name' => 'event',
+                    'value' => 'reschedule'
+                ] );
+
+                echo html()->button( [
+                    'type' => 'submit',
+                    'text' => __( 'Reschedule Appointment' ),
+                    'name' => 'reschedule',
+                    'id' => 'reschedule',
+                    'class' => 'button',
+                    'value' => 'reschedule',
+                ] );
+
+                echo '</form>';
+
+                // do stuff...
+
+
+            } else if ( $calendar->has_linked_form() ) {
                 echo do_shortcode( sprintf( '[gh_form id="%d" class="details-form"]', $calendar->get_linked_form() ) );
             } else {
                 default_form();
