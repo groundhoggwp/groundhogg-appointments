@@ -99,7 +99,7 @@ class Appointments extends DB
     public function appointments_exist_in_range( $a, $b, $calendar_id ){
         global $wpdb;
 
-        $results = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$this->get_table_name()} WHERE ( (start_time BETWEEN %d AND %d) OR (end_time BETWEEN %d AND %d) ) AND calendar_id = %d",
+        $results = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$this->get_table_name()} WHERE ( (start_time BETWEEN %d AND %d) OR (end_time BETWEEN %d AND %d) ) AND calendar_id != %d",
             $a, $b, $a, $b , absint( $calendar_id ) ) );
 
         return $results;
