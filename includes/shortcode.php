@@ -2,6 +2,7 @@
 
 namespace GroundhoggBookingCalendar;
 
+use function Groundhogg\after_form_submit_handler;
 use Groundhogg\Contact;
 use Groundhogg\Form\Submission_Handler;
 use function Groundhogg\get_array_var;
@@ -56,7 +57,6 @@ class Shortcode extends Supports_Errors
      */
     public function create_appointment( $contact )
     {
-
         // NEW
         $appointment = $this->calendar->schedule_appointment( [
             'contact_id' => $contact->get_id(),
@@ -64,12 +64,10 @@ class Shortcode extends Supports_Errors
             'end_time' => absint( get_array_var( $this->booking_data, 'end_time' ) ),
         ] );
 
-        if ( !$appointment->exists() ) {
+        if ( ! $appointment->exists() ) {
             $this->add_error( new \WP_Error( 'failed', 'Appointment not created!' ) );
             return;
         }
-
-//        $appointment->update_meta( 'notes', sanitize_textarea_field( get_request_var( 'notes' ) ) );
 
         $redirect_link_status = $this->calendar->get_meta( 'redirect_link_status', true );
         $redirect_link = $this->calendar->get_meta( 'redirect_link', true );
@@ -103,7 +101,7 @@ class Shortcode extends Supports_Errors
     public function add_appointment_ajax()
     {
 
-        if ( !wp_verify_nonce( get_request_var( '_ghnonce' ), 'groundhogg_frontend' ) ) {
+        if ( ! wp_verify_nonce( get_request_var( '_ghnonce' ), 'groundhogg_frontend' ) ) {
             $this->add_error( new \WP_Error( 'oops', 'invalid nonce' ) );
         }
 
@@ -133,9 +131,6 @@ class Shortcode extends Supports_Errors
             $this->add_appointment();
         }
 
-        // Add start and end date to contact meta
-//        WPGH()->contact_meta->update_meta($contact_id, 'appointment_start', date('Y-m-d', $start)); // TODO update contact meta
-//        WPGH()->contact_meta->update_meta($contact_id, 'appointment_end', date('Y-m-d', $end));     //TODO update contact meta
     }
 
     public function get_slots()
@@ -235,26 +230,35 @@ class Shortcode extends Supports_Errors
                 do_action( 'wp_ajax_nopriv_groundhogg_ajax_form_submit' );
             }
 
-
         } else {
             // PROCESS DEFAULT FORM
 
             $email = sanitize_email( get_request_var( 'email' ) );
-            if ( !filter_var( $email, FILTER_VALIDATE_EMAIL ) ) {
+
+            if ( ! is_email( $email ) ) {
                 $this->add_error( new \WP_Error( 'invalid_email', 'Please enter valid email.' ) );
                 return;
             }
-            // get contact by email
 
-            $contact = get_contactdata( $email );
-            if ( !$contact ) {
-                $contact = new Contact( [
-                    'email' => $email,
-                    'first_name' => sanitize_text_field( get_request_var( 'first_name' ) ),
-                    'last_name' => sanitize_text_field( get_request_var( 'last_name' ) ),
-                ] );
-                $contact->update_meta( 'primary_phone', sanitize_text_field( get_request_var( 'phone' ) ) );
+            $args = [
+                'email' => $email,
+                'first_name' => sanitize_text_field( get_request_var( 'first_name' ) ),
+                'last_name' => sanitize_text_field( get_request_var( 'last_name' ) ),
+            ];
+
+            // get contact by email
+            $contact = get_contactdata( $args[ 'email' ] );
+
+            if ( ! $contact ) {
+                $contact = new Contact( $args );
+            } else {
+                $contact->update( $args );
             }
+
+            $contact->update_meta( 'primary_phone', sanitize_text_field( get_request_var( 'phone' ) ) );
+
+            after_form_submit_handler( $contact );
+
             $this->create_appointment( $contact );
         }
     }

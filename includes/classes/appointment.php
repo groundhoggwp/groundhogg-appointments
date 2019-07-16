@@ -301,6 +301,12 @@ class Appointment extends Base_Object_With_Meta
         do_action( 'groundhogg/calendar/appointment/book/after' );
     }
 
+    /**
+     * Reschedule Appointment
+     *
+     * @param $args
+     * @return bool
+     */
     public function reschedule( $args )
     {
         // update appointment
@@ -314,14 +320,16 @@ class Appointment extends Base_Object_With_Meta
             'notes' => $this->get_meta( 'notes', true )
         ] );
 
-        $notes = $args[ 'notes' ];
+        $note = $args[ 'notes' ];
         unset( $args[ 'notes' ] );
-        $this->update_meta( 'note', $notes );
+
+        if ( $note ) {
+            $this->update_meta( 'notes', $note );
+        }
         $status = $this->update( $args );
         if ( !$status ) {
             return false;
         }
-
 
         //cancel events form the event queue
         $this->cancel_reminders();
@@ -330,7 +338,7 @@ class Appointment extends Base_Object_With_Meta
         do_action( 'groundhogg/calendar/appointment/reschedule/before' );
         $this->schedule_reminders( Reminder::RESCHEDULED );
         do_action( 'groundhogg/calendar/appointment/reschedule/after' );
-        do_action( 'groundhogg/calendar/appointment/reschedule' , $this->get_id() , Reminder::RESCHEDULED  );
+        do_action( 'groundhogg/calendar/appointment/reschedule', $this->get_id(), Reminder::RESCHEDULED );
         return true;
     }
 
@@ -350,7 +358,7 @@ class Appointment extends Base_Object_With_Meta
         $this->schedule_reminders( Reminder::CANCELLED );
         do_action( 'groundhogg/calendar/appointment/cancelled/after' );
 
-        do_action( 'groundhogg/calendar/appointment/cancelled' , $this->get_id() , Reminder::CANCELLED  );
+        do_action( 'groundhogg/calendar/appointment/cancelled', $this->get_id(), Reminder::CANCELLED );
 
         return true;
 
@@ -372,7 +380,7 @@ class Appointment extends Base_Object_With_Meta
         $this->schedule_reminders( Reminder::APPROVED );
         do_action( 'groundhogg/calendar/appointment/approve/after' );
 
-        do_action( 'groundhogg/calendar/appointment/approve' , $this->get_id() , Reminder::APPROVED  );
+        do_action( 'groundhogg/calendar/appointment/approve', $this->get_id(), Reminder::APPROVED );
         return true;
     }
 
@@ -409,7 +417,6 @@ class Appointment extends Base_Object_With_Meta
 
             }
         }
-
     }
 
     protected function cancel_reminders()
@@ -436,7 +443,7 @@ class Appointment extends Base_Object_With_Meta
      * @param string $action
      * @return string
      */
-    public function manage_link( $action='cancel' )
+    public function manage_link( $action = 'cancel' )
     {
         return site_url( sprintf( 'gh/appointment/%s/%s', urlencode( encrypt( $this->get_id() ) ), $action ) );
     }

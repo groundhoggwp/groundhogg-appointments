@@ -8,7 +8,8 @@ class Installer extends \Groundhogg\Installer
 
     protected function activate()
     {
-        // TODO: Implement activate() method.
+        \Groundhogg\Plugin::$instance->dbs->install_dbs();
+        Plugin::$instance->roles->install_roles_and_caps();
     }
 
     protected function deactivate()

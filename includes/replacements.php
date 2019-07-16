@@ -129,7 +129,7 @@ class Replacements
         }
 
         $contact = get_contactdata( $contact_id );
-        $local_time = $contact->get_local_time_in_utc_0( $this->get_appointment()->get_start_time() );
+        $local_time = $contact->get_local_time( $this->get_appointment()->get_start_time() );
         $format = sprintf( "%s %s", get_option( 'date_format' ), get_option( 'time_format' ) );
         return date_i18n( $format, $local_time );
 
@@ -150,7 +150,7 @@ class Replacements
 
         $contact = get_contactdata( $contact_id );
 
-        $local_time = $contact->get_local_time_in_utc_0( $this->get_appointment()->get_end_time() );
+        $local_time = $contact->get_local_time( $this->get_appointment()->get_end_time() );
         $format = sprintf( "%s %s", get_option( 'date_format' ), get_option( 'time_format' ) );
         return date_i18n( $format, $local_time );
     }
@@ -166,6 +166,10 @@ class Replacements
 
         if ( ! $this->get_appointment() ) {
             return false;
+        }
+
+        if (! $this->get_appointment()->get_meta( 'notes' )) {
+            return __('There is no additional note with this appointment.','groundhogg');
         }
 
         return $this->get_appointment()->get_meta( 'notes' );

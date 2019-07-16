@@ -119,17 +119,10 @@ class Plugin extends Extension
 
         wp_register_script( 'jstz', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'js/jstz.min.js', [], GROUNDHOGG_BOOKING_CALENDAR_VERSION );
         wp_register_script( 'groundhogg-appointments-admin', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . '/js/admin.new.js', [ 'jquery', 'groundhogg-admin-functions' ], GROUNDHOGG_BOOKING_CALENDAR_VERSION );
-//        wp_register_script( 'groundhogg-appointments-shortcode', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . '/js/shortcode.js', ['jquery', 'jquery-ui-datepicker' ],GROUNDHOGG_BOOKING_CALENDAR_VERSION  );
+
         wp_register_script( 'fullcalendar-moment', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . '/lib/fullcalendar/lib/moment.min.js', [], GROUNDHOGG_BOOKING_CALENDAR_VERSION );
         wp_register_script( 'fullcalendar-main', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . '/lib/fullcalendar/fullcalendar.js', [], GROUNDHOGG_BOOKING_CALENDAR_VERSION );
 
-//        wp_register_script( 'groundhogg-appointments-appointments', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . '/js/appointments.js', [ 'jstz', 'jquery', 'jquery-ui-datepicker' ],GROUNDHOGG_BOOKING_CALENDAR_VERSION  );
-//        wp_localize_script( 'groundhogg-appointments-appointments','BookingCalendar', [
-//            'ajax_url'          => admin_url( 'admin-ajax.php' ),
-//            'invalidDateMsg'    => __( 'Please select a time slot first.', 'groundhogg' ),
-//            'invalidDetailsMsg' => __( 'Please make sure all your details are filled out.', 'groundhogg' ),
-//            'invalidEmailMsg'   => __( 'Your email address is invalid.', 'groundhogg' ),
-//        ] );
     }
 
     public function register_frontend_scripts( $is_minified, $IS_MINIFIED )
@@ -152,10 +145,6 @@ class Plugin extends Extension
 
     }
 
-    public function register_apis( $api_manager )
-    {
-        $api_manager->calendar_api = new Calendar_Api();
-    }
 
     /**
      * Register controls to retrive google ID and secret

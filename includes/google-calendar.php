@@ -171,7 +171,6 @@ class Google_Calendar
             // get event id and check for update
             if ( !( $event->start->dateTime === null || $event->end->dateTime === null || empty( $event->getAttendees() ) ) ) {
 
-
                 $fetched_start = str_ireplace( 'Z', '', $event->start->dateTime );
                 $fetched_end = str_ireplace( 'Z', '', $event->end->dateTime );
 
@@ -194,47 +193,38 @@ class Google_Calendar
 
                 if ( $find === false ) {
                     //check for attendees if no one found does not sync it
-                    $appointment = new  Appointment( [
+                    $appointment = $calendar->schedule_appointment( [
                         'contact_id' => $contact->get_id(),
                         'calendar_id' => $calendar->get_id(),
                         'name' => sanitize_text_field( stripslashes( $event->getSummary() ) ),
                         'status' => 'pending',
                         'start_time' => Plugin::$instance->utils->date_time->convert_to_utc_0( $start ),    //strtotime()
-                        'end_time' => Plugin::$instance->utils->date_time->convert_to_utc_0( $end )       //strtotime()
+                        'end_time' => Plugin::$instance->utils->date_time->convert_to_utc_0( $end ),      //strtotime()
+                        'notes' => sanitize_text_field( stripslashes( $event->getDescription() ) )
                     ] );
 
                     if ( $appointment->exists() ) {
-                        $appointment->add_meta( 'note', sanitize_text_field( stripslashes( $event->getDescription() ) ) );
-
                         // delete google event from google and sync it.
                         try {
                             $service->events->delete( $google_calendar_id, $event->getId() );
                         } catch ( Exception $e ) {
                             //todo nothing
                         }
-
-                        //add GH event
-
-                        $appointment->add_in_google();
                     }
 
                 } else {
-
 
                     //get appointment id form the google event id
                     $appointment = new Appointment( absint( str_replace( 'ghcalendarcid' . $calendar->get_id() . 'aid', '', $event->getId() ) ) );
 
                     // update query
-                    $status = $appointment->update( [
+                    $status = $appointment->reschedule( [
                         'contact_id' => $contact->get_id(),
                         'name' => sanitize_text_field( stripslashes( $event->getSummary() ) ),
                         'start_time' => Plugin::$instance->utils->date_time->convert_to_utc_0( $start ),    //strtotime()
-                        'end_time' => Plugin::$instance->utils->date_time->convert_to_utc_0( $end )       //strtotime()
+                        'end_time' => Plugin::$instance->utils->date_time->convert_to_utc_0( $end ),      //strtotime()
+                        'notes' => sanitize_text_field( stripslashes( $event->getDescription() ) )
                     ] );
-
-                    $appointment->add_meta( 'note', sanitize_text_field( stripslashes( $event->getDescription() ) ) );
-
-
                 }
             }
         }

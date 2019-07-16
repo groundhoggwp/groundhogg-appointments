@@ -48,14 +48,11 @@ class Calendar_Page extends Admin_Page
 
         $ID = absint( get_request_var( 'calendar' ) );
 
-
         $calendar = new Calendar( $ID );
-
 
         if ( !$calendar->exists() ) {
             wp_send_json_error();
         }
-
 
         $date = get_request_var( 'date' );
 
@@ -74,6 +71,7 @@ class Calendar_Page extends Admin_Page
      */
     public function add_appointment_ajax()
     {
+
         if ( !current_user_can( 'add_appointment' ) ) {
             wp_send_json_error();
         }
@@ -95,7 +93,8 @@ class Calendar_Page extends Admin_Page
             wp_send_json_error( __( 'Please provide a valid date selection.', 'groundhogg' ) );
         }
 
-        $appointment = $calendar->schedule_appointment( [
+
+         $appointment = $calendar->schedule_appointment( [
             'contact_id' => $contact->get_id(),
             'name' => sanitize_text_field( get_request_var( 'appointment_name' ) ),
             'start_time' => absint( $start ),
@@ -109,12 +108,6 @@ class Calendar_Page extends Admin_Page
         }
 
         wp_send_json_success( [ 'appointment' => $appointment->get_full_calendar_event(), 'msg' => __( 'Appointment booked successfully.', 'groundhogg' ) ] );
-
-
-        // Add start and end date to contact meta
-//        WPGH()->contact_meta->update_meta($contact_id, 'appointment_start', date('Y-m-d', $start)); // TODO update contact meta
-//        WPGH()->contact_meta->update_meta($contact_id, 'appointment_end', date('Y-m-d', $end));     //TODO update contact meta
-
     }
 
     /**
@@ -172,10 +165,6 @@ class Calendar_Page extends Admin_Page
         if ( !$status ) {
             wp_send_json_error( __( 'Something went wrong while updating appointment.', 'groundhogg' ) );
         }
-
-        // Add start and end date to contact meta
-//        WPGH()->contact_meta->update_meta( $appointment->contact_id, 'appointment_start', date( 'Y-m-d', $start_time ) ); TODO CONTACT META
-//        WPGH()->contact_meta->update_meta( $appointment->contact_id, 'appointment_end', date( 'Y-m-d', $end_time ) ); TODO CONTACT META
 
         wp_send_json_success( [ 'msg' => __( 'Your appointment updated successfully!', 'groundhogg' ) ] );
 
@@ -292,7 +281,6 @@ class Calendar_Page extends Admin_Page
 
     public function process_delete()
     {
-
         if ( !current_user_can( 'delete_calendar' ) ) {
             $this->wp_die_no_access();
         }
@@ -328,8 +316,9 @@ class Calendar_Page extends Admin_Page
             return new \WP_Error( 'no_data', __( 'Please enter name and description of calendar.', 'groundhogg' ) );
         }
 
+        $owner_id = absint( get_request_var( 'owner_id', get_current_user_id() ) ) ;
         $calendar = new Calendar( [
-            'user_id' => absint( get_request_var( 'owner_id', get_current_user_id() ) ),
+            'user_id' => $owner_id ,
             'name' => $name,
             'description' => $description,
         ] );
@@ -344,9 +333,10 @@ class Calendar_Page extends Admin_Page
         $calendar->update_meta( 'max_booking_period_count', absint( get_request_var( 'max_booking_period_count', 3 ) ) );
         $calendar->update_meta( 'max_booking_period_type', sanitize_text_field( get_request_var( 'max_booking_period_type', 'months' ) ) );
 
-        //set default settings
 
+        //set default settings
         $calendar->update_meta( 'slot_hour', 1 );
+        $calendar->update_meta( 'message', __('Appointment booked successfully!','groundhogg') );
 
         // Create default emails...
         $templates = get_email_templates();
@@ -357,6 +347,7 @@ class Calendar_Page extends Admin_Page
             'subject' => $templates[ 'booked' ][ 'title' ],
             'content' => $templates[ 'booked' ][ 'content' ],
             'status' => 'ready',
+            'from_user' => $owner_id ,
         ] );
 
         $approved = new Email( [
@@ -364,6 +355,7 @@ class Calendar_Page extends Admin_Page
             'subject' => $templates[ 'approved' ][ 'title' ],
             'content' => $templates[ 'approved' ][ 'content' ],
             'status' => 'ready',
+            'from_user' => $owner_id ,
         ] );
 
         $cancelled = new Email( [
@@ -371,6 +363,7 @@ class Calendar_Page extends Admin_Page
             'subject' => $templates[ 'cancelled' ][ 'title' ],
             'content' => $templates[ 'cancelled' ][ 'content' ],
             'status' => 'ready',
+            'from_user' => $owner_id ,
         ] );
 
         $rescheduled = new Email( [
@@ -378,6 +371,7 @@ class Calendar_Page extends Admin_Page
             'subject' => $templates[ 'rescheduled' ][ 'title' ],
             'content' => $templates[ 'rescheduled' ][ 'content' ],
             'status' => 'ready',
+            'from_user' => $owner_id ,
         ] );
 
         $reminder = new Email( [
@@ -385,6 +379,7 @@ class Calendar_Page extends Admin_Page
             'subject' => $templates[ 'reminder' ][ 'title' ],
             'content' => $templates[ 'reminder' ][ 'content' ],
             'status' => 'ready',
+            'from_user' => $owner_id ,
         ] );
 
         $calendar->update_meta( 'emails', [
@@ -437,6 +432,7 @@ class Calendar_Page extends Admin_Page
      */
     public function process_edit_appointment()
     {
+
         if ( !current_user_can( 'edit_appointment' ) ) {
             $this->wp_die_no_access();
         }
@@ -492,7 +488,6 @@ class Calendar_Page extends Admin_Page
             return new \WP_Error( 'appointment_clash', __( 'You already have an appointment in this time slot.', 'groundhogg' ) );
         }
 
-
         // updates current appointment with the updated details and updates google appointment
         $status = $appointment->reschedule( [
             'contact_id' => $contact_id,
@@ -501,7 +496,6 @@ class Calendar_Page extends Admin_Page
             'end_time' => $end_time,
             'notes' => sanitize_textarea_field( get_request_var( 'notes' ) )
         ] );
-
 
         if ( !$status ) {
             $this->add_notice( new \WP_Error( 'error', 'Something went wrong...' ) );
@@ -807,5 +801,7 @@ class Calendar_Page extends Admin_Page
         echo "<script>window.open(\"" . $authUrl . "\",\"_self\");</script>";
         return true;
     }
+
+
 
 }

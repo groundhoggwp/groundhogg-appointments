@@ -117,7 +117,7 @@
                     start_time: calendar.valueOf().bookingData.start_date,
                     end_time: calendar.valueOf().bookingData.end_date,
                     contact_id: $('#contact-id').val(),
-                    note: $('#appointmentnote').val(),
+                    notes: $('#notes').val(),
                     calendar_id: $('#calendar_id').val(),
                     appointment_name: $('#appointmentname').val()
                 },
@@ -175,7 +175,7 @@
 
         clearData: function () {
 
-            $('#appointmentnote').val('');
+            $('#notes').val('');
             $('#appt-calendar').val('');
             $('#appointmentname').val('');
             $('#select_time').children().remove();

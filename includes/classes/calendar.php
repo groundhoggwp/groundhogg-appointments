@@ -366,15 +366,17 @@ class Calendar extends Base_Object_With_Meta
     }
 
     /**
+     * Fetches valid time slots for end using by performing all the cleaning operations.
+     * (Most Important method)
+     *
      * @param string $date
      * @param string $timezone
-     * @return array|false
+     * @return array|false|mixed
      */
     public function get_appointment_slots( $date = '', $timezone = '' )
     {
-
-
         $slots = $this->get_all_available_slots( strtotime( $date ) );
+
         $slots = $this->sort_slots( $slots );
 
         if ( !$slots ) {
@@ -435,7 +437,6 @@ class Calendar extends Base_Object_With_Meta
         return $slots;
     }
 
-
     /**
      * Slots will be returned as
      *
@@ -479,6 +480,10 @@ class Calendar extends Base_Object_With_Meta
             // 09:00
             $start_time = date( 'H:i:s', strtotime( "{$period[0]}:00" ) );
             $start_time = Plugin::$instance->utils->date_time->convert_to_utc_0( strtotime( "{$str_date_no_hours} {$start_time}" ) );
+            if ($start_time < time() ){
+                $start_time =  strtotime( date('Y-m-d H:00:00' ,  time() ) );
+             }
+
             $start_date = new \DateTime( date( 'Y-m-d H:i:s', $start_time ) );
 
             // 17:00
@@ -617,6 +622,13 @@ class Calendar extends Base_Object_With_Meta
         return [];
     }
 
+    /**
+     * Removes google appointment slots from all the appointment slots.
+     *
+     * @param $slots
+     * @return array
+     */
+
     protected function clean_google_slots( $slots )
     {
 
@@ -632,6 +644,12 @@ class Calendar extends Base_Object_With_Meta
     }
 
 
+    /**
+     * Fetches valid appointment.
+     *
+     * @param $slots
+     * @return array
+     */
     protected function validate_appointments( $slots )
     {
         /**
@@ -660,6 +678,13 @@ class Calendar extends Base_Object_With_Meta
     }
 
 
+    /**
+     * Clean appointments where time slots are smaller then appointment.
+     *
+     * @param $slots
+     * @param $appointments
+     * @return array
+     */
     protected function clean_big_appointment( $slots, $appointments )
     {
         $clean_slots = [];
@@ -678,6 +703,13 @@ class Calendar extends Base_Object_With_Meta
         return $clean_slots;
     }
 
+    /**
+     * Clean appointments where time slots are bigger then appointment.
+     *
+     * @param $slots
+     * @param $appointments
+     * @return array
+     */
     protected function clean_small_appointment( $slots, $appointments )
     {
         $clean_slots = [];
@@ -697,6 +729,13 @@ class Calendar extends Base_Object_With_Meta
         return $clean_slots;
     }
 
+
+    /**
+     *  Removes duplicate slots from the slots array and sort array to display time slots in ascending order.
+     *
+     * @param $slot
+     * @return array
+     */
     protected function sort_slots( $slot )
     {
         $sort = [];
@@ -704,6 +743,8 @@ class Calendar extends Base_Object_With_Meta
         if ( empty( $slot ) ) {
             return $slot;
         }
+
+        $slot = array_map("unserialize", array_unique(array_map("serialize", $slot)));
 
         foreach ( $slot as $key => $row ) {
             $sort[ $key ] = $row[ 'start' ];
@@ -757,6 +798,7 @@ class Calendar extends Base_Object_With_Meta
     }
 
     /**
+     * Returns day number based on day name
      *
      * @param $day string
      * @return int
@@ -823,7 +865,6 @@ class Calendar extends Base_Object_With_Meta
      */
     public function schedule_appointment( $args )
     {
-
         $args = wp_parse_args( $args, [
             'contact_id' => 0,
             'calendar_id' => $this->get_id(),
@@ -841,12 +882,11 @@ class Calendar extends Base_Object_With_Meta
         $appointment = new Appointment( $args );
 
         $notes = '';
-        if ($appointment->get_calendar()->get_meta('default_note')) {
-            $notes = $appointment->get_calendar()->get_meta('default_note');
-            $notes .= sprintf( "\n\n========== \n\n");
+        if ( $appointment->get_calendar()->get_meta( 'default_note' ) ) {
+            $notes = $appointment->get_calendar()->get_meta( 'default_note' );
+            $notes .= sprintf( "\n\n========== \n\n" );
         }
         $notes .= $note;
-
 
         $appointment->update_meta( 'notes', $notes );
 
@@ -865,5 +905,4 @@ class Calendar extends Base_Object_With_Meta
         return $appointment;
 
     }
-
 }
