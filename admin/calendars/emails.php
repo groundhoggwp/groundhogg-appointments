@@ -25,7 +25,7 @@ if ( !$emails ) {
 
 wp_enqueue_script( 'groundhogg-appointments-reminders' );
 wp_localize_script( 'groundhogg-appointments-reminders', 'CalendarReminders', [
-    'edit_email_path' => groundhogg_url( 'emails', [ 'action' => 'edit' ] ),
+    'edit_email_path' => add_query_arg( [ 'page' => 'gh_emails', 'action' => 'edit' ], admin_url( 'admin.php' ) )
 ] );
 
 

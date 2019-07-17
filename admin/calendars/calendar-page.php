@@ -316,9 +316,9 @@ class Calendar_Page extends Admin_Page
             return new \WP_Error( 'no_data', __( 'Please enter name and description of calendar.', 'groundhogg' ) );
         }
 
-        $owner_id = absint( get_request_var( 'owner_id', get_current_user_id() ) ) ;
+        $owner_id = absint( get_request_var( 'owner_id', get_current_user_id() ) );
         $calendar = new Calendar( [
-            'user_id' => $owner_id ,
+            'user_id' => $owner_id,
             'name' => $name,
             'description' => $description,
         ] );
@@ -336,7 +336,7 @@ class Calendar_Page extends Admin_Page
 
         //set default settings
         $calendar->update_meta( 'slot_hour', 1 );
-        $calendar->update_meta( 'message', __('Appointment booked successfully!','groundhogg') );
+        $calendar->update_meta( 'message', __( 'Appointment booked successfully!', 'groundhogg' ) );
 
         // Create default emails...
         $templates = get_email_templates();
@@ -347,7 +347,7 @@ class Calendar_Page extends Admin_Page
             'subject' => $templates[ 'booked' ][ 'title' ],
             'content' => $templates[ 'booked' ][ 'content' ],
             'status' => 'ready',
-            'from_user' => $owner_id ,
+            'from_user' => $owner_id,
         ] );
 
         $approved = new Email( [
@@ -355,7 +355,7 @@ class Calendar_Page extends Admin_Page
             'subject' => $templates[ 'approved' ][ 'title' ],
             'content' => $templates[ 'approved' ][ 'content' ],
             'status' => 'ready',
-            'from_user' => $owner_id ,
+            'from_user' => $owner_id,
         ] );
 
         $cancelled = new Email( [
@@ -363,7 +363,7 @@ class Calendar_Page extends Admin_Page
             'subject' => $templates[ 'cancelled' ][ 'title' ],
             'content' => $templates[ 'cancelled' ][ 'content' ],
             'status' => 'ready',
-            'from_user' => $owner_id ,
+            'from_user' => $owner_id,
         ] );
 
         $rescheduled = new Email( [
@@ -371,7 +371,7 @@ class Calendar_Page extends Admin_Page
             'subject' => $templates[ 'rescheduled' ][ 'title' ],
             'content' => $templates[ 'rescheduled' ][ 'content' ],
             'status' => 'ready',
-            'from_user' => $owner_id ,
+            'from_user' => $owner_id,
         ] );
 
         $reminder = new Email( [
@@ -379,14 +379,14 @@ class Calendar_Page extends Admin_Page
             'subject' => $templates[ 'reminder' ][ 'title' ],
             'content' => $templates[ 'reminder' ][ 'content' ],
             'status' => 'ready',
-            'from_user' => $owner_id ,
+            'from_user' => $owner_id,
         ] );
 
         $calendar->update_meta( 'emails', [
-            'appointment_booked'        => $booked->get_id(),
-            'appointment_approved'      => $approved->get_id(),
-            'appointment_rescheduled'   => $rescheduled->get_id(),
-            'appointment_cancelled'     => $cancelled->get_id(),
+            'appointment_booked' => $booked->get_id(),
+            'appointment_approved' => $approved->get_id(),
+            'appointment_rescheduled' => $rescheduled->get_id(),
+            'appointment_cancelled' => $cancelled->get_id(),
         ] );
 
         // set one hour before reminder by default
@@ -484,7 +484,7 @@ class Calendar_Page extends Admin_Page
          */
         $appointments_table = get_db( 'appointments' );
 
-        if ( $appointments_table->appointments_exist_in_range( $start_time, $end_time, $appointment->get_calendar_id() ) ) {
+        if ( $appointments_table->appointments_exist_in_range_except_same_appointment( $start_time, $end_time, $appointment->get_calendar_id() ,$appointment->get_id() ) ) {
             return new \WP_Error( 'appointment_clash', __( 'You already have an appointment in this time slot.', 'groundhogg' ) );
         }
 
@@ -758,7 +758,7 @@ class Calendar_Page extends Admin_Page
         $calendar->update_meta( 'message', wp_kses_post( get_request_var( 'message' ) ) );
 
         //save default note
-        $calendar->update_meta( 'default_note', sanitize_textarea_field( get_request_var('default_note'))  );
+        $calendar->update_meta( 'default_note', sanitize_textarea_field( get_request_var( 'default_note' ) ) );
 
         // save thank you page
         $calendar->update_meta( 'redirect_link_status', absint( get_request_var( 'redirect_link_status' ) ) );
@@ -801,7 +801,6 @@ class Calendar_Page extends Admin_Page
         echo "<script>window.open(\"" . $authUrl . "\",\"_self\");</script>";
         return true;
     }
-
 
 
 }

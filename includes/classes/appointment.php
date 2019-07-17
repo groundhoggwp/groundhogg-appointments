@@ -396,6 +396,11 @@ class Appointment extends Base_Object_With_Meta
 
             // Schedule Email Reminders...
             $reminders = $this->get_calendar()->get_reminder_emails();
+
+            if (empty($reminders)){
+                return;
+            }
+
             foreach ( $reminders as $reminder ) {
 
                 // Calc time...

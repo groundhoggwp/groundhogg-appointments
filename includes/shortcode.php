@@ -166,13 +166,16 @@ class Shortcode extends Supports_Errors
     public function gh_calendar_shortcode( $atts )
     {
         $atts = shortcode_atts( [
-            'id' => 0,
-            'reschedule' => 0
+            'id'            => 0,
+            'calendar_id'   => 0,
+            'reschedule'    => 0
         ], $atts );
+
+        $id = get_array_var( $atts, 'id', get_array_var( $atts, 'calendar_id' ) );
 
         wp_enqueue_script( 'fullframe' );
 
-        $url = site_url( 'gh/calendar/' . $atts[ 'id' ] );
+        $url = site_url( sprintf( 'gh/calendar/%d/', $id ) );
 
         if ( get_array_var( $atts, 'reschedule' ) ) {
             $url = wp_nonce_url( add_query_arg( 'reschedule', $atts[ 'reschedule' ], $url ), 'appointment_reschedule' );
@@ -269,7 +272,6 @@ class Shortcode extends Supports_Errors
         $appointment = new Appointment( get_request_var( 'appointment' ) );
 
         if ( !$appointment->exists() ) {
-
             $this->add_error( new \WP_Error( 'no_appointment', 'Appointment not found!' ) );
             return;
         }

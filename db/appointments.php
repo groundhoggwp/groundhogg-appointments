@@ -5,7 +5,7 @@ namespace GroundhoggBookingCalendar\DB;
 use Groundhogg\DB\DB;
 use GroundhoggBookingCalendar\Plugin;
 
-if ( ! defined( 'ABSPATH' ) ) exit;
+if ( !defined( 'ABSPATH' ) ) exit;
 
 
 /**
@@ -21,7 +21,6 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  * @since       File available since Release 2.0
  *
  */
-
 class Appointments extends DB
 {
     public function get_db_suffix()
@@ -60,15 +59,16 @@ class Appointments extends DB
      * @access  public
      * @since   2.0
      */
-    public function get_columns() {
+    public function get_columns()
+    {
         return array(
-            'ID'             => '%d',
-            'contact_id'     => '%d',
-            'calendar_id'    => '%d',
-            'name'           => '%s',
-            'status'         => '%s',
-            'start_time'     => '%d',
-            'end_time'       => '%d',
+            'ID' => '%d',
+            'contact_id' => '%d',
+            'calendar_id' => '%d',
+            'name' => '%s',
+            'status' => '%s',
+            'start_time' => '%d',
+            'end_time' => '%d',
         );
     }
 
@@ -78,15 +78,16 @@ class Appointments extends DB
      * @access  public
      * @since   2.0
      */
-    public function get_column_defaults() {
+    public function get_column_defaults()
+    {
         return array(
-            'ID'             => 0,
-            'contact_id'     => 0,
-            'calendar_id'    => 0,
-            'name'           => '',
-            'status'         => 'pending',
-            'start_time'     => 0,
-            'end_time'       => 0,
+            'ID' => 0,
+            'contact_id' => 0,
+            'calendar_id' => 0,
+            'name' => '',
+            'status' => 'pending',
+            'start_time' => 0,
+            'end_time' => 0,
         );
     }
 
@@ -96,11 +97,28 @@ class Appointments extends DB
      * @param $calendar_id int
      * @return array|null|object
      */
-    public function appointments_exist_in_range( $a, $b, $calendar_id ){
+    public function appointments_exist_in_range( $a, $b, $calendar_id )
+    {
         global $wpdb;
 
-        $results = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$this->get_table_name()} WHERE ( (start_time BETWEEN %d AND %d) OR (end_time BETWEEN %d AND %d) ) AND calendar_id != %d",
-            $a, $b, $a, $b , absint( $calendar_id ) ) );
+        $results = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$this->get_table_name()} WHERE ( (start_time BETWEEN %d AND %d) OR (end_time BETWEEN %d AND %d) ) AND calendar_id = %d",
+            $a, $b, $a, $b, absint( $calendar_id ) ) );
+
+        return $results;
+    }
+
+    /**
+     * @param $a int
+     * @param $b int
+     * @param $calendar_id int
+     * @return array|null|object
+     */
+    public function appointments_exist_in_range_except_same_appointment( $a, $b, $calendar_id, $appointment_id )
+    {
+        global $wpdb;
+
+        $results = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$this->get_table_name()} WHERE ( (start_time BETWEEN %d AND %d) OR (end_time BETWEEN %d AND %d) ) AND calendar_id = %d AND ID != %d",
+            $a, $b, $a, $b, absint( $calendar_id ), absint( $appointment_id ) ) );
 
         return $results;
     }
@@ -116,7 +134,7 @@ class Appointments extends DB
         global $wpdb;
         $IDS = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $this->table_name WHERE calendar_id = %d", $id ) );
         $result = false;
-        foreach ( $IDS as $id ){
+        foreach ( $IDS as $id ) {
             // $id = array_shift( $id );
             //WPGH_APPOINTMENTS()->google_calendar->delete_appointment_from_google($id->ID); //todo call google calendar delete method
             $result = $this->delete( absint( $id->ID ) );
@@ -135,7 +153,7 @@ class Appointments extends DB
         global $wpdb;
         $IDS = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $this->table_name WHERE contact_id = %d", $id ) );
         $result = false;
-        foreach ( $IDS as $id ){
+        foreach ( $IDS as $id ) {
 //            $id = array_shift( $id );
 //            Plugin::$instance->google_calendar->delete_appointment_from_google($id->ID); //todo call google calendar delete method
             $result = $this->delete( absint( $id->ID ) );
@@ -153,7 +171,7 @@ class Appointments extends DB
     public function create_table()
     {
         global $wpdb;
-        require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+        require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
         $sql = "CREATE TABLE " . $this->table_name . " (
         ID bigint(20) unsigned NOT NULL AUTO_INCREMENT,
         contact_id bigint(20) unsigned NOT NULL,
