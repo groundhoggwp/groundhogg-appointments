@@ -48,6 +48,8 @@ class Updater extends \Groundhogg\Updater
         foreach ( $calendars as $c ) {
             $this->update_calendar( absint( $c->ID ) );
         }
+
+        flush_rewrite_rules();
     }
 
 

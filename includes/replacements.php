@@ -51,23 +51,23 @@ class Replacements
     {
         return [
             [
-                'code'        => 'appointment_start_time',
-                'callback'    => array( $this, 'start_time' ),
+                'code' => 'appointment_start_time',
+                'callback' => array( $this, 'start_time' ),
                 'description' => __( 'Returns the start date & time of a contact\'s appointment.', 'groundhogg' ),
             ],
             [
-                'code'        => 'appointment_end_time',
-                'callback'    => array( $this, 'end_time' ),
+                'code' => 'appointment_end_time',
+                'callback' => array( $this, 'end_time' ),
                 'description' => __( 'Returns the end date & time of a contact\'s appointment.', 'groundhogg' ),
             ],
             [
                 'code' => 'appointment_actions',
-                'callback'    => array( $this, 'appointment_actions' ),
+                'callback' => array( $this, 'appointment_actions' ),
                 'description' => __( 'Links to allow cancelling or re-scheduling appointments.', 'groundhogg' ),
             ],
             [
                 'code' => 'appointment_notes',
-                'callback'    => array( $this, 'appointment_notes' ),
+                'callback' => array( $this, 'appointment_notes' ),
                 'description' => __( 'Any notes about the appointment.', 'groundhogg' ),
             ]
         ];
@@ -95,7 +95,7 @@ class Replacements
             // Otherwise get contacts last appointment...
             $appts = get_db( 'appointments' )->query( [ 'contact_id' => $event->get_contact_id() ] );
 
-            if ( ! empty( $appts ) ){
+            if ( !empty( $appts ) ) {
 
                 $last_booked = array_shift( $appts );
                 $this->appointment = new Appointment( absint( $last_booked->ID ) );
@@ -121,17 +121,23 @@ class Replacements
      * @param int $contact_id
      * @return bool|string
      */
-    public function start_time( $contact_id=0 )
+    public function start_time( $contact_id = 0 )
     {
 
-        if ( ! $this->get_appointment() ) {
+        if ( !$this->get_appointment() ) {
             return false;
         }
 
         $contact = get_contactdata( $contact_id );
         $local_time = $contact->get_local_time( $this->get_appointment()->get_start_time() );
         $format = sprintf( "%s %s", get_option( 'date_format' ), get_option( 'time_format' ) );
-        return date_i18n( $format, $local_time );
+
+        if ( $contact->get_ip_address() ) {
+            return date_i18n( $format, $local_time );
+        }
+
+        return sprintf( '%s ( UTC+0 )', date_i18n( $format, $local_time ) );
+
 
     }
 
@@ -141,10 +147,10 @@ class Replacements
      * @param int $contact_id
      * @return bool|string
      */
-    public function end_time( $contact_id=0 )
+    public function end_time( $contact_id = 0 )
     {
 
-        if ( ! $this->get_appointment() ) {
+        if ( !$this->get_appointment() ) {
             return false;
         }
 
@@ -152,7 +158,14 @@ class Replacements
 
         $local_time = $contact->get_local_time( $this->get_appointment()->get_end_time() );
         $format = sprintf( "%s %s", get_option( 'date_format' ), get_option( 'time_format' ) );
-        return date_i18n( $format, $local_time );
+
+
+        if ( $contact->get_ip_address() ) {
+            return date_i18n( $format, $local_time );
+        }
+
+        return sprintf( '%s ( UTC+0 )', date_i18n( $format, $local_time ) );
+
     }
 
     /**
@@ -161,15 +174,15 @@ class Replacements
      * @param int $contact_id
      * @return bool|string
      */
-    public function appointment_notes( $contact_id=0 )
+    public function appointment_notes( $contact_id = 0 )
     {
 
-        if ( ! $this->get_appointment() ) {
+        if ( !$this->get_appointment() ) {
             return false;
         }
 
-        if (! $this->get_appointment()->get_meta( 'notes' )) {
-            return __('There is no additional note with this appointment.','groundhogg');
+        if ( !$this->get_appointment()->get_meta( 'notes' ) ) {
+            return __( 'There is no additional note with this appointment.', 'groundhogg' );
         }
 
         return $this->get_appointment()->get_meta( 'notes' );
@@ -181,9 +194,9 @@ class Replacements
      * @param int $contact_id
      * @return bool|string
      */
-    public function appointment_actions( $contact_id=0 )
+    public function appointment_actions( $contact_id = 0 )
     {
-        if ( ! $this->get_appointment() ) {
+        if ( !$this->get_appointment() ) {
             return false;
         }
 
