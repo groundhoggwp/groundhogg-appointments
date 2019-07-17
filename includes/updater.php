@@ -39,14 +39,15 @@ class Updater extends \Groundhogg\Updater
      */
     public function version_2_0()
     {
-        $calendars = get_db( 'calendars' )->query( [] );
-        foreach ( $calendars as $c ) {
-            $this->update_calendar( $c->ID );
-        }
-
         //get google client id and secret
         Plugin::$instance->settings->update_option( 'google_calendar_client_id', get_option( 'google_calendar_client_id' ) );
         Plugin::$instance->settings->update_option( 'google_calendar_secret_key', get_option( 'google_calendar_secret_key' ) );
+
+        $calendars = get_db( 'calendars' )->query( [] );
+
+        foreach ( $calendars as $c ) {
+            $this->update_calendar( absint( $c->ID ) );
+        }
     }
 
 
@@ -54,7 +55,7 @@ class Updater extends \Groundhogg\Updater
      * Create all the emails and convert availability
      *
      * @param $id
-    */
+     */
     protected function update_calendar( $id )
     {
         $calendar = new Calendar( $id );
@@ -154,6 +155,7 @@ class Updater extends \Groundhogg\Updater
 
             }
         }
+
         $calendar->update_meta( 'rules', $availability );
 
     }

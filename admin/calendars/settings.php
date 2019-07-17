@@ -293,33 +293,37 @@ if ( $calendar == null ) {
                     <p>
                         <?php
                         $client = Plugin::$instance->google_calendar->get_google_client_form_access_token( $calendar->get_id() );
-                        $service = new Google_Service_Calendar( $client );
-                        $calendarList = $service->calendarList->listCalendarList();
-                        while ( true ) {
-                            foreach ( $calendarList->getItems() as $calendarListEntry ) {
-                                if ( !( $google_calendar_id == $calendarListEntry->getId() ) ) {
 
-                                    $checked = false;
-                                    if ( in_array( $calendarListEntry->getId(), $google_calendar_list, true ) ) {
-                                        $checked = true;
+                        if ( ! is_wp_error( $client ) ){
+                            $service = new Google_Service_Calendar( $client );
+                            $calendarList = $service->calendarList->listCalendarList();
+                            while ( true ) {
+                                foreach ( $calendarList->getItems() as $calendarListEntry ) {
+                                    if ( !( $google_calendar_id == $calendarListEntry->getId() ) ) {
+
+                                        $checked = false;
+                                        if ( in_array( $calendarListEntry->getId(), $google_calendar_list, true ) ) {
+                                            $checked = true;
+                                        }
+                                        echo html()->checkbox( array(
+                                            'name' => 'google_calendar_list[]',
+                                            'value' => $calendarListEntry->getId(),
+                                            'label' => $calendarListEntry->getSummary(),
+                                            'checked' => $checked,
+                                        ) );
+                                        echo '<br/>';
                                     }
-                                    echo html()->checkbox( array(
-                                        'name' => 'google_calendar_list[]',
-                                        'value' => $calendarListEntry->getId(),
-                                        'label' => $calendarListEntry->getSummary(),
-                                        'checked' => $checked,
-                                    ) );
-                                    echo '<br/>';
+                                }
+                                $pageToken = $calendarList->getNextPageToken();
+                                if ( $pageToken ) {
+                                    $optParams = array( 'pageToken' => $pageToken );
+                                    $calendarList = $service->calendarList->listCalendarList( $optParams );
+                                } else {
+                                    break;
                                 }
                             }
-                            $pageToken = $calendarList->getNextPageToken();
-                            if ( $pageToken ) {
-                                $optParams = array( 'pageToken' => $pageToken );
-                                $calendarList = $service->calendarList->listCalendarList( $optParams );
-                            } else {
-                                break;
-                            }
                         }
+
                         ?>
                     </p>
                 </td>

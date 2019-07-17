@@ -76,13 +76,14 @@ class Plugin extends Extension
     public function init_components()
     {
         $this->google_calendar = new Google_Calendar();
-        $this->updater = new Updater();
         $this->roles = new Roles();
-        $this->installer = new Installer();
         $this->shortcode = new Shortcode();
         $this->replacements = new Replacements();
 
         new Rewrites();
+
+        $this->installer = new Installer();
+        $this->updater = new Updater();
     }
 
     public function register_admin_pages( $admin_menu )
