@@ -20,26 +20,19 @@
  */
 
 // Exit if accessed directly.
+use Groundhogg\Plugin;
+
 if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) exit;
 
-if ( ! class_exists( 'Groundhogg' ) ){
-    include_once dirname( __FILE__ ) . '/../groundhogg/groundhogg.php' ;
-}
 
-
-if ( ! class_exists( 'Groundhogg_Appointments' ) ){
-    include_once dirname( __FILE__ ) . '/groundhogg-appointments.php' ;
-}
-
-if( wpgh_is_option_enabled( 'gh_uninstall_on_delete' ) ) {
+if( Plugin::$instance->settings->is_option_enabled( 'gh_uninstall_on_delete' ) ) {
 
     /* delete permissions */
-    WPGH_APPOINTMENTS()->role_calendar->remove_caps();
+//    \GroundhoggBookingCalendar\Plugin::$instance->roles->remove_roles_and_caps();
 
     // Delete the databases
-    WPGH_APPOINTMENTS()->calendar->drop();
-    WPGH_APPOINTMENTS()->calendarmeta->drop();
-    WPGH_APPOINTMENTS()->appointmentmeta->drop();
-    WPGH_APPOINTMENTS()->appointments->drop();
-
+//    \Groundhogg\get_db('appointmentmeta')->drop();
+//    \Groundhogg\get_db('appointments')->drop();
+//    \Groundhogg\get_db('calendarmeta')->drop();
+//    \Groundhogg\get_db('calendar')->drop();
 }

@@ -221,8 +221,18 @@ class Appointment extends Base_Object_With_Meta
     }
 
 
+    /**
+     * Delete appointment.
+     *  Sends cancel email
+     *  Deletes appointment from the google calendar
+     *  Cancels all the pending events for the appointment
+     *
+     * @return bool
+     */
     public function delete()
     {
+        $this->cancel();
+
         $status = $this->get_db()->delete( $this->get_id() );
 
         if ( !$status ) {
@@ -342,6 +352,11 @@ class Appointment extends Base_Object_With_Meta
         return true;
     }
 
+    /**
+     * Cancel appointment and send reminder of canceling event..
+     *
+     * @return bool
+     */
     public function cancel()
     {
         $status = $this->update( [
