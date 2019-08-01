@@ -28,13 +28,13 @@ class Rewrites extends Abstract_Rewrites
         // Forms Iframe Template
         add_rewrite_rule(
             '^gh/calendar/([^/]*)/hosted/?$',
-            'index.php?pagenow=calendar_hosted&calendar_id=$matches[1]',
+            managed_rewrite_rule('subpage=calendar_hosted&calendar_id=$matches[1]' ),
             'top'
         );
 
         add_rewrite_rule(
             '^gh/appointment/([^/]*)/([^/]*)/?$',
-            'index.php?pagenow=appointment&appointment_id=$matches[1]&action=$matches[2]',
+            managed_rewrite_rule('subpage=appointment&appointment_id=$matches[1]&action=$matches[2]' ),
             'top'
         );
 
