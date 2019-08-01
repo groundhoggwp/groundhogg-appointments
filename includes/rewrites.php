@@ -2,6 +2,8 @@
 
 namespace GroundhoggBookingCalendar;
 
+use function Groundhogg\is_managed_page;
+use function Groundhogg\managed_rewrite_rule;
 use Groundhogg\Utils\Abstract_Rewrites;
 
 class Rewrites extends Abstract_Rewrites
@@ -19,7 +21,7 @@ class Rewrites extends Abstract_Rewrites
     {
         add_rewrite_rule(
             '^gh/calendar/([^/]*)/?$',
-            'index.php?pagenow=calendar&calendar_id=$matches[1]',
+            managed_rewrite_rule( 'subpage=calendar&calendar_id=$matches[1]' ),
             'top'
         );
 
@@ -44,7 +46,7 @@ class Rewrites extends Abstract_Rewrites
      */
     public function add_query_vars( $vars )
     {
-        $vars[] = 'pagenow';
+        $vars[] = 'subpage';
         $vars[] = 'action';
         $vars[] = 'calendar_id';
         $vars[] = 'appointment_id';
@@ -75,7 +77,11 @@ class Rewrites extends Abstract_Rewrites
     public function template_include( $template = '' )
     {
 
-        $page = get_query_var( 'pagenow' );
+        if ( ! is_managed_page() ){
+            return $template;
+        }
+
+        $page = get_query_var( 'subpage' );
 
         $template_loader = $this->get_template_loader();
 

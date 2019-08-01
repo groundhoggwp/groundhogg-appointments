@@ -147,6 +147,9 @@ function enqueue_calendar_styles()
 
 add_action( 'wp_enqueue_scripts', '\GroundhoggBookingCalendar\enqueue_calendar_styles' );
 
+status_header( 200 );
+header( 'Content-Type: text/html; charset=utf-8' );
+nocache_headers();
 
 ?><!DOCTYPE html>
 <html <?php language_attributes(); ?>>
