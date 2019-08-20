@@ -117,6 +117,7 @@ class Plugin extends Extension
     public function register_admin_scripts( $is_minified, $IS_MINIFIED )
     {
         wp_register_script( 'groundhogg-appointments-reminders', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'js/reminders.js', [ 'jquery', 'groundhogg-admin-modal' ], GROUNDHOGG_BOOKING_CALENDAR_VERSION, true );
+        wp_register_script( 'groundhogg-sms-reminders', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'js/sms-reminders.js', [ 'jquery', 'groundhogg-admin-modal' ], GROUNDHOGG_BOOKING_CALENDAR_VERSION, true );
 
         wp_register_script( 'jstz', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'js/jstz.min.js', [], GROUNDHOGG_BOOKING_CALENDAR_VERSION );
         wp_register_script( 'groundhogg-appointments-admin', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . '/js/admin.new.js', [ 'jquery', 'groundhogg-admin-functions' ], GROUNDHOGG_BOOKING_CALENDAR_VERSION );

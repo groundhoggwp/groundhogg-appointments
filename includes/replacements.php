@@ -3,6 +3,7 @@
 namespace GroundhoggBookingCalendar;
 
 use Groundhogg\Event;
+use GroundhoggBookingCalendar\Classes\SMS_Reminder;
 use function Groundhogg\get_contactdata;
 use function Groundhogg\get_db;
 use function Groundhogg\html;
@@ -87,7 +88,7 @@ class Replacements
             $this->event = $event;
 
             // If is a reminder event
-            if ( $event->get_event_type() === Reminder::NOTIFICATION_TYPE ) {
+            if ( $event->get_event_type() === Reminder::NOTIFICATION_TYPE ||  $event->get_event_type() === SMS_Reminder::NOTIFICATION_TYPE ) {
                 $this->appointment = new Appointment( $event->get_funnel_id() );
                 return $this->appointment;
             }
@@ -137,7 +138,6 @@ class Replacements
         }
 
         return sprintf( '%s ( UTC+0 )', date_i18n( $format, $local_time ) );
-
 
     }
 

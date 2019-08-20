@@ -11,7 +11,9 @@ html()->tabs( [
     'settings' => __( 'Settings', 'groundhogg' ), // Show calendar settings
     'availability' => __( 'Availability', 'groundhogg' ), // Show calendar settings
     'emails' => __( 'Emails', 'groundhogg' ), // Show calendar reminders
-    'list' => __( 'List', 'groundhogg' ) // show appointments in list table.
+    'sms' => __( 'SMS', 'groundhogg' ),// show appointments in list table.
+    'list' => __( 'List', 'groundhogg' ), // show appointments in list table.
+
 ] );
 
 $tab = get_request_var( 'tab', 'view' );
@@ -29,6 +31,9 @@ switch ( $tab ):
     case 'emails':
         include_once dirname(__FILE__) . '/emails.php';
         break;
+    case 'sms' :
+        include_once dirname(__FILE__) . '/sms.php';
+        break ;
     case 'list':
 
         if ( ! class_exists( 'Appointments_Table' ) ){

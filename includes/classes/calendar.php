@@ -837,6 +837,23 @@ class Calendar extends Base_Object_With_Meta
     }
 
     /**
+     * Get the set of notification SMS.
+     * @param string $which
+     * @return mixed|int
+     */
+    public function get_notification_sms( $which = '' )
+    {
+        $sms = $this->get_meta( 'sms' );
+
+        if ( !$which ) {
+            return $sms;
+        }
+
+        return get_array_var( $sms, $which );
+    }
+
+
+    /**
      * Get the list of reminder emails...
      *
      * @return array
@@ -852,6 +869,28 @@ class Calendar extends Base_Object_With_Meta
         foreach ( $reminders as &$reminder ) {
             $reminder[ 'number' ] = absint( $reminder[ 'number' ] );
             $reminder[ 'email_id' ] = absint( $reminder[ 'email_id' ] );
+        }
+
+        return $reminders;
+    }
+
+
+    /**
+     * Get the list of reminder emails...
+     *
+     * @return array
+     */
+    public function get_reminder_sms()
+    {
+        $reminders = $this->get_meta( 'sms_reminders' );
+
+        if ( !is_array( $reminders ) ) {
+            $reminders = []; // Todo Add defaults?
+        }
+
+        foreach ( $reminders as &$reminder ) {
+            $reminder[ 'number' ] = absint( $reminder[ 'number' ] );
+            $reminder[ 'sms_id' ] = absint( $reminder[ 'sms_id' ] );
         }
 
         return $reminders;

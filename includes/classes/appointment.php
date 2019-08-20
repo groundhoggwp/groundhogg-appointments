@@ -14,6 +14,7 @@ use \Google_Service_Calendar_Event;
 use \Google_Service_Calendar;
 use \Exception;
 use function GroundhoggBookingCalendar\send_reminder_notification;
+use function GroundhoggBookingCalendar\send_sms_reminder_notification;
 
 class Appointment extends Base_Object_With_Meta
 {
@@ -402,6 +403,12 @@ class Appointment extends Base_Object_With_Meta
 
     protected function schedule_reminders( $which )
     {
+
+        if ( $this->get_calendar()->get_meta( 'sms_notification' ) ) {
+            $this->schedule_sms_reminders( $which );
+        }
+
+
         // Schedule Appointment Booked Email...
         if ( $booked_email_id = $this->get_calendar()->get_notification_emails( $which ) ) {
             send_reminder_notification( absint( $booked_email_id ), absint( $this->get_id() ), time() );
@@ -412,7 +419,7 @@ class Appointment extends Base_Object_With_Meta
             // Schedule Email Reminders...
             $reminders = $this->get_calendar()->get_reminder_emails();
 
-            if (empty($reminders)){
+            if ( empty( $reminders ) ) {
                 return;
             }
 
@@ -439,6 +446,46 @@ class Appointment extends Base_Object_With_Meta
         }
     }
 
+
+    protected function schedule_sms_reminders( $which )
+    {
+        // Schedule Appointment Booked sms...
+        if ( $booked_sms_id = $this->get_calendar()->get_notification_sms( $which ) ) {
+            send_sms_reminder_notification( absint( $booked_sms_id ), absint( $this->get_id() ), time() );
+        }
+
+        if ( !( $which === SMS_Reminder::CANCELLED ) ) {
+
+            // Schedule sms Reminders...
+            $sms_reminders = $this->get_calendar()->get_reminder_sms();
+
+            if ( empty( $sms_reminders ) ) {
+                return;
+            }
+
+            foreach ( $sms_reminders as $reminder ) {
+
+                // Calc time...
+                switch ( $reminder[ 'when' ] ) {
+                    default:
+                    case 'before':
+                        $time = strtotime( sprintf( "-%d %s", $reminder[ 'number' ], $reminder[ 'period' ] ), $this->get_start_time() );
+                        if ( $time > time() ) {
+                            send_sms_reminder_notification( absint( $reminder[ 'sms_id' ] ), $this->get_id(), $time );
+                        }
+                        break;
+                    case 'after':
+                        $time = strtotime( sprintf( "+%d %s", $reminder[ 'number' ], $reminder[ 'period' ] ), $this->get_end_time() );
+                        if ( $time > time() ) {
+                            send_sms_reminder_notification( absint( $reminder[ 'sms_id' ] ), $this->get_id(), $time );
+                        }
+                        break;
+                }
+
+            }
+        }
+    }
+
     protected function cancel_reminders()
     {
         // delete all the waiting events for the appointment
@@ -446,6 +493,26 @@ class Appointment extends Base_Object_With_Meta
             'funnel_id' => $this->get_id(),
             'contact_id' => $this->get_contact_id(),
             'event_type' => Reminder::NOTIFICATION_TYPE,
+            'status' => 'waiting',
+        ] );
+
+        if ( !empty( $events ) ) {
+            foreach ( $events as $event ) {
+                $eve = new Event( absint( $event->ID ) );
+                $eve->update( [ 'status' => 'cancelled', ] );
+            }
+        }
+
+        $this->cancel_sms_reminders();
+    }
+
+    protected function cancel_sms_reminders()
+    {
+        // delete all the waiting events for the appointment
+        $events = get_db( 'events' )->query( [
+            'funnel_id' => $this->get_id(),
+            'contact_id' => $this->get_contact_id(),
+            'event_type' => SMS_Reminder::NOTIFICATION_TYPE,
             'status' => 'waiting',
         ] );
 

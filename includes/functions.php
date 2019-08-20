@@ -5,6 +5,9 @@ namespace GroundhoggBookingCalendar;
 use Groundhogg\Email;
 use Groundhogg\Event;
 use Groundhogg\Event_Process;
+use Groundhogg\SMS;
+use GroundhoggBookingCalendar\Classes\Email_Reminder;
+use GroundhoggBookingCalendar\Classes\SMS_Reminder;
 use function Groundhogg\get_array_var;
 use function Groundhogg\get_db;
 use GroundhoggBookingCalendar\Classes\Appointment;
@@ -122,7 +125,7 @@ function setup_reminder_notification_object( $event )
     }
 }
 
-add_action( 'groundhogg/event/post_setup', '\GroundhoggBookingCalendar\setup_reminder_notification_object' );
+add_action( 'groundhogg/event/post_setup', __NAMESPACE__.'\setup_reminder_notification_object' );
 
 /**
  * Schedule a 1 off reminder notification
@@ -160,6 +163,63 @@ function send_reminder_notification( $email_id=0, $appointment_id=0, $time=0 )
     }
 
     do_action( 'groundhogg/calendar/reminder_scheduled', $event );
+    return true;
+
+}
+
+
+/**
+ * Setup the step for an event as the Reminder notification type
+ *
+ * @param $event Event
+ */
+function setup_reminder_notification_object_sms( $event )
+{
+    if ( $event->get_event_type() === SMS_Reminder::NOTIFICATION_TYPE ){
+
+        // Step ID will be the ID of the email
+        // Funnel ID will be the ID of the appointment
+        $event->step = new SMS_Reminder( $event->get_funnel_id(), $event->get_step_id() );
+    }
+}
+
+add_action( 'groundhogg/event/post_setup', __NAMESPACE__.'\setup_reminder_notification_object_sms' );
+
+/**
+ * Schedule a 1 off reminder notification
+ *
+ * @param $sms_id int the ID of the email to send
+ * @param $appointment_id int|string the ID of the appointment being referenced
+ * @param int $time time time to send at, defaults to time()
+ *
+ * @return bool whether the scheduling was successful.
+ */
+function send_sms_reminder_notification( $sms_id=0, $appointment_id=0, $time=0 )
+{
+    $appointment = new Appointment( absint( $appointment_id ) );
+    $sms = new SMS( absint(  $sms_id ) );
+
+    if ( ! $appointment->exists() || ! $sms->exists() ){
+        return false;
+    }
+
+    if ( ! $time ){
+        $time = time();
+    }
+
+    $event = new Event([
+        'time'          => $time,
+        'funnel_id'     => $appointment_id,
+        'step_id'       => $sms->get_id(),
+        'contact_id'    => $appointment->get_contact_id(),
+        'event_type'    => SMS_Reminder::NOTIFICATION_TYPE,
+        'status'        => 'waiting',
+    ]);
+
+    if ( ! $event->exists() ){
+        return false;
+    }
+
     return true;
 
 }
