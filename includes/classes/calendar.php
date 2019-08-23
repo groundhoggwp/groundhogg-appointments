@@ -4,6 +4,7 @@ namespace GroundhoggBookingCalendar\Classes;
 
 use Exception;
 use Google_Service_Calendar;
+use Google_Service_Calendar_Calendar;
 use Groundhogg\Base_Object_With_Meta;
 use function Groundhogg\get_array_var;
 use function Groundhogg\get_db;
@@ -78,6 +79,37 @@ class Calendar extends Base_Object_With_Meta
         return $this->get_meta( 'google_calendar_list', true );
     }
 
+    /**
+     * Create new google calendar inside google
+     */
+    public function add_in_google()
+    {
+        $access_token = $this->get_access_token();
+
+        if ( $access_token ) {
+            $google_calendar = new Google_Service_Calendar_Calendar();
+            // fetch calendar name from DB
+            $client = \GroundhoggBookingCalendar\Plugin::$instance->google_calendar->get_google_client_from_access_token( $this->get_id() );
+
+            $google_calendar->setSummary( $this->get_name() );
+
+            if ( get_option( 'timezone_string' ) ) {
+                $google_calendar->setTimeZone( get_option( 'timezone_string' ) );
+            }
+
+            $service = new Google_Service_Calendar( $client );
+            $createdCalendar = $service->calendars->insert( $google_calendar );
+            $this->update_meta( 'google_calendar_id', sanitize_text_field( $createdCalendar->getId() ) );
+
+
+            $appointments = get_db( 'appointments' )->query( [ 'calendar_id' => $this->get_id() ] );
+
+            foreach ( $appointments as $appo ) {
+                $appointment = new Appointment( $appo->ID );
+                $appointment->add_in_google();
+            }
+        }
+    }
 
     /**
      * @return mixed
@@ -582,7 +614,7 @@ class Calendar extends Base_Object_With_Meta
             $google_min = date( 'c', ( $min_time ) );
             $google_max = date( 'c', ( $max_time ) );
             $google_appointments = [];
-            $client = \GroundhoggBookingCalendar\Plugin::$instance->google_calendar->get_google_client_form_access_token( $this->get_id() );
+            $client = \GroundhoggBookingCalendar\Plugin::$instance->google_calendar->get_google_client_from_access_token( $this->get_id() );
             $service = new Google_Service_Calendar( $client );
             $google_calendar_list = $this->get_meta( 'google_calendar_list', true );
             if ( count( $google_calendar_list ) > 0 ) {

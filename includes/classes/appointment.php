@@ -154,7 +154,7 @@ class Appointment extends Base_Object_With_Meta
         if ( $access_token && $google_calendar_id ) {
 
 //             create google client
-            $client = \GroundhoggBookingCalendar\Plugin::$instance->google_calendar->get_google_client_form_access_token( $this->get_calendar_id() );
+            $client = \GroundhoggBookingCalendar\Plugin::$instance->google_calendar->get_google_client_from_access_token( $this->get_calendar_id() );
 
             $service = new Google_Service_Calendar( $client );
             if ( \GroundhoggBookingCalendar\Plugin::$instance->google_calendar->is_valid_calendar( $this->get_calendar_id(), $google_calendar_id, $service ) ) {
@@ -190,7 +190,7 @@ class Appointment extends Base_Object_With_Meta
         $google_calendar_id = $this->get_calendar()->get_google_calendar_id();
         if ( $access_token && $google_calendar_id ) {
 
-            $client = \GroundhoggBookingCalendar\Plugin::$instance->google_calendar->get_google_client_form_access_token( $this->get_calendar_id() );
+            $client = \GroundhoggBookingCalendar\Plugin::$instance->google_calendar->get_google_client_from_access_token( $this->get_calendar_id() );
             $service = new Google_Service_Calendar( $client );
             if ( \GroundhoggBookingCalendar\Plugin::$instance->google_calendar->is_valid_calendar( $this->get_calendar_id(), $google_calendar_id, $service ) ) {
 
@@ -261,7 +261,7 @@ class Appointment extends Base_Object_With_Meta
         $google_calendar_id = $this->get_calendar()->get_google_calendar_id();
         if ( $access_token && $google_calendar_id ) {
 
-            $client = \GroundhoggBookingCalendar\Plugin::$instance->google_calendar->get_google_client_form_access_token( $this->get_calendar_id() );
+            $client = \GroundhoggBookingCalendar\Plugin::$instance->google_calendar->get_google_client_from_access_token( $this->get_calendar_id() );
             $service = new Google_Service_Calendar( $client );
             try {
                 $service->events->delete( $google_calendar_id, $this->get_google_appointment_id() );

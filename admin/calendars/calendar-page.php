@@ -6,6 +6,7 @@ use Exception;
 use Groundhogg\Admin\Admin_Page;
 use Groundhogg\Email;
 use Groundhogg\SMS;
+use WP_Error;
 use function Groundhogg\get_array_var;
 use function Groundhogg\get_contactdata;
 use function Groundhogg\get_db;
@@ -27,6 +28,16 @@ if ( !defined( 'ABSPATH' ) ) exit;
  */
 class Calendar_Page extends Admin_Page
 {
+
+    public function help()
+    {
+        // TODO: Implement help() method.
+    }
+
+    protected function add_additional_actions()
+    {
+        // TODO: Implement add_additional_actions() method.
+    }
 
     protected function add_ajax_actions()
     {
@@ -95,7 +106,7 @@ class Calendar_Page extends Admin_Page
         }
 
 
-         $appointment = $calendar->schedule_appointment( [
+        $appointment = $calendar->schedule_appointment( [
             'contact_id' => $contact->get_id(),
             'name' => sanitize_text_field( get_request_var( 'appointment_name' ) ),
             'start_time' => absint( $start ),
@@ -121,28 +132,27 @@ class Calendar_Page extends Admin_Page
         $auth_code = get_request_var( 'auth_code' );
 
         if ( !$auth_code ) {
-            wp_send_json_error( __( 'Please enter validation code.' . $auth_code . '-asd', 'groundhogg' ) );
+            wp_send_json_error( __( 'Please enter a valid code.', 'groundhogg' ) );
         }
 
-        //call method to validate information
-        try {
+        $response = Plugin::instance()->proxy_service->request( 'authentication/get', [
+            'code' => $auth_code,
+            'slug' => 'google'
+        ] );
 
-            $client = \GroundhoggBookingCalendar\Plugin::$instance->google_calendar->generate_access_token( $calendar->get_id(), trim( $auth_code ) );
-        } catch ( Exception $e ) {
-
-            wp_send_json_error( __( 'This code is expired or invalid and make sure you entered correct google clientID and Secret.', 'groundhogg' ) );
-        }
-        if ( is_wp_error( $client ) ) {
-            wp_send_json_error( __( 'Please enter validation code.' . 'client error ', 'groundhogg' ) );
+        if ( is_wp_error( $response ) ) {
+            wp_send_json_error( $response->get_error_message() );
         }
 
-        // sync all the existing appointment inside calender
-        $appointments = get_db( 'appointments' )->query( [ 'calendar_id' => $calendar_id ] );
+        $access_token = get_array_var( $response, 'token' );
 
-        foreach ( $appointments as $appo ) {
-            $appointment = new Appointment( $appo->ID );
-            $appointment->add_in_google();
+        if ( !$access_token ) {
+            wp_send_json_error( __( 'Could not retrieve access token.', 'groundhogg' ) );
         }
+
+        $calendar->update_meta( 'access_token', $access_token );
+
+        $calendar->add_in_google();
 
         wp_send_json_success( [ 'msg' => __( 'Your calendar synced successfully!', 'groundhogg' ) ] );
 
@@ -171,12 +181,6 @@ class Calendar_Page extends Admin_Page
 
     }
 
-
-    protected function add_additional_actions()
-    {
-        // TODO: Implement add_additional_actions() method.
-    }
-
     public function get_slug()
     {
         return 'gh_calendar';
@@ -200,11 +204,6 @@ class Calendar_Page extends Admin_Page
     public function get_priority()
     {
         return 48;
-    }
-
-    public function help()
-    {
-        // TODO: Implement help() method.
     }
 
     /**
@@ -405,39 +404,39 @@ class Calendar_Page extends Admin_Page
         //Create default SMS
 
         $sms_booked = new SMS( [
-            'title' => __('Appointment Booked', 'groundhogg'),
-            'message' => __("Hey {first},\n\nThank you for booking an appointment.\n\nYour appointment will be from {appointment_start_time} to {appointment_end_time}.\n\nThank you!\n\n@ the {business_name} team",'groundhogg'),
+            'title' => __( 'Appointment Booked', 'groundhogg' ),
+            'message' => __( "Hey {first},\n\nThank you for booking an appointment.\n\nYour appointment will be from {appointment_start_time} to {appointment_end_time}.\n\nThank you!\n\n@ the {business_name} team", 'groundhogg' ),
 
         ] );
 
         $sms_approved = new SMS( [
-            'title' => __('Appointment Approved', 'groundhogg'),
-            'message' => __("Hey {first},\n\nThank you for booking an appointment with us.\n\nYour appointment booking on {appointment_start_time} has been approved.\n\nThank you!\n\n@ the {business_name} team\n\n",'groundhogg'),
+            'title' => __( 'Appointment Approved', 'groundhogg' ),
+            'message' => __( "Hey {first},\n\nThank you for booking an appointment with us.\n\nYour appointment booking on {appointment_start_time} has been approved.\n\nThank you!\n\n@ the {business_name} team\n\n", 'groundhogg' ),
 
         ] );
 
         $sms_cancelled = new SMS( [
-            'title' => __('Appointment Cancelled', 'groundhogg'),
-            'message' => __( "Hey {first},\n\nYour appointment scheduled on {appointment_start_time} has been cancelled.\n\nYou can always book another appointment using our booking page.\n\nThank you!\n\n@ the {business_name} team",'groundhogg'),
+            'title' => __( 'Appointment Cancelled', 'groundhogg' ),
+            'message' => __( "Hey {first},\n\nYour appointment scheduled on {appointment_start_time} has been cancelled.\n\nYou can always book another appointment using our booking page.\n\nThank you!\n\n@ the {business_name} team", 'groundhogg' ),
 
         ] );
 
         $sms_rescheduled = new SMS( [
-            'title' => __('Appointment Rescheduled', 'groundhogg'),
-            'message' => __("Hey {first},\n\nWe successfully rescheduled your appointment. Your new appointment will be from {appointment_start_time} to {appointment_end_time}.\n\nThank you!\n\n@ the {business_name} team",'groundhogg'),
+            'title' => __( 'Appointment Rescheduled', 'groundhogg' ),
+            'message' => __( "Hey {first},\n\nWe successfully rescheduled your appointment. Your new appointment will be from {appointment_start_time} to {appointment_end_time}.\n\nThank you!\n\n@ the {business_name} team", 'groundhogg' ),
 
         ] );
 
         $sms_reminder = new SMS( [
-            'title' => __('Appointment Reminder', 'groundhogg'),
-            'message' => __("Hey {first},\n\nJust a friendly reminder that you have appointment coming up with us on {appointment_start_time} we look forward to seeing you then.\n\nThank you!\n\n@ the {business_name} team",'groundhogg'),
+            'title' => __( 'Appointment Reminder', 'groundhogg' ),
+            'message' => __( "Hey {first},\n\nJust a friendly reminder that you have appointment coming up with us on {appointment_start_time} we look forward to seeing you then.\n\nThank you!\n\n@ the {business_name} team", 'groundhogg' ),
         ] );
 
         $calendar->update_meta( 'sms', [
-            'appointment_booked'        => $sms_booked->get_id(),
-            'appointment_approved'      => $sms_approved->get_id(),
-            'appointment_rescheduled'   => $sms_rescheduled->get_id(),
-            'appointment_cancelled'     => $sms_cancelled->get_id(),
+            'appointment_booked' => $sms_booked->get_id(),
+            'appointment_approved' => $sms_approved->get_id(),
+            'appointment_rescheduled' => $sms_rescheduled->get_id(),
+            'appointment_cancelled' => $sms_cancelled->get_id(),
         ] );
 
         // set one hour before reminder by default
@@ -535,7 +534,7 @@ class Calendar_Page extends Admin_Page
          */
         $appointments_table = get_db( 'appointments' );
 
-        if ( $appointments_table->appointments_exist_in_range_except_same_appointment( $start_time, $end_time, $appointment->get_calendar_id() ,$appointment->get_id() ) ) {
+        if ( $appointments_table->appointments_exist_in_range_except_same_appointment( $start_time, $end_time, $appointment->get_calendar_id(), $appointment->get_id() ) ) {
             return new \WP_Error( 'appointment_clash', __( 'You already have an appointment in this time slot.', 'groundhogg' ) );
         }
 
@@ -891,17 +890,28 @@ class Calendar_Page extends Admin_Page
 
     }
 
-
+    /**
+     * Return the Oath URL
+     *
+     * @return string
+     */
     public function process_access_code()
     {
-        $client = \GroundhoggBookingCalendar\Plugin::$instance->google_calendar->get_basic_client();
-        if ( is_wp_error( $client ) ) {
-            return new \WP_Error( 'client_error', __( 'Please check your google clientId and Secret.', 'groundhogg' ) );
-        }
-        $authUrl = $client->createAuthUrl();
-        echo "<script>window.open(\"" . $authUrl . "\",\"_self\");</script>";
-        return true;
-    }
+        $response = Plugin::instance()->proxy_service->request( 'authentication/url', [
+            'slug' => 'google'
+        ] );
 
+        if ( is_wp_error( $response ) ) {
+            return new WP_Error( 'rest_error', $response->get_error_message() );
+        }
+
+        $url = get_array_var( $response, 'url' );
+
+        if ( !$url ) {
+            return new WP_Error( 'no_token', __( 'Could not retrieve url', 'groundhogg' ) );
+        }
+
+        return $url;
+    }
 
 }

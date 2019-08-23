@@ -147,74 +147,74 @@ class Plugin extends Extension
 
     }
 
-
-    /**
-     * Register controls to retrive google ID and secret
-     *
-     * @param array[] $settings
-     * @return array[]
-     */
-
-    public function register_settings( $settings )
-    {
-        $settings[ 'gh_google_calendar_client_id' ] = [
-            'id' => 'gh_google_calendar_client_id',
-            'section' => 'google_calendar',
-            'label' => __( 'Client ID', 'groundhogg' ),
-            'desc' => __( 'Your Google developer client ID.', 'groundhogg' ),
-            'type' => 'input',
-            'atts' => [
-                'name' => 'gh_google_calendar_client_id',
-                'id' => 'gh_google_calendar_client_id',
-            ]
-        ];
-        $settings[ 'gh_google_calendar_secret_key' ] = [
-            'id' => 'gh_google_calendar_secret_key',
-            'section' => 'google_calendar',
-            'label' => __( 'Secret Key', 'groundhogg' ),
-            'desc' => __( 'Your Google developer Secret Key.', 'groundhogg' ),
-            'type' => 'input',
-            'atts' => [
-                'name' => 'gh_google_calendar_secret_key',
-                'id' => 'gh_google_calendar_secret_key',
-            ]
-        ];
-
-        return $settings;
-    }
-
-    /**
-     * Register setting tab for calendar
-     *
-     * @param array[] $tabs
-     * @return array[]
-     */
-    public function register_settings_tabs( $tabs )
-    {
-        $tabs[ 'calendar' ] = [
-            'id' => 'calendar',
-            'title' => _x( 'Booking Calendar', 'settings_tabs', 'groundhogg' )
-        ];
-
-        return $tabs;
-    }
-
-    /**
-     * Register Booking calendar setting section
-     *
-     * @param array[] $sections
-     * @return array[]
-     */
-    public function register_settings_sections( $sections )
-    {
-        $sections[ 'google_calendar' ] = [
-            'id' => 'google_calendar',
-            'title' => _x( 'Google API Keys', 'settings_sections', 'groundhogg' ),
-            'tab' => 'calendar'
-        ];
-
-        return $sections;
-    }
+//
+//    /**
+//     * Register controls to retrive google ID and secret
+//     *
+//     * @param array[] $settings
+//     * @return array[]
+//     */
+//
+//    public function register_settings( $settings )
+//    {
+//        $settings[ 'gh_google_calendar_client_id' ] = [
+//            'id' => 'gh_google_calendar_client_id',
+//            'section' => 'google_calendar',
+//            'label' => __( 'Client ID', 'groundhogg' ),
+//            'desc' => __( 'Your Google developer client ID.', 'groundhogg' ),
+//            'type' => 'input',
+//            'atts' => [
+//                'name' => 'gh_google_calendar_client_id',
+//                'id' => 'gh_google_calendar_client_id',
+//            ]
+//        ];
+//        $settings[ 'gh_google_calendar_secret_key' ] = [
+//            'id' => 'gh_google_calendar_secret_key',
+//            'section' => 'google_calendar',
+//            'label' => __( 'Secret Key', 'groundhogg' ),
+//            'desc' => __( 'Your Google developer Secret Key.', 'groundhogg' ),
+//            'type' => 'input',
+//            'atts' => [
+//                'name' => 'gh_google_calendar_secret_key',
+//                'id' => 'gh_google_calendar_secret_key',
+//            ]
+//        ];
+//
+//        return $settings;
+//    }
+//
+//    /**
+//     * Register setting tab for calendar
+//     *
+//     * @param array[] $tabs
+//     * @return array[]
+//     */
+//    public function register_settings_tabs( $tabs )
+//    {
+//        $tabs[ 'calendar' ] = [
+//            'id' => 'calendar',
+//            'title' => _x( 'Booking Calendar', 'settings_tabs', 'groundhogg' )
+//        ];
+//
+//        return $tabs;
+//    }
+//
+//    /**
+//     * Register Booking calendar setting section
+//     *
+//     * @param array[] $sections
+//     * @return array[]
+//     */
+//    public function register_settings_sections( $sections )
+//    {
+//        $sections[ 'google_calendar' ] = [
+//            'id' => 'google_calendar',
+//            'title' => _x( 'Google API Keys', 'settings_sections', 'groundhogg' ),
+//            'tab' => 'calendar'
+//        ];
+//
+//        return $sections;
+//    }
 
     /**
      * Add email templates...

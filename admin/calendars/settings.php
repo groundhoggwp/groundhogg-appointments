@@ -258,6 +258,9 @@ if ( $calendar == null ) {
 
                     $access_token = $calendar->get_access_token();
                     $google_calendar_id = $calendar->get_google_calendar_id();
+                    var_dump($access_token);
+                    var_dump( $google_calendar_id) ;
+
                     $google_calendar_list = (array) $calendar->get_google_calendar_list();
 
 
@@ -292,7 +295,8 @@ if ( $calendar == null ) {
                     <p class="description"><?php _e( 'These calendars will be checked for your availability when booking new appointments.' ); ?></p>
                     <p>
                         <?php
-                        $client = Plugin::$instance->google_calendar->get_google_client_form_access_token( $calendar->get_id() );
+
+                        $client = Plugin::$instance->google_calendar->get_google_client_from_access_token( $calendar->get_id() );
 
                         if ( ! is_wp_error( $client ) ){
                             $service = new Google_Service_Calendar( $client );
