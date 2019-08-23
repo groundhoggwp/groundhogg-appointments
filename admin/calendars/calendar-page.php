@@ -897,21 +897,23 @@ class Calendar_Page extends Admin_Page
      */
     public function process_access_code()
     {
-        $response = Plugin::instance()->proxy_service->request( 'authentication/url', [
-            'slug' => 'google'
-        ] );
+//        $response = Plugin::instance()->proxy_service->request( 'authentication/url', [
+//            'slug' => 'google'
+//        ] );
+//
+//        if ( is_wp_error( $response ) ) {
+//            return new WP_Error( 'rest_error', $response->get_error_message() );
+//        }
+//
+//        $url = get_array_var( $response, 'url' );
+//
+//        if ( !$url ) {
+//            return new WP_Error( 'no_token', __( 'Could not retrieve url', 'groundhogg' ) );
+//        }
+//
+//        return $url;
 
-        if ( is_wp_error( $response ) ) {
-            return new WP_Error( 'rest_error', $response->get_error_message() );
-        }
-
-        $url = get_array_var( $response, 'url' );
-
-        if ( !$url ) {
-            return new WP_Error( 'no_token', __( 'Could not retrieve url', 'groundhogg' ) );
-        }
-
-        return $url;
+        return 'https://proxy.groundho.gg/oauth/google/start';
     }
 
 }

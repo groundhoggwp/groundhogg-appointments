@@ -258,11 +258,7 @@ if ( $calendar == null ) {
 
                     $access_token = $calendar->get_access_token();
                     $google_calendar_id = $calendar->get_google_calendar_id();
-                    var_dump($access_token);
-                    var_dump( $google_calendar_id) ;
-
                     $google_calendar_list = (array) $calendar->get_google_calendar_list();
-
 
                     if ( $access_token && $google_calendar_id ) {
                         _e( 'Your google calendar sync is on. (Delete the calendar from your Google account to stop syncing)', 'groundhogg' );
