@@ -72,8 +72,9 @@ class Google_Calendar
         if ( $client->isAccessTokenExpired() ) {
             if ( $client->getRefreshToken() ) {
 
+
                 $response = Plugin::instance()->proxy_service->request( 'authentication/refresh', [
-                    'code' => $calendar->get_meta('access_token'),
+                    'token' => $calendar->get_meta('access_token',true),
                     'slug' => 'google'
                 ] );
 
