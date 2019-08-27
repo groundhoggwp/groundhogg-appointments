@@ -49,7 +49,11 @@ class Updater extends \Groundhogg\Updater
             $this->update_calendar( absint( $c->ID ) );
         }
 
+        set_transient( 'groundhogg_upgrade_notice_booking_calendar', 1, WEEK_IN_SECONDS );
+
+        \GroundhoggBookingCalendar\Plugin::$instance->rewrites->add_rewrite_rules();
         flush_rewrite_rules();
+
     }
 
 

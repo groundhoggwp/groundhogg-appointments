@@ -29,6 +29,11 @@ class Plugin extends Extension
     public $replacements;
 
     /**
+     * @var Rewrites
+     */
+    public $rewrites;
+
+    /**
      * Override the parent instance.
      *
      * @var Plugin
@@ -79,9 +84,7 @@ class Plugin extends Extension
         $this->roles = new Roles();
         $this->shortcode = new Shortcode();
         $this->replacements = new Replacements();
-
-        new Rewrites();
-
+        $this->rewrites = new Rewrites();
         $this->installer = new Installer();
         $this->updater = new Updater();
     }
