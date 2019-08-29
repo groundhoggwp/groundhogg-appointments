@@ -70,6 +70,11 @@ class Replacements
                 'code' => 'appointment_notes',
                 'callback' => array( $this, 'appointment_notes' ),
                 'description' => __( 'Any notes about the appointment.', 'groundhogg' ),
+            ],
+            [
+                'code' => 'zoom_meeting_details',
+                'callback' => array( $this, 'zoom_meeting_details' ),
+                'description' => __( 'Detail Description about zoom meeting.( needs zoom enabled and synced )', 'groundhogg' ),
             ]
         ];
     }
@@ -185,7 +190,7 @@ class Replacements
             return __( 'There is no additional note with this appointment.', 'groundhogg' );
         }
 
-        return $this->get_appointment()->get_meta( 'notes' );
+        return wpautop( $this->get_appointment()->get_meta( 'notes' ) );
     }
 
     /**
@@ -206,6 +211,22 @@ class Replacements
         ];
 
         return implode( ' | ', $actions );
+    }
+
+
+    /**
+     * fetch Zoom meting description from zoom
+     *
+     * @return bool|string
+     */
+    public function zoom_meeting_details( )
+    {
+        if ( !$this->get_appointment() ) {
+            return false;
+        }
+
+        return wpautop( $this->get_appointment()->get_zoom_meeting_detail() );
+
     }
 
 }

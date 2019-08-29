@@ -6,6 +6,7 @@ namespace GroundhoggBookingCalendar\Classes;
 use Groundhogg\Base_Object_With_Meta;
 use function Groundhogg\encrypt;
 use Groundhogg\Event;
+use function Groundhogg\get_array_var;
 use function Groundhogg\get_contactdata;
 use function Groundhogg\get_db;
 use Groundhogg\Plugin;
@@ -13,6 +14,7 @@ use GroundhoggBookingCalendar\DB\Calendar_Meta;
 use \Google_Service_Calendar_Event;
 use \Google_Service_Calendar;
 use \Exception;
+use function Groundhogg\get_request_var;
 use function GroundhoggBookingCalendar\send_reminder_notification;
 use function GroundhoggBookingCalendar\send_sms_reminder_notification;
 
@@ -142,6 +144,9 @@ class Appointment extends Base_Object_With_Meta
                 return false;
             }
         }
+
+        $this->update_zoom_meeting();
+
         return true;
     }
 
@@ -246,6 +251,9 @@ class Appointment extends Base_Object_With_Meta
                 return false;
             }
         }
+
+        $this->delete_zoom_meeting();
+
         return true;
     }
 
@@ -534,4 +542,178 @@ class Appointment extends Base_Object_With_Meta
     {
         return site_url( sprintf( 'gh/appointment/%s/%s', urlencode( encrypt( $this->get_id() ) ), $action ) );
     }
+
+    /**
+     * Return zoom meeting id
+     *
+     * @return int
+     */
+    public function get_zoom_meeting_id()
+    {
+        return absint( $this->get_meta( 'zoom_id', true ) );
+    }
+
+    public function create_zoom_meeting()
+    {
+        if ( !$this->get_calendar()->is_zoom_enabled() ) {
+            return;
+        }
+
+        $access_token = $this->get_calendar()->get_access_token_zoom();
+
+        if ( !$access_token ) {
+            return;
+        }
+
+        if ( is_wp_error( $access_token ) ) {
+            return;
+        }
+
+        // Create meeting by making post request
+
+        $response = wp_remote_post( GROUNDHOGG_BOOKING_CALENDAR_ZOOM_BASE_URL . 'users/me/meetings', [
+            'headers' => [
+                'Authorization' => 'Bearer ' . $access_token,
+                'Content-Type' => 'application/json'
+            ],
+            'body' => json_encode( [
+                "topic" => $this->get_calendar()->get_name() . ' - Meeting with ' . get_contactdata( $this->get_contact_id() )->get_full_name(),
+                "type" => 2,
+                "start_time" => date( 'Y-m-d\TH:i:s', $this->get_start_time() ) . 'Z',
+                "duration" => $this->get_calendar()->get_appointment_length( true ) / 60,
+                "settings" => [
+                    "host_video" => true,
+                    "participant_video" => true,
+                    "cn_meeting" => true,
+                    "in_meeting" => true,
+                    "join_before_host" => true,
+                    "mute_upon_entry" => false
+                ]
+            ] )
+        ] );
+
+        $body = json_decode( $response[ 'body' ] );
+        if ( $body->id ) {
+            $this->update_meta( 'zoom_id', $body->id );
+        }
+    }
+
+
+    public function update_zoom_meeting()
+    {
+        if ( !$this->get_calendar()->is_zoom_enabled() ) {
+            return;
+        }
+
+        $access_token = $this->get_calendar()->get_access_token_zoom();
+
+        if ( !$access_token ) {
+            return;
+        }
+
+        if ( is_wp_error( $access_token ) ) {
+            return;
+        }
+
+        // create meeting if meeting does not exist
+
+        if ( !$this->get_zoom_meeting_id() ) {
+            $this->create_zoom_meeting();
+            return;
+        }
+
+        // Update meeting by making post request
+        $response = wp_remote_request( GROUNDHOGG_BOOKING_CALENDAR_ZOOM_BASE_URL . '/meetings/' . $this->get_zoom_meeting_id(), [
+            'headers' => [
+                'Authorization' => 'Bearer ' . $access_token,
+                'Content-Type' => 'application/json',
+            ],
+            'method' => 'PATCH',
+            'body' => json_encode( [
+                "topic" => $this->get_calendar()->get_name() . ' - Meeting with ' . get_contactdata( $this->get_contact_id() )->get_full_name(),
+                "type" => 2,
+                "start_time" => date( 'Y-m-d\TH:i:s', $this->get_start_time() ) . 'Z',
+                "duration" => $this->get_calendar()->get_appointment_length( true ) / 60,
+                "settings" => [
+                    "host_video" => true,
+                    "participant_video" => true,
+                    "cn_meeting" => true,
+                    "in_meeting" => true,
+                    "join_before_host" => true,
+                    "mute_upon_entry" => false
+                ]
+            ] )
+        ] );
+
+    }
+
+    public function delete_zoom_meeting()
+    {
+        if ( !$this->get_calendar()->is_zoom_enabled() ) {
+            return;
+        }
+
+        $access_token = $this->get_calendar()->get_access_token_zoom();
+
+        if ( !$access_token ) {
+            return;
+        }
+
+        if ( is_wp_error( $access_token ) ) {
+            return;
+        }
+
+        // create meeting if meeting does not exist
+        if ( $this->get_zoom_meeting_id() ) {
+
+            // Update meeting by making post request
+            $response = wp_remote_request( GROUNDHOGG_BOOKING_CALENDAR_ZOOM_BASE_URL . '/meetings/' . $this->get_zoom_meeting_id(), [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $access_token,
+                ],
+                'method' => 'DELETE',
+            ] );
+
+        }
+    }
+
+    public function get_zoom_meeting_detail()
+    {
+        if ( !$this->get_calendar()->is_zoom_enabled() ) {
+            return __( 'Zoom is not enabled.', 'groundhogg' );
+        }
+
+        $access_token = $this->get_calendar()->get_access_token_zoom();
+
+        if ( !$access_token || is_wp_error( $access_token ) ) {
+            return '';
+        }
+
+        // create meeting if meeting does not exist
+        if ( !$this->get_zoom_meeting_id() ) {
+            return __( 'Zoom meeting details not found!', 'groundhogg' );
+        }
+
+        // Update meeting by making post request
+        $response = wp_remote_get( GROUNDHOGG_BOOKING_CALENDAR_ZOOM_BASE_URL . '/meetings/' . $this->get_zoom_meeting_id() . '/invitation', [
+            'headers' => [
+                'Authorization' => 'Bearer ' . $access_token,
+            ],
+
+        ] );
+
+        $body = json_decode( $response[ 'body' ] );
+
+        if ( $body->id ) {
+            $this->update_meta( 'zoom_id', $body->id );
+        }
+
+        if ( $body->invitation ) {
+            return $body->invitation;
+        }
+
+        return __( 'Zoom meeting details not found!', 'groundhogg' );
+
+    }
+
 }

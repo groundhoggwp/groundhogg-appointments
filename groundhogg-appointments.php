@@ -24,7 +24,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-define( 'GROUNDHOGG_BOOKING_CALENDAR_VERSION', '2.0.1' );
+define( 'GROUNDHOGG_BOOKING_CALENDAR_VERSION', '2.0.1' ); //todo update version while tagging.
 define( 'GROUNDHOGG_BOOKING_CALENDAR_PREVIOUS_STABLE_VERSION', '1.2.5' );
 define( 'GROUNDHOGG_BOOKING_CALENDAR_NAME', 'Booking Calendar' );
 
@@ -36,6 +36,7 @@ define( 'GROUNDHOGG_BOOKING_CALENDAR_URL', plugins_url( '/', GROUNDHOGG_BOOKING_
 
 define( 'GROUNDHOGG_BOOKING_CALENDAR_ASSETS_PATH', GROUNDHOGG_BOOKING_CALENDAR_PATH . 'assets/' );
 define( 'GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL', GROUNDHOGG_BOOKING_CALENDAR_URL . 'assets/' );
+define( 'GROUNDHOGG_BOOKING_CALENDAR_ZOOM_BASE_URL','https://api.zoom.us/v2/' );
 
 add_action( 'plugins_loaded', function (){
     load_plugin_textdomain( GROUNDHOGG_BOOKING_CALENDAR_TEXT_DOMAIN, false, basename( dirname( __FILE__ ) ) . '/languages' );

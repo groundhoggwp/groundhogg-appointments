@@ -12,6 +12,7 @@ use function Groundhogg\get_contactdata;
 use function Groundhogg\get_db;
 use function Groundhogg\get_email_templates;
 use function Groundhogg\get_request_var;
+use function Groundhogg\get_url_var;
 use function Groundhogg\groundhogg_url;
 use GroundhoggBookingCalendar\Classes\Appointment;
 use GroundhoggBookingCalendar\Classes\Calendar;
@@ -872,6 +873,14 @@ class Calendar_Page extends Admin_Page
         $google_calendar_list = array_map( 'sanitize_text_field', $google_calendar_list );
         $calendar->update_meta( 'google_calendar_list', $google_calendar_list );
 
+        //save Zoom Meeting settings
+
+        if ( get_request_var( 'zoom_enable' ) ) {
+            $calendar->update_meta( 'zoom_enable', true );
+        } else {
+            $calendar->delete_meta( 'zoom_enable' );
+        }
+
         $this->add_notice( 'success', _x( 'Settings updated.', 'notice', 'groundhogg' ), 'success' );
 
 
@@ -913,7 +922,60 @@ class Calendar_Page extends Admin_Page
 //
 //        return $url;
 
-        return 'https://proxy.groundho.gg/oauth/google/start';
+        return 'https://proxy.groundhogg.io/oauth/google/start';
+    }
+
+    /**
+     * Return the Oath URL
+     *
+     * @return string
+     */
+    public function process_access_code_zoom()
+    {
+        $return = add_query_arg(  [
+            'page' => 'gh_calendar',
+            'action' => 'verify_zoom_code',
+            'calendar' => get_url_var( 'calendar' ),
+            '_wpnonce' => wp_create_nonce()
+        ], admin_url( 'admin.php' ) );
+
+        $url = add_query_arg( [ 'return' => urlencode( base64_encode( $return ) ) ], 'https://proxy.groundhogg.io/oauth/zoom/start/' );
+
+        return $url;
+    }
+
+
+    public function process_verify_zoom_code()
+    {
+
+        if ( !get_request_var( 'code' ) ) {
+            return new \WP_Error( 'no_code', __( 'Authentication code not found!', 'groundhogg' ) );
+        }
+
+        $auth_code = get_request_var('code');
+        $calendar_id = absint( get_request_var( 'calendar' ) );
+        $calendar = new Calendar( $calendar_id );
+
+        $response = Plugin::instance()->proxy_service->request( 'authentication/get', [
+            'code' => $auth_code,
+            'slug' => 'zoom'
+        ] );
+
+        if ( is_wp_error( $response ) ) {
+            return new \WP_Error( 'failed', $response->get_error_message() );
+        }
+
+        $access_token = get_array_var( $response, 'token' );
+
+        if ( !$access_token ) {
+            return new \WP_Error( 'failed', $response->get_error_message() );
+        }
+
+        $calendar->update_meta( 'access_token_zoom', json_encode( $access_token ) );
+
+        $this->add_notice( 'success', __( 'Connection to zoom successfully completed!', 'groundhogg' ), 'success' );
+
+        return true;
     }
 
 }

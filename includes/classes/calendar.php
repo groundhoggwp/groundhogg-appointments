@@ -6,6 +6,7 @@ use Exception;
 use Google_Service_Calendar;
 use Google_Service_Calendar_Calendar;
 use Groundhogg\Base_Object_With_Meta;
+use WP_Error;
 use function Groundhogg\get_array_var;
 use function Groundhogg\get_db;
 use function Groundhogg\isset_not_empty;
@@ -512,9 +513,9 @@ class Calendar extends Base_Object_With_Meta
             // 09:00
             $start_time = date( 'H:i:s', strtotime( "{$period[0]}:00" ) );
             $start_time = Plugin::$instance->utils->date_time->convert_to_utc_0( strtotime( "{$str_date_no_hours} {$start_time}" ) );
-            if ($start_time < time() ){
-                $start_time =  strtotime( date('Y-m-d H:00:00' ,  time() ) );
-             }
+            if ( $start_time < time() ) {
+                $start_time = strtotime( date( 'Y-m-d H:00:00', time() ) );
+            }
 
             $start_date = new \DateTime( date( 'Y-m-d H:i:s', $start_time ) );
 
@@ -776,7 +777,7 @@ class Calendar extends Base_Object_With_Meta
             return $slot;
         }
 
-        $slot = array_map("unserialize", array_unique(array_map("serialize", $slot)));
+        $slot = array_map( "unserialize", array_unique( array_map( "serialize", $slot ) ) );
 
         foreach ( $slot as $key => $row ) {
             $sort[ $key ] = $row[ 'start' ];
@@ -969,11 +970,71 @@ class Calendar extends Base_Object_With_Meta
 
         $appointment->add_in_google();
 
+        $appointment->create_zoom_meeting();
+
         do_action( 'groundhogg/calendar/schedule_appointment/after', $this, $appointment );
 
         do_action( 'groundhogg/calendar/appointment/book', $appointment->get_id(), Reminder::BOOKED );
 
         return $appointment;
 
+    }
+
+    /**
+     * Return value of zoom enable checkbox.
+     *
+     * @return bool
+     */
+    public function is_zoom_enabled()
+    {
+        return (bool) $this->get_meta( 'zoom_enable', true );
+    }
+
+
+    /**
+     * fetch access_token for the zoom
+     *
+     * @return WP_Error | string
+     */
+    public function get_access_token_zoom()
+    {
+        if ( !$this->is_access_token_zoom() ) {
+            return new WP_Error( 'no_token', 'Access token not found!' );;
+        }
+
+        // refresh token
+
+        $json = json_decode( $this->get_meta( 'access_token_zoom', true ) );
+
+        if ( ! $json->refresh_token ) {
+            return new WP_Error( 'no_refresh', 'Refresh token not found' );
+        }
+
+        $response = Plugin::instance()->proxy_service->request( 'authentication/refresh', [
+            'token' => $json->refresh_token,
+            'slug' => 'zoom'
+        ] );
+
+        if ( is_wp_error( $response ) ) {
+            $this->delete_meta( 'access_token_zoom' );
+            return new WP_Error( 'rest_error', $response->get_error_message() );
+        }
+
+
+        $access_token = get_array_var( $response, 'token' );
+
+        if ( !$access_token ) {
+            $this->delete_meta( 'access_token_zoom' );
+            return new WP_Error( 'no_token', __( 'Could not retrieve access token.', 'groundhogg' ) );
+        }
+
+        $this->update_meta( 'access_token_zoom', json_encode( $access_token ) );
+
+        return $access_token->access_token;
+    }
+
+    public function is_access_token_zoom()
+    {
+        return (bool) $this->get_meta( 'access_token_zoom', true );
     }
 }

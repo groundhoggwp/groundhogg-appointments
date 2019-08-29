@@ -55,7 +55,7 @@
         verifyCode: function () {
 
             if ( !$('#auth_code').val() ) {
-                alert('Please enter Validation code.bvv');
+                alert('Please enter Validation code.');
                 return;
             }
 
@@ -80,7 +80,7 @@
                         alert(response.data);
                     }
 
-                     $('#auth_code').val('');
+                    $('#auth_code').val('');
                     $('#spinner').hide();
                     $('#auth_code').show();
                     $('#verify_code').show();
@@ -137,7 +137,7 @@
 
         initCalendar: function (c) {
             var self = this;
-           c.datepicker({
+            c.datepicker({
                 firstDay: self.start_of_week,
                 minDate: 0,
                 maxDate: self.max_date,

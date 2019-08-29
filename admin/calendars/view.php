@@ -24,6 +24,7 @@ $start_time = '00:00';
 $end_time = '23:59';
 $access_token = $calendar->get_access_token();
 $google_calendar_id = $calendar->get_google_calendar_id();
+
 ?>
 <div id="col-container" class="wp-clearfix">
     <div id="col-left">
@@ -121,6 +122,12 @@ $google_calendar_id = $calendar->get_google_calendar_id();
                         <a class="button"
                            href="<?php echo wp_nonce_url( admin_url( 'admin.php?page=gh_calendar&action=google_sync&calendar=' . $_GET[ 'calendar' ] ) ); ?>"><?php _e( 'Sync Now' ); ?></a>
                     </div>
+                <?php endif; ?>
+
+                <?php if ( $calendar->is_access_token_zoom() && $calendar->is_zoom_enabled() ) : ?>
+                    <div class="alert alert-success">
+                        <b><?php _e( 'Zoom sync is on.', 'groundhogg' ); ?></b>
+                            </div>
                 <?php endif; ?>
             </div>
         </div>
