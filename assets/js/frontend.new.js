@@ -152,7 +152,7 @@
             this.calendar = $('#booking-calendar');
             this.calendar.datepicker({
                 firstDay: self.start_of_week,
-                minDate: 0,
+                minDate: self.min_date,
                 maxDate: self.max_date,
                 changeMonth: false,
                 changeYear: false,

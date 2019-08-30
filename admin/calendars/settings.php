@@ -384,6 +384,23 @@ if ( $calendar == null ) {
                     <p><a class="button" id="generate_access_code_zoom" target="_blank"
                           href="<?php echo wp_nonce_url( admin_url( 'admin.php?page=gh_calendar&action=access_code_zoom&calendar=' . $calendar_id ) ); ?>"><?php _e( 'Generate access code & enable sync', 'groundhogg' ); ?></a>
                     </p>
+
+                    <?php if ( is_wp_error( $access_token_zoom  ) ): ?>
+                    <p>
+                        <?php echo html()->input( [
+                            'name' => 'auth_code_zoom',
+                            'id' => 'auth_code_zoom',
+                            'placeholder' => 'Please Enter validation code'
+                        ] ); ?>
+                        <?php echo html()->button( [
+                            'class' => 'button btn-approve',
+                            'name' => 'verify_code_zoom',
+                            'id' => 'verify_code_zoom',
+                            'text' => 'Verify zoom code'
+                        ] ); ?>
+
+                    </p>
+                    <?php endif; ?>
                 </td>
             </tr>
         <?php endif; ?>

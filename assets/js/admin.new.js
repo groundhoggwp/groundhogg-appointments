@@ -49,6 +49,12 @@
                 self.verifyCode();
             });
 
+            $('#verify_code_zoom').on('click', function (e) {
+                e.preventDefault();
+                self.verifyCodeZoom();
+            });
+
+
             $('#spinner').hide();
         },
 
@@ -88,6 +94,44 @@
                 }
             );
         },
+
+        verifyCodeZoom: function () {
+
+            if ( !$('#auth_code_zoom').val() ) {
+                alert('Please enter Validation code.');
+                return;
+            }
+
+
+            $('#auth_code_zoom').hide();
+            $('#verify_code_zoom').hide();
+            $('#generate_access_code_zoom').hide();
+
+            // ajax request to generate access code
+            adminAjaxRequest(
+                {
+                    action: 'groundhogg_verify_zoom',
+                    auth_code: $('#auth_code_zoom').val(),
+                    calendar: $('#calendar').val()
+                },
+                function callback(response) {
+                    // Handler
+                    if (response.success) {
+                        alert(response.data.msg);
+                        calendar.clearData();
+                    } else {
+                        alert(response.data);
+                    }
+
+                    $('#auth_code_zoom').val('');
+                    $('#spinner').hide();
+                    $('#auth_code_zoom').show();
+                    $('#verify_code_zoom').show();
+                    $('#generate_access_code_zoom').show();
+                }
+            );
+        },
+
 
         addAppointment: function () {
 
@@ -139,7 +183,7 @@
             var self = this;
             c.datepicker({
                 firstDay: self.start_of_week,
-                minDate: 0,
+                minDate: self.min_date,
                 maxDate: self.max_date,
                 changeMonth: false,
                 changeYear: false,

@@ -46,6 +46,7 @@ class Calendar_Page extends Admin_Page
         add_action( 'wp_ajax_groundhogg_add_appointments', [ $this, 'add_appointment_ajax' ] );
         add_action( 'wp_ajax_groundhogg_update_appointments', [ $this, 'update_appointment_ajax' ] );
         add_action( 'wp_ajax_groundhogg_verify_google_calendar', [ $this, 'verify_code_ajax' ] );
+        add_action( 'wp_ajax_groundhogg_verify_zoom', [ $this, 'verify_zoom_code_ajax' ] );
 
     }
 
@@ -160,6 +161,44 @@ class Calendar_Page extends Admin_Page
     }
 
 
+    /**
+     * Process AJAX code for zoom verification
+     */
+    public function verify_zoom_code_ajax()
+    {
+        $calendar_id = absint( get_request_var( 'calendar' ) );
+        $calendar = new Calendar( $calendar_id );
+        $auth_code = get_request_var( 'auth_code' );
+
+        if ( !$auth_code ) {
+            wp_send_json_error( __( 'Please enter a valid code.', 'groundhogg' ) );
+        }
+
+        $response = Plugin::instance()->proxy_service->request( 'authentication/get', [
+            'code' => $auth_code,
+            'slug' => 'zoom'
+        ] );
+
+        if ( is_wp_error( $response ) ) {
+            wp_send_json_error( $response->get_error_message() );
+        }
+
+        $access_token = get_array_var( $response, 'token' );
+
+        if ( !$access_token ) {
+            wp_send_json_error( __( 'Could not retrieve access token.', 'groundhogg' ) );
+        }
+
+        $calendar->update_meta( 'access_token_zoom', json_encode( $access_token ) );
+
+        $this->add_notice( 'success', __( 'Connection to zoom successfully completed!', 'groundhogg' ), 'success' );
+
+        wp_send_json_success( [ 'msg' => __( 'Zoom authentication completed successfully!', 'groundhogg' ) ] );
+
+    }
+
+
+
     public function update_appointment_ajax()
     {
         if ( !current_user_can( 'edit_appointment' ) ) {
@@ -224,6 +263,7 @@ class Calendar_Page extends Admin_Page
             wp_localize_script( 'groundhogg-appointments-admin', 'GroundhoggCalendar', [
                 'calendar_id' => absint( get_request_var( 'calendar' ) ),
                 'start_of_week' => get_option( 'start_of_week' ),
+                'min_date' => $calendar->get_min_booking_period( true ),
                 'max_date' => $calendar->get_max_booking_period( true ),
                 'disabled_days' => $calendar->get_dates_no_slots(),
                 'tab' => get_request_var( 'tab', 'view' ),
@@ -334,6 +374,9 @@ class Calendar_Page extends Admin_Page
         $calendar->update_meta( 'max_booking_period_count', absint( get_request_var( 'max_booking_period_count', 3 ) ) );
         $calendar->update_meta( 'max_booking_period_type', sanitize_text_field( get_request_var( 'max_booking_period_type', 'months' ) ) );
 
+        //min booking period in availability
+        $calendar->update_meta( 'min_booking_period_count', absint( get_request_var( 'min_booking_period_count', 0 ) ) );
+        $calendar->update_meta( 'min_booking_period_type', sanitize_text_field( get_request_var( 'min_booking_period_type', 'days' ) ) );
 
         //set default settings
         $calendar->update_meta( 'slot_hour', 1 );
@@ -812,6 +855,10 @@ class Calendar_Page extends Admin_Page
 
         $calendar->update_meta( 'max_booking_period_count', absint( get_request_var( 'max_booking_period_count', 3 ) ) );
         $calendar->update_meta( 'max_booking_period_type', sanitize_text_field( get_request_var( 'max_booking_period_type', 'months' ) ) );
+
+        $calendar->update_meta( 'min_booking_period_count', absint( get_request_var( 'min_booking_period_count', 0 ) ) );
+        $calendar->update_meta( 'min_booking_period_type', sanitize_text_field( get_request_var( 'min_booking_period_type', 'days' ) ) );
+
 
         $calendar->update_meta( 'rules', $availability );
 

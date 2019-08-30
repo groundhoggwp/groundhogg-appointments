@@ -86,6 +86,33 @@ endforeach;
 
     html()->start_row();
 
+    html()->th( __( 'Min time before Booking ' ) );
+    html()->td( [
+        // number
+        html()->number( [
+            'name' => 'min_booking_period_count',
+            'value' => $calendar->get_meta( 'min_booking_period_count' ),
+            'class' => 'input'
+        ] ),
+        // month|day|year
+        html()->dropdown( [
+            'name' => 'min_booking_period_type',
+            'selected' => $calendar->get_meta( 'min_booking_period_type' ),
+            'options' => [
+                'hours'     => __( 'Hours' ),
+                'days'      => __( 'Days' ),
+                'weeks'     => __( 'Weeks' ),
+                'months'    => __( 'Months' ),
+            ],
+        ]),
+        html()->description( __( 'The minimum amount of time from the current date and time someone can book an appointment.', 'groundhogg' ) ),
+    ] );
+
+    html()->end_row();
+
+
+    html()->start_row();
+
     html()->th( __( 'Max. booking period' ) );
     html()->td( [
         // number

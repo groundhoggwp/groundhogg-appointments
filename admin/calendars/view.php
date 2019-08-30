@@ -124,7 +124,7 @@ $google_calendar_id = $calendar->get_google_calendar_id();
                     </div>
                 <?php endif; ?>
 
-                <?php if ( $calendar->is_access_token_zoom() && $calendar->is_zoom_enabled() ) : ?>
+                <?php if ( $calendar->is_zoom_enabled() && (! is_wp_error($calendar->get_access_token_zoom() ) ) ) : ?>
                     <div class="alert alert-success">
                         <b><?php _e( 'Zoom sync is on.', 'groundhogg' ); ?></b>
                             </div>

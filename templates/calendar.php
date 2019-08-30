@@ -120,6 +120,7 @@ function enqueue_calendar_scripts()
     wp_localize_script( 'groundhogg-appointments-frontend', 'BookingCalendar', [
         'calendar_id' => $calendar_id,
         'start_of_week' => get_option( 'start_of_week' ),
+        'min_date' => $calendar->get_min_booking_period( true ),
         'max_date' => $calendar->get_max_booking_period( true ),
         'disabled_days' => $calendar->get_dates_no_slots(),
         'day_names' => [ "SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT" ],

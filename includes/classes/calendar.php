@@ -377,7 +377,9 @@ class Calendar extends Base_Object_With_Meta
     /**
      * Get the maximum date that can be booked.
      *
+     * @param bool $as_string
      * @return \DateTime|string
+     * @throws Exception
      */
     public function get_max_booking_period( $as_string = true )
     {
@@ -398,6 +400,32 @@ class Calendar extends Base_Object_With_Meta
         return $interval;
     }
 
+
+    /**
+     * @param bool $as_string
+     * @return \DateTime|string
+     * @throws Exception
+     */
+    public function get_min_booking_period( $as_string = true )
+    {
+        $num = $this->get_meta( 'min_booking_period_count' );
+        $type = $this->get_meta( 'min_booking_period_type' );
+
+        if ( !$num || !$type ) {
+            $num = 0;
+            $type = 'days';
+        }
+
+        $interval = new \DateTime( date( 'Y-m-d H:i:s', strtotime( "+{$num} {$type}" ) ) );
+
+        if ( $as_string ) {
+            return $interval->format( 'Y-m-d' );
+        }
+
+        return $interval;
+    }
+
+
     /**
      * Fetches valid time slots for end using by performing all the cleaning operations.
      * (Most Important method)
@@ -415,6 +443,8 @@ class Calendar extends Base_Object_With_Meta
         if ( !$slots ) {
             return [];
         }
+
+
         $slots = $this->validate_appointments( $slots );
         $slots = $this->clean_google_slots( $slots );
 
@@ -495,6 +525,7 @@ class Calendar extends Base_Object_With_Meta
             $date = strtotime( $date );
         }
 
+
         $str_date = date( 'Y-m-d H:i:s', $date );
         $str_date_no_hours = date( 'Y-m-d', $date );
 
@@ -508,13 +539,19 @@ class Calendar extends Base_Object_With_Meta
             return false;
         }
 
+        $base_time  = time();
+
+        if ( $this->get_meta('min_booking_period_type' ) == 'hours' ) {
+            $base_time = $base_time  + ( 60 * 60 * intval( $this->get_meta( 'min_booking_period_count' ) ) );
+        }
+
         foreach ( $available_periods as $period ) {
 
             // 09:00
             $start_time = date( 'H:i:s', strtotime( "{$period[0]}:00" ) );
             $start_time = Plugin::$instance->utils->date_time->convert_to_utc_0( strtotime( "{$str_date_no_hours} {$start_time}" ) );
-            if ( $start_time < time() ) {
-                $start_time = strtotime( date( 'Y-m-d H:00:00', time() ) );
+            if ( $start_time < $base_time ) {
+                $start_time = strtotime( date( 'Y-m-d H:00:00', $base_time ) );
             }
 
             $start_date = new \DateTime( date( 'Y-m-d H:i:s', $start_time ) );

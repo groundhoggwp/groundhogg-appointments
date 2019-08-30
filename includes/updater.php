@@ -70,6 +70,10 @@ class Updater extends \Groundhogg\Updater
         $calendar->update_meta( 'max_booking_period_count', absint( 3 ) );
         $calendar->update_meta( 'max_booking_period_type', sanitize_text_field( 'months' ) );
 
+        //min booking period in availability
+        $calendar->update_meta( 'min_booking_period_count', absint( 0 ) );
+        $calendar->update_meta( 'min_booking_period_type', sanitize_text_field( 'days' ) );
+
         // Create default emails...
         $templates = get_email_templates();
         // Booked
