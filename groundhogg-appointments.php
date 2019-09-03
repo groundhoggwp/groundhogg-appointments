@@ -3,7 +3,7 @@
  * Plugin Name: Groundhogg - Booking Calendar
  * Plugin URI:  https://www.groundhogg.io/downloads/booking-calendar/?utm_source=wp-plugins&utm_campaign=plugin-uri&utm_medium=wp-dash
  * Description: Create calendars and appointments.
- * Version: 2.0.1
+ * Version: 2.0.2
  * Author: Groundhogg Inc.
  * Author URI: https://www.groundhogg.io/?utm_source=wp-plugins&utm_campaign=author-uri&utm_medium=wp-dash
  * Text Domain: groundhogg
@@ -24,7 +24,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-define( 'GROUNDHOGG_BOOKING_CALENDAR_VERSION', '2.0.1' ); //todo update version while tagging.
+define( 'GROUNDHOGG_BOOKING_CALENDAR_VERSION', '2.0.2' );
 define( 'GROUNDHOGG_BOOKING_CALENDAR_PREVIOUS_STABLE_VERSION', '1.2.5' );
 define( 'GROUNDHOGG_BOOKING_CALENDAR_NAME', 'Booking Calendar' );
 

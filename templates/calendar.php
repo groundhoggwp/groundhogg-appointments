@@ -22,6 +22,8 @@ if ( !$calendar->exists() ) {
 function default_form()
 {
 
+    $contact = \Groundhogg\Plugin::$instance->tracking->get_current_contact();
+
 ?>
 <div class="gh-form-wrapper">
     <form class="gh-form details-form" method="post" target="_parent">
@@ -36,7 +38,8 @@ function default_form()
                             'id' => 'first_name',
                             'class' => 'gh-input',
                             'placeholder' => _e( 'First Name' ),
-                            'required' => true
+                            'required' => true,
+                            'value' => $contact ? $contact->get_first_name() : '',
                         ] );
                         ?>
                     </div>
@@ -50,7 +53,8 @@ function default_form()
                             'id' => 'last_name',
                             'class' => 'gh-input',
                             'placeholder' => _e( 'Last Name' ),
-                            'required' => true
+                            'required' => true,
+                            'value' => $contact ? $contact->get_last_name() : '',
                         ] );
                         ?>
                     </div>
@@ -66,7 +70,8 @@ function default_form()
                             'id' => 'email',
                             'class' => 'gh-input',
                             'placeholder' => _e( 'Email' ),
-                            'required' => true
+                            'required' => true,
+                            'value' => $contact ? $contact->get_email() : '',
                         ] );
                         ?>
                     </div>
@@ -82,7 +87,8 @@ function default_form()
                             'id' => 'phone',
                             'class' => 'gh-input',
                             'placeholder' => _e( 'Phone' ),
-                            'required' => true
+                            'required' => true,
+                            'value' => $contact ? $contact->get_phone_number() : '',
                         ] );
                         ?>
                     </div>

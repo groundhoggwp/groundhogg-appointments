@@ -67,11 +67,10 @@ class Google_Calendar
             return new WP_Error( 'ACCESS_TOKEN', __( "Access token not found!", "groundhogg" ) );
         }
 
-        $client->setAccessToken( json_encode( $access_token ) );
+        $client->setAccessToken(  $access_token ) ;
 
         if ( $client->isAccessTokenExpired() ) {
             if ( $client->getRefreshToken() ) {
-
 
                 $response = Plugin::instance()->proxy_service->request( 'authentication/refresh', [
                     'token' => $calendar->get_meta('access_token',true),
@@ -82,13 +81,15 @@ class Google_Calendar
                     return new WP_Error( 'rest_error' ,  $response->get_error_message()  );
                 }
 
-                $access_token = get_array_var( $response, 'token' );
+                $access_token = json_encode( get_array_var( $response, 'token' ) );
 
                 if ( !$access_token ) {
                     return new WP_Error(  'no_token', __( 'Could not retrieve access token.', 'groundhogg' ) );
                 }
 
-                $calendar->update_meta( 'access_token', $access_token );
+                $client->setAccessToken( $access_token ) ;
+
+                $calendar->update_meta( 'access_token',  $access_token  );
 
             }
         }

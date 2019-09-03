@@ -152,7 +152,7 @@ class Calendar_Page extends Admin_Page
             wp_send_json_error( __( 'Could not retrieve access token.', 'groundhogg' ) );
         }
 
-        $calendar->update_meta( 'access_token', $access_token );
+        $calendar->update_meta( 'access_token', json_encode( $access_token ) );
 
         $calendar->add_in_google();
 
