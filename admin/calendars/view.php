@@ -124,10 +124,19 @@ $google_calendar_id = $calendar->get_google_calendar_id();
                     </div>
                 <?php endif; ?>
 
-                <?php if ( $calendar->is_zoom_enabled() && (! is_wp_error($calendar->get_access_token_zoom() ) ) ) : ?>
+                <?php if ( $calendar->is_zoom_enabled() && ( !is_wp_error( $calendar->get_access_token_zoom() ) ) ) : ?>
                     <div class="alert alert-success">
                         <b><?php _e( 'Zoom sync is on.', 'groundhogg' ); ?></b>
-                            </div>
+                    </div>
+<!--                    --><?php
+//                    $response = wp_remote_get( GROUNDHOGG_BOOKING_CALENDAR_ZOOM_BASE_URL . '/users/me/meetings', [
+//                        'headers' => [
+//                            'Authorization' => 'Bearer ' . $calendar->get_access_token_zoom(),
+//                        ],
+//
+//                    ] );
+//                    var_dump( $response );
+//                    ?>
                 <?php endif; ?>
             </div>
         </div>

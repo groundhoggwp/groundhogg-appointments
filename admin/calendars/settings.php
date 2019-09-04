@@ -352,60 +352,43 @@ if ( $calendar == null ) {
         <?php endif; ?>
         </tbody>
     </table>
-<!--    <h2>--><?php //_e( 'Zoom Integration', 'groundhogg' ); ?><!--</h2>-->
-<!--    <table class="form-table">-->
-<!--        <tbody>-->
-<!--        <tr>-->
-<!--            <th scope="row"><label>--><?php //_e( 'Enable Zoom', 'groundhogg' ) ?><!--</label></th>-->
-<!--            <td>-->
-<!--                --><?php //echo html()->checkbox( [
-//                    'label' => "Enable",
-//                    "name" => "zoom_enable",
-//                    'checked' => $calendar->is_zoom_enabled() ? $calendar->is_zoom_enabled() : 0,
-//                ] ); ?>
-<!--                <p class="description">--><?php //_e( 'Enabling this setting will create zoom meeting.', 'groundhogg' ) ?><!--</p>-->
-<!--            </td>-->
-<!--        </tr>-->
-<!--        --><?php //if ( $calendar->is_zoom_enabled() ): ?>
-<!--            <tr>-->
-<!--                <th scope="row"><label>--><?php //_e( 'Zoom sync' ) ?><!--</label></th>-->
-<!--                <td id="appointment-status">-->
-<!--                    <p class="description">-->
-<!--                        <b>-->
-<!--                            --><?php
-//                            $access_token_zoom = $calendar->get_access_token_zoom();
-//
-//                            if ( !is_wp_error( $access_token_zoom ) ) {
-//                                _e( 'Your zoom sync is on.', 'groundhogg' );
-//                            }
-//                            ?>
-<!--                        </b>-->
-<!--                    </p>-->
-<!--                    <p><a class="button" id="generate_access_code_zoom" target="_blank"-->
-<!--                          href="--><?php //echo wp_nonce_url( admin_url( 'admin.php?page=gh_calendar&action=access_code_zoom&calendar=' . $calendar_id ) ); ?><!--">--><?php //_e( 'Generate access code & enable sync', 'groundhogg' ); ?><!--</a>-->
-<!--                    </p>-->
-<!---->
-<!--                    --><?php //if ( is_wp_error( $access_token_zoom  ) ): ?>
-<!--                    <p>-->
-<!--                        --><?php //echo html()->input( [
-//                            'name' => 'auth_code_zoom',
-//                            'id' => 'auth_code_zoom',
-//                            'placeholder' => 'Please Enter validation code'
-//                        ] ); ?>
-<!--                        --><?php //echo html()->button( [
-//                            'class' => 'button btn-approve',
-//                            'name' => 'verify_code_zoom',
-//                            'id' => 'verify_code_zoom',
-//                            'text' => 'Verify zoom code'
-//                        ] ); ?>
-<!---->
-<!--                    </p>-->
-<!--                    --><?php //endif; ?>
-<!--                </td>-->
-<!--            </tr>-->
-<!--        --><?php //endif; ?>
-<!--        </tbody>-->
-<!--    </table>-->
+    <h2><?php _e( 'Zoom Integration', 'groundhogg' ); ?></h2>
+    <table class="form-table">
+        <tbody>
+        <tr>
+            <th scope="row"><label><?php _e( 'Enable Zoom', 'groundhogg' ) ?></label></th>
+            <td>
+                <?php echo html()->checkbox( [
+                    'label' => "Enable",
+                    "name" => "zoom_enable",
+                    'checked' => $calendar->is_zoom_enabled() ? $calendar->is_zoom_enabled() : 0,
+                ] ); ?>
+                <p class="description"><?php _e( 'Enabling this setting will create zoom meeting.', 'groundhogg' ) ?></p>
+            </td>
+        </tr>
+        <?php if ( $calendar->is_zoom_enabled() ): ?>
+            <tr>
+                <th scope="row"><label><?php _e( 'Zoom sync' ) ?></label></th>
+                <td id="appointment-status">
+                    <p class="description">
+                        <b>
+                            <?php
+                            $access_token_zoom = $calendar->get_access_token_zoom();
+
+                            if ( !is_wp_error( $access_token_zoom ) ) {
+                                _e( 'Your zoom sync is on.', 'groundhogg' );
+                            }
+                            ?>
+                        </b>
+                    </p>
+                    <p><a class="button" id="generate_access_code_zoom" target="_blank"
+                          href="<?php echo wp_nonce_url( admin_url( 'admin.php?page=gh_calendar&action=access_code_zoom&calendar=' . $calendar_id ) ); ?>"><?php _e( 'Generate access code & enable sync', 'groundhogg' ); ?></a>
+                    </p>
+                </td>
+            </tr>
+        <?php endif; ?>
+        </tbody>
+    </table>
     <input type="hidden" value="<?php echo $calendar_id; ?>" name="calendar" id="calendar"/>
     <div class="add-calendar-actions">
         <?php submit_button( __( 'Update Calendar' ), 'primary', 'update', false ); ?>
