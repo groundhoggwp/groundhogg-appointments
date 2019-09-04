@@ -30,7 +30,8 @@ class Updater extends \Groundhogg\Updater
     protected function get_available_updates()
     {
         return [
-            '2.0'
+            '2.0',
+            '2.0.3',
         ];
     }
 
@@ -52,10 +53,17 @@ class Updater extends \Groundhogg\Updater
         set_transient( 'groundhogg_upgrade_notice_booking_calendar', 1, WEEK_IN_SECONDS );
 
         \GroundhoggBookingCalendar\Plugin::$instance->rewrites->add_rewrite_rules();
-        flush_rewrite_rules();
 
+        flush_rewrite_rules();
     }
 
+    /**
+     * Resync notice
+     */
+    public function version_2_0_3()
+    {
+        set_transient( 'groundhogg_upgrade_notice_booking_calendar', 1, WEEK_IN_SECONDS );
+    }
 
     /**
      * Create all the emails and convert availability

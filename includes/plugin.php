@@ -2,11 +2,8 @@
 
 namespace GroundhoggBookingCalendar;
 
-use Groundhogg\Admin\Admin_Menu;
 use Groundhogg\DB\Manager;
 use Groundhogg\Extension;
-use GroundhoggBookingCalendar\Admin\Testing\Test_Page;
-use GroundhoggBookingCalendar\Api\Calendar_Api;
 use GroundhoggBookingCalendar\DB\Appointment_Meta;
 use GroundhoggBookingCalendar\DB\Appointments;
 use GroundhoggBookingCalendar\DB\Calendar_Meta;
@@ -87,6 +84,8 @@ class Plugin extends Extension
         $this->rewrites = new Rewrites();
         $this->installer = new Installer();
         $this->updater = new Updater();
+
+        new Upgrade_Notice();
     }
 
     public function register_admin_pages( $admin_menu )
@@ -149,75 +148,6 @@ class Plugin extends Extension
         wp_register_style( 'groundhogg-calendar-frontend', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'css/frontend.css', [ 'jquery-ui-datepicker', 'groundhogg-form' ], GROUNDHOGG_BOOKING_CALENDAR_VERSION );
 
     }
-
-//
-//    /**
-//     * Register controls to retrive google ID and secret
-//     *
-//     * @param array[] $settings
-//     * @return array[]
-//     */
-//
-//    public function register_settings( $settings )
-//    {
-//        $settings[ 'gh_google_calendar_client_id' ] = [
-//            'id' => 'gh_google_calendar_client_id',
-//            'section' => 'google_calendar',
-//            'label' => __( 'Client ID', 'groundhogg' ),
-//            'desc' => __( 'Your Google developer client ID.', 'groundhogg' ),
-//            'type' => 'input',
-//            'atts' => [
-//                'name' => 'gh_google_calendar_client_id',
-//                'id' => 'gh_google_calendar_client_id',
-//            ]
-//        ];
-//        $settings[ 'gh_google_calendar_secret_key' ] = [
-//            'id' => 'gh_google_calendar_secret_key',
-//            'section' => 'google_calendar',
-//            'label' => __( 'Secret Key', 'groundhogg' ),
-//            'desc' => __( 'Your Google developer Secret Key.', 'groundhogg' ),
-//            'type' => 'input',
-//            'atts' => [
-//                'name' => 'gh_google_calendar_secret_key',
-//                'id' => 'gh_google_calendar_secret_key',
-//            ]
-//        ];
-//
-//        return $settings;
-//    }
-//
-//    /**
-//     * Register setting tab for calendar
-//     *
-//     * @param array[] $tabs
-//     * @return array[]
-//     */
-//    public function register_settings_tabs( $tabs )
-//    {
-//        $tabs[ 'calendar' ] = [
-//            'id' => 'calendar',
-//            'title' => _x( 'Booking Calendar', 'settings_tabs', 'groundhogg' )
-//        ];
-//
-//        return $tabs;
-//    }
-//
-//    /**
-//     * Register Booking calendar setting section
-//     *
-//     * @param array[] $sections
-//     * @return array[]
-//     */
-//    public function register_settings_sections( $sections )
-//    {
-//        $sections[ 'google_calendar' ] = [
-//            'id' => 'google_calendar',
-//            'title' => _x( 'Google API Keys', 'settings_sections', 'groundhogg' ),
-//            'tab' => 'calendar'
-//        ];
-//
-//        return $sections;
-//    }
 
     /**
      * Add email templates...
