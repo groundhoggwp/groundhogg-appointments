@@ -44,50 +44,50 @@
                 self.addAppointment();
             });
 
-            $('#verify_code').on('click', function (e) {
-                e.preventDefault();
-                self.verifyCode();
-            });
+            // $('#verify_code').on('click', function (e) {
+            //     e.preventDefault();
+            //     self.verifyCode();
+            // });
 
             $('#spinner').hide();
         },
-
-        verifyCode: function () {
-
-            if ( !$('#auth_code').val() ) {
-                alert('Please enter Validation code.');
-                return;
-            }
-
-            $('#spinner').show();
-            $('#auth_code').hide();
-            $('#verify_code').hide();
-            $('#generate_access_code').hide();
-
-            // ajax request to generate access code
-            adminAjaxRequest(
-                {
-                    action: 'groundhogg_verify_google_calendar',
-                    auth_code: $('#auth_code').val(),
-                    calendar: $('#calendar').val()
-                },
-                function callback(response) {
-                    // Handler
-                    if (response.success) {
-                        alert(response.data.msg);
-                        calendar.clearData();
-                    } else {
-                        alert(response.data);
-                    }
-
-                    $('#auth_code').val('');
-                    $('#spinner').hide();
-                    $('#auth_code').show();
-                    $('#verify_code').show();
-                    $('#generate_access_code').show();
-                }
-            );
-        },
+        //
+        // verifyCode: function () {
+        //
+        //     if ( !$('#auth_code').val() ) {
+        //         alert('Please enter Validation code.');
+        //         return;
+        //     }
+        //
+        //     $('#spinner').show();
+        //     $('#auth_code').hide();
+        //     $('#verify_code').hide();
+        //     $('#generate_access_code').hide();
+        //
+        //     // ajax request to generate access code
+        //     adminAjaxRequest(
+        //         {
+        //             action: 'groundhogg_verify_google_calendar',
+        //             auth_code: $('#auth_code').val(),
+        //             calendar: $('#calendar').val()
+        //         },
+        //         function callback(response) {
+        //             // Handler
+        //             if (response.success) {
+        //                 alert(response.data.msg);
+        //                 calendar.clearData();
+        //             } else {
+        //                 alert(response.data);
+        //             }
+        //
+        //             $('#auth_code').val('');
+        //             $('#spinner').hide();
+        //             $('#auth_code').show();
+        //             $('#verify_code').show();
+        //             $('#generate_access_code').show();
+        //         }
+        //     );
+        // },
 
         addAppointment: function () {
 

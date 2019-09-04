@@ -914,23 +914,17 @@ class Calendar_Page extends Admin_Page
      */
     public function process_access_code()
     {
-//        $response = Plugin::instance()->proxy_service->request( 'authentication/url', [
-//            'slug' => 'google'
-//        ] );
-//
-//        if ( is_wp_error( $response ) ) {
-//            return new WP_Error( 'rest_error', $response->get_error_message() );
-//        }
-//
-//        $url = get_array_var( $response, 'url' );
-//
-//        if ( !$url ) {
-//            return new WP_Error( 'no_token', __( 'Could not retrieve url', 'groundhogg' ) );
-//        }
-//
-//        return $url;
+        $return = add_query_arg( [
+            'page' => 'gh_calendar',
+            'action' => 'verify_google_code',
+            'calendar' => get_url_var( 'calendar' ),
+            '_wpnonce' => wp_create_nonce()
+        ], admin_url( 'admin.php' ) );
 
-        return 'https://proxy.groundhogg.io/oauth/google/start';
+        $url = add_query_arg( [ 'return' => urlencode( base64_encode( $return ) ) ], 'https://proxy.groundhogg.io/oauth/google/start/' );
+
+        return $url;
+
     }
 
     /**
@@ -940,7 +934,7 @@ class Calendar_Page extends Admin_Page
      */
     public function process_access_code_zoom()
     {
-        $return = add_query_arg(  [
+        $return = add_query_arg( [
             'page' => 'gh_calendar',
             'action' => 'verify_zoom_code',
             'calendar' => get_url_var( 'calendar' ),
@@ -953,20 +947,20 @@ class Calendar_Page extends Admin_Page
     }
 
 
-    public function process_verify_zoom_code()
+    public function process_verify_google_code()
     {
 
         if ( !get_request_var( 'code' ) ) {
             return new \WP_Error( 'no_code', __( 'Authentication code not found!', 'groundhogg' ) );
         }
 
-        $auth_code = get_request_var('code');
+        $auth_code = get_request_var( 'code' );
         $calendar_id = absint( get_request_var( 'calendar' ) );
         $calendar = new Calendar( $calendar_id );
 
         $response = Plugin::instance()->proxy_service->request( 'authentication/get', [
             'code' => $auth_code,
-            'slug' => 'zoom'
+            'slug' => 'google'
         ] );
 
         if ( is_wp_error( $response ) ) {
@@ -979,9 +973,11 @@ class Calendar_Page extends Admin_Page
             return new \WP_Error( 'failed', $response->get_error_message() );
         }
 
-        $calendar->update_meta( 'access_token_zoom', json_encode( $access_token ) );
+        $calendar->update_meta( 'access_token', json_encode( $access_token ) );
 
-        $this->add_notice( 'success', __( 'Connection to zoom successfully completed!', 'groundhogg' ), 'success' );
+        $calendar->add_in_google();
+
+        $this->add_notice( 'success', __( 'Connection to Google calendar successfully completed!', 'groundhogg' ), 'success' );
 
         return true;
     }

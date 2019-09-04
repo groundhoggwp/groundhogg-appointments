@@ -142,7 +142,7 @@ class Replacements
             return date_i18n( $format, $local_time );
         }
 
-        return sprintf( '%s ( UTC+0 )', date_i18n( $format, $local_time ) );
+        return sprintf( '%s ( %s )', date_i18n( $format, $local_time )  , get_option('timezone_string') );
 
     }
 
@@ -169,7 +169,7 @@ class Replacements
             return date_i18n( $format, $local_time );
         }
 
-        return sprintf( '%s ( UTC+0 )', date_i18n( $format, $local_time ) );
+        return sprintf( '%s ( %s )', date_i18n( $format, $local_time )  , get_option('timezone_string') );
 
     }
 
