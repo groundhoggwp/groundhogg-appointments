@@ -45,7 +45,7 @@ class Calendar_Page extends Admin_Page
         add_action( 'wp_ajax_groundhogg_get_appointments', [ $this, 'get_appointments_ajax' ] );
         add_action( 'wp_ajax_groundhogg_add_appointments', [ $this, 'add_appointment_ajax' ] );
         add_action( 'wp_ajax_groundhogg_update_appointments', [ $this, 'update_appointment_ajax' ] );
-        add_action( 'wp_ajax_groundhogg_verify_google_calendar', [ $this, 'verify_code_ajax' ] );
+//        add_action( 'wp_ajax_groundhogg_verify_google_calendar', [ $this, 'verify_code_ajax' ] );
 
 
     }
@@ -124,42 +124,45 @@ class Calendar_Page extends Admin_Page
         wp_send_json_success( [ 'appointment' => $appointment->get_full_calendar_event(), 'msg' => __( 'Appointment booked successfully.', 'groundhogg' ) ] );
     }
 
+//    /**
+//     * Process AJAX code verification
+//     */
+//    public function verify_code_ajax()
+//    {
+//        $calendar_id = absint( get_request_var( 'calendar' ) );
+//        $calendar = new Calendar( $calendar_id );
+//        $auth_code = get_request_var( 'auth_code' );
+//
+//        if ( !$auth_code ) {
+//            wp_send_json_error( __( 'Please enter a valid code.', 'groundhogg' ) );
+//        }
+//
+//        $response = Plugin::instance()->proxy_service->request( 'authentication/get', [
+//            'code' => $auth_code,
+//            'slug' => 'google'
+//        ] );
+//
+//        if ( is_wp_error( $response ) ) {
+//            wp_send_json_error( $response->get_error_message() );
+//        }
+//
+//        $access_token = get_array_var( $response, 'token' );
+//
+//        if ( !$access_token ) {
+//            wp_send_json_error( __( 'Could not retrieve access token.', 'groundhogg' ) );
+//        }
+//
+//        $calendar->update_meta( 'access_token', json_encode( $access_token ) );
+//
+//        $calendar->add_in_google();
+//
+//        wp_send_json_success( [ 'msg' => __( 'Your calendar synced successfully!', 'groundhogg' ) ] );
+//
+//    }
+
     /**
-     * Process AJAX code verification
+     * process AJAX request to update an appointment.
      */
-    public function verify_code_ajax()
-    {
-        $calendar_id = absint( get_request_var( 'calendar' ) );
-        $calendar = new Calendar( $calendar_id );
-        $auth_code = get_request_var( 'auth_code' );
-
-        if ( !$auth_code ) {
-            wp_send_json_error( __( 'Please enter a valid code.', 'groundhogg' ) );
-        }
-
-        $response = Plugin::instance()->proxy_service->request( 'authentication/get', [
-            'code' => $auth_code,
-            'slug' => 'google'
-        ] );
-
-        if ( is_wp_error( $response ) ) {
-            wp_send_json_error( $response->get_error_message() );
-        }
-
-        $access_token = get_array_var( $response, 'token' );
-
-        if ( !$access_token ) {
-            wp_send_json_error( __( 'Could not retrieve access token.', 'groundhogg' ) );
-        }
-
-        $calendar->update_meta( 'access_token', json_encode( $access_token ) );
-
-        $calendar->add_in_google();
-
-        wp_send_json_success( [ 'msg' => __( 'Your calendar synced successfully!', 'groundhogg' ) ] );
-
-    }
-
     public function update_appointment_ajax()
     {
         if ( !current_user_can( 'edit_appointment' ) ) {
@@ -461,6 +464,11 @@ class Calendar_Page extends Admin_Page
     }
 
 
+    /**
+     * Handles button click for syncing calendar.
+     *
+     * @return bool|string|void|WP_Error
+     */
     public function process_google_sync()
     {
         if ( !current_user_can( 'edit_appointment' ) ) {
@@ -561,7 +569,11 @@ class Calendar_Page extends Admin_Page
         return true;
     }
 
-
+    /**
+     * process approved button click from edit page of appointment.
+     *
+     * @return string|void|WP_Error
+     */
     public function process_approve_appointment()
     {
         if ( !current_user_can( 'edit_appointment' ) ) {
@@ -587,6 +599,11 @@ class Calendar_Page extends Admin_Page
         return admin_url( 'admin.php?page=gh_calendar&calendar=' . $appointment->get_calendar_id() . '&action=edit' );
     }
 
+    /**
+     * Process Cancel button click from appointment edit page.
+     *
+     * @return string|void|WP_Error
+     */
     public function process_cancel_appointment()
     {
         if ( !current_user_can( 'edit_appointment' ) ) {
@@ -908,7 +925,7 @@ class Calendar_Page extends Admin_Page
     }
 
     /**
-     * Return the Oath URL
+     * Redirects users to GOOGLE oauth authentication URL with all the details.
      *
      * @return string
      */
@@ -928,7 +945,7 @@ class Calendar_Page extends Admin_Page
     }
 
     /**
-     * Return the Oath URL
+     * Redirects users to ZOOM oauth authentication URL with all the details.
      *
      * @return string
      */
@@ -947,6 +964,11 @@ class Calendar_Page extends Admin_Page
     }
 
 
+    /**
+     * Retrieves authentication code from the response url and creates authentication token for the GOOGLE.
+     *
+     * @return bool|WP_Error
+     */
     public function process_verify_google_code()
     {
 
@@ -982,4 +1004,43 @@ class Calendar_Page extends Admin_Page
         return true;
     }
 
+
+    /**
+     * Retrieves authentication code from the response url and creates authentication token for the ZOOM.
+     *
+     * @return bool|WP_Error
+     */
+
+    public function process_verify_zoom_code()
+    {
+
+        if ( !get_request_var( 'code' ) ) {
+            return new \WP_Error( 'no_code', __( 'Authentication code not found!', 'groundhogg' ) );
+        }
+
+        $auth_code = get_request_var('code');
+        $calendar_id = absint( get_request_var( 'calendar' ) );
+        $calendar = new Calendar( $calendar_id );
+
+        $response = Plugin::instance()->proxy_service->request( 'authentication/get', [
+            'code' => $auth_code,
+            'slug' => 'zoom'
+        ] );
+
+        if ( is_wp_error( $response ) ) {
+            return new \WP_Error( 'failed', $response->get_error_message() );
+        }
+
+        $access_token = get_array_var( $response, 'token' );
+
+        if ( !$access_token ) {
+            return new \WP_Error( 'failed', $response->get_error_message() );
+        }
+
+        $calendar->update_meta( 'access_token_zoom', json_encode( $access_token ) );
+
+        $this->add_notice( 'success', __( 'Connection to zoom successfully completed!', 'groundhogg' ), 'success' );
+
+        return true;
+    }
 }
