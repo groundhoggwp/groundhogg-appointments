@@ -20,8 +20,6 @@
  * GNU General Public License for more details.
  */
 
-
-
 if ( ! defined( 'ABSPATH' ) ) exit;
 
 define( 'GROUNDHOGG_BOOKING_CALENDAR_VERSION', '2.0.4' );
