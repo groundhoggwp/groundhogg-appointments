@@ -178,7 +178,8 @@ class Appointment extends Base_Object_With_Meta
                 ) );
 
                 try {
-                    $updatedEvent = $service->events->update( $google_calendar_id, $google_appointment_id, $event );
+                    $sendNotifications = array('sendNotifications' => true);
+                    $updatedEvent = $service->events->update( $google_calendar_id, $google_appointment_id, $event, $sendNotifications );
                 } catch ( \Exception $exception ) {
                     return false;
                 }
@@ -210,7 +211,8 @@ class Appointment extends Base_Object_With_Meta
                         [ 'email' => $contact->get_email() ],
                     ],
                 ) );
-                $event = $service->events->insert( $google_calendar_id, $event );
+                $sendNotifications = array('sendNotifications' => true);
+                $event = $service->events->insert( $google_calendar_id, $event ,$sendNotifications );
             }
 
         }

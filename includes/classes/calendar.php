@@ -1040,7 +1040,6 @@ class Calendar extends Base_Object_With_Meta
         }
 
         // refresh token
-
         $json = json_decode( $this->get_meta( 'access_token_zoom', true ) );
 
         if ( ! $json->refresh_token ) {
@@ -1057,7 +1056,6 @@ class Calendar extends Base_Object_With_Meta
             return new WP_Error( 'rest_error', $response->get_error_message() );
         }
 
-
         $access_token = get_array_var( $response, 'token' );
 
         if ( !$access_token ) {
@@ -1065,9 +1063,15 @@ class Calendar extends Base_Object_With_Meta
             return new WP_Error( 'no_token', __( 'Could not retrieve access token.', 'groundhogg' ) );
         }
 
-        $this->update_meta( 'access_token_zoom', json_encode( $access_token ) );
+        $access_token_json_encoded = json_encode($access_token);
+        $access_token_json_decoded = json_decode($access_token_json_encoded);
 
-        return $access_token->access_token;
+        if ($access_token_json_decoded->access_token) {
+            $this->update_meta( 'access_token_zoom', $access_token_json_encoded );
+            return $access_token_json_decoded->access_token;
+        }
+        $this->delete_meta( 'access_token_zoom' );
+        return new WP_Error( 'no_token', __( 'Token refresh Failed', 'groundhogg' ) );
     }
 
     public function is_access_token_zoom()

@@ -3,8 +3,10 @@
 namespace GroundhoggBookingCalendar\Admin\Appointments;
 
 use function Groundhogg\get_contactdata;
+use function Groundhogg\get_db;
 use function Groundhogg\get_request_query;
 use function Groundhogg\get_request_var;
+use function Groundhogg\get_url_var;
 use function Groundhogg\html;
 use GroundhoggBookingCalendar\Classes\Appointment;
 use Groundhogg\Plugin;
@@ -200,6 +202,13 @@ class Appointments_Table extends WP_List_Table
         );
     }
 
+    /**
+     * @return \Groundhogg\DB\DB|\GroundhoggBookingCalendar\DB\Appointment_Meta|\GroundhoggBookingCalendar\DB\Appointments
+     */
+    protected function get_db()
+    {
+        return get_db( 'appointments' );
+    }
 
     /**
      * Prepares the list of items for displaying.
@@ -216,58 +225,48 @@ class Appointments_Table extends WP_List_Table
      */
     function prepare_items()
     {
-        /*
-         * First, lets decide how many records per page to show
-         */
-        $per_page = 20;
-        $columns = $this->get_columns();
-        $hidden = [];
+        $columns  = $this->get_columns();
+        $hidden   = array(); // No hidden columns
         $sortable = $this->get_sortable_columns();
-        $this->_column_headers = array($columns, $hidden, $sortable);
 
-        $query = get_request_query();
-        $query['calendar_id'] = get_request_var('calendar' );
+        $this->_column_headers = array( $columns, $hidden, $sortable );
 
-        $data = Plugin::$instance->dbs->get_db('appointments')->query($query);
+        $data    = [];
+        $per_page = absint( get_url_var( 'limit', 30 ) );
+        $paged   = $this->get_pagenum();
+        $offset  = $per_page * ( $paged - 1 );
+        $search  = get_url_var( 's' );
+        $order   = get_url_var( 'order', 'DESC' );
+        $orderby = get_url_var( 'orderby', $this->get_db()->get_primary_key() );
 
-        usort($data, array($this, 'usort_reorder'));
+        $where = [
+            'relationship' => 'AND',
+            [ 'col' => 'calendar_id', 'val' => absint( get_request_var('calendar' ) ) ]
+        ];
 
-        $current_page = $this->get_pagenum();
+        $args = array(
+            'where'   => $where,
+            'limit'   => $per_page,
+            'offset'  => $offset,
+            'order'   => $order,
+            'search'  => $search,
+            'orderby' => $orderby,
+        );
 
-        $total_items = count($data);
+        $items = $this->get_db()->query( $args );
+        $total = $this->get_db()->count( $args );
 
-        $data = array_slice($data, (($current_page - 1) * $per_page), $per_page);
+        $this->items = $items;
 
-        $this->items = $data;
-        /**
-         * REQUIRED. We also have to register our pagination options & calculations.
-         */
-        $this->set_pagination_args(array(
-            'total_items' => $total_items,                     // WE have to calculate the total number of items.
-            'per_page' => $per_page,                        // WE have to determine how many items to show on a page.
-            'total_pages' => ceil($total_items / $per_page), // WE have to calculate the total number of pages.
-        ));
+        // Add condition to be sure we don't divide by zero.
+        // If $this->per_page is 0, then set total pages to 1.
+        $total_pages = $per_page ? ceil( (int) $total / (int) $per_page ) : 1;
+
+        $this->set_pagination_args( array(
+            'total_items' => $total,
+            'per_page'    => $per_page,
+            'total_pages' => $total_pages,
+        ) );
     }
 
-    /**
-     * Callback to allow sorting of example data.
-     *
-     * @param string $a First value.
-     * @param string $b Second value.
-     *
-     * @return int
-     */
-    protected function usort_reorder($a, $b)
-    {
-        $a = (array)$a;
-        $b = (array)$b;
-
-        // If no sort, default to title.
-        $orderby = !empty($_REQUEST['orderby']) ? wp_unslash($_REQUEST['orderby']) : 'date_scheduled'; // WPCS: Input var ok.
-        // If no order, default to asc.
-        $order = !empty($_REQUEST['order']) ? wp_unslash($_REQUEST['order']) : 'asc'; // WPCS: Input var ok.
-        // Determine sort order.
-        $result = strnatcmp($a[$orderby], $b[$orderby]);
-        return ('desc' === $order) ? $result : -$result;
-    }
 }
