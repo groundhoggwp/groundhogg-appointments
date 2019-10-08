@@ -231,8 +231,5 @@ function send_sms_reminder_notification( $sms_id = 0, $appointment_id = 0, $time
 
 function is_sms_plugin_active()
 {
-    if ( is_plugin_active( 'groundhogg-sms/groundhogg-sms.php' ) ) {
-        return true;
-    }
-    return false;
+    return \Groundhogg\is_sms_plugin_active();
 }
