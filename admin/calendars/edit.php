@@ -5,39 +5,44 @@ namespace GroundhoggBookingCalendar\Admin\Calendars;
 use function Groundhogg\get_request_var;
 use function Groundhogg\html;
 use GroundhoggBookingCalendar\Admin\Appointments\Appointments_Table;
+use function GroundhoggBookingCalendar\is_sms_plugin_active;
 
-html()->tabs( [
+$tab_list = [
     'view' => __( 'View', 'groundhogg' ), // Show calendar and add appointments
     'settings' => __( 'Settings', 'groundhogg' ), // Show calendar settings
     'availability' => __( 'Availability', 'groundhogg' ), // Show calendar settings
     'emails' => __( 'Emails', 'groundhogg' ), // Show calendar reminders
-    'sms' => __( 'SMS', 'groundhogg' ),// show appointments in list table.
     'list' => __( 'List', 'groundhogg' ), // show appointments in list table.
-
-] );
+];
+if ( is_sms_plugin_active() ) {
+    $tab_list [ 'sms' ] = __( 'SMS', 'groundhogg' );
+}
+html()->tabs( $tab_list );
 
 $tab = get_request_var( 'tab', 'view' );
 switch ( $tab ):
     default:
     case 'view':
-        include_once dirname(__FILE__) . '/view.php';
+        include_once dirname( __FILE__ ) . '/view.php';
         break;
     case 'settings':
-        include_once dirname(__FILE__) . '/settings.php';
+        include_once dirname( __FILE__ ) . '/settings.php';
         break;
     case 'availability':
-        include_once dirname(__FILE__) . '/availability.php';
+        include_once dirname( __FILE__ ) . '/availability.php';
         break;
     case 'emails':
-        include_once dirname(__FILE__) . '/emails.php';
+        include_once dirname( __FILE__ ) . '/emails.php';
         break;
     case 'sms' :
-        include_once dirname(__FILE__) . '/sms.php';
-        break ;
+        if ( is_sms_plugin_active() ) {
+            include_once dirname( __FILE__ ) . '/sms.php';
+        }
+        break;
     case 'list':
 
-        if ( ! class_exists( 'Appointments_Table' ) ){
-            include_once dirname(__FILE__) . '/../appointments/table.php';
+        if ( !class_exists( 'Appointments_Table' ) ) {
+            include_once dirname( __FILE__ ) . '/../appointments/table.php';
         }
 
         $appointments_table = new Appointments_Table();

@@ -1,31 +1,33 @@
 <?php
+
 namespace GroundhoggBookingCalendar;
 
 
 use Groundhogg\Email;
 use Groundhogg\Event;
 use Groundhogg\Event_Process;
-use Groundhogg\SMS;
 use GroundhoggBookingCalendar\Classes\Email_Reminder;
 use GroundhoggBookingCalendar\Classes\SMS_Reminder;
+use GroundhoggSMS\Classes\SMS;
 use function Groundhogg\get_array_var;
 use function Groundhogg\get_db;
 use GroundhoggBookingCalendar\Classes\Appointment;
 use GroundhoggBookingCalendar\Classes\Reminder;
 
-function convert_to_client_timezone($time, $timezone='' ){
-    if ( ! $timezone ){
+function convert_to_client_timezone( $time, $timezone = '' )
+{
+    if ( !$timezone ) {
         return $time;
     }
 
-    if ( current_user_can( 'edit_calendar' ) ){
+    if ( current_user_can( 'edit_calendar' ) ) {
         $local_time = \Groundhogg\Plugin::$instance->utils->date_time->convert_to_local_time( $time );
         return $local_time;
     }
 
     try {
         $local_time = \Groundhogg\Plugin::$instance->utils->date_time->convert_to_foreign_time( $time, $timezone );
-    } catch (\Exception $e ){
+    } catch ( \Exception $e ) {
         // Use site time anyway.
         $local_time = \Groundhogg\Plugin::$instance->utils->date_time->convert_to_local_time( $time );
     }
@@ -39,7 +41,8 @@ function convert_to_client_timezone($time, $timezone='' ){
  * @param $b mixed Higher
  * @return bool
  */
-function in_between( $value, $a, $b ){
+function in_between( $value, $a, $b )
+{
     return ( $value > $a && $value < $b );
 }
 
@@ -49,7 +52,8 @@ function in_between( $value, $a, $b ){
  * @param $b mixed Higher
  * @return bool
  */
-function in_between_inclusive( $value, $a, $b ){
+function in_between_inclusive( $value, $a, $b )
+{
     return ( $value >= $a && $value <= $b );
 }
 
@@ -59,19 +63,19 @@ function in_between_inclusive( $value, $a, $b ){
  * @param string $day
  * @return array|mixed
  */
-function days_of_week( $day='' )
+function days_of_week( $day = '' )
 {
     $days = [
-        'monday'    => __( 'Monday' ),
-        'tuesday'   => __( 'Tuesday' ),
+        'monday' => __( 'Monday' ),
+        'tuesday' => __( 'Tuesday' ),
         'wednesday' => __( 'Wednesday' ),
-        'thursday'  => __( 'Thursday' ),
-        'friday'    => __( 'Friday' ),
-        'saturday'  => __( 'Saturday' ),
-        'sunday'    => __( 'Sunday' ),
+        'thursday' => __( 'Thursday' ),
+        'friday' => __( 'Friday' ),
+        'saturday' => __( 'Saturday' ),
+        'sunday' => __( 'Sunday' ),
     ];
 
-    if ( empty( $day ) ){
+    if ( empty( $day ) ) {
         return $days;
     }
 
@@ -117,7 +121,7 @@ function adjust_brightness( $hex, $steps )
  */
 function setup_reminder_notification_object( $event )
 {
-    if ( $event->get_event_type() === Reminder::NOTIFICATION_TYPE ){
+    if ( $event->get_event_type() === Reminder::NOTIFICATION_TYPE ) {
 
         // Step ID will be the ID of the email
         // Funnel ID will be the ID of the appointment
@@ -125,7 +129,7 @@ function setup_reminder_notification_object( $event )
     }
 }
 
-add_action( 'groundhogg/event/post_setup', __NAMESPACE__.'\setup_reminder_notification_object' );
+add_action( 'groundhogg/event/post_setup', __NAMESPACE__ . '\setup_reminder_notification_object' );
 
 /**
  * Schedule a 1 off reminder notification
@@ -136,29 +140,29 @@ add_action( 'groundhogg/event/post_setup', __NAMESPACE__.'\setup_reminder_notifi
  *
  * @return bool whether the scheduling was successful.
  */
-function send_reminder_notification( $email_id=0, $appointment_id=0, $time=0 )
+function send_reminder_notification( $email_id = 0, $appointment_id = 0, $time = 0 )
 {
     $appointment = new Appointment( $appointment_id );
     $email = new Email( $email_id );
 
-    if ( ! $appointment->exists() || ! $email->exists() ){
+    if ( !$appointment->exists() || !$email->exists() ) {
         return false;
     }
 
-    if ( ! $time ){
+    if ( !$time ) {
         $time = time();
     }
 
-    $event = new Event([
-        'time'          => $time,
-        'funnel_id'     => $appointment_id,
-        'step_id'       => $email->get_id(),
-        'contact_id'    => $appointment->get_contact_id(),
-        'event_type'    => Reminder::NOTIFICATION_TYPE,
-        'status'        => 'waiting',
-    ]);
+    $event = new Event( [
+        'time' => $time,
+        'funnel_id' => $appointment_id,
+        'step_id' => $email->get_id(),
+        'contact_id' => $appointment->get_contact_id(),
+        'event_type' => Reminder::NOTIFICATION_TYPE,
+        'status' => 'waiting',
+    ] );
 
-    if ( ! $event->exists() ){
+    if ( !$event->exists() ) {
         return false;
     }
 
@@ -175,7 +179,7 @@ function send_reminder_notification( $email_id=0, $appointment_id=0, $time=0 )
  */
 function setup_reminder_notification_object_sms( $event )
 {
-    if ( $event->get_event_type() === SMS_Reminder::NOTIFICATION_TYPE ){
+    if ( $event->get_event_type() === SMS_Reminder::NOTIFICATION_TYPE ) {
 
         // Step ID will be the ID of the email
         // Funnel ID will be the ID of the appointment
@@ -183,7 +187,7 @@ function setup_reminder_notification_object_sms( $event )
     }
 }
 
-add_action( 'groundhogg/event/post_setup', __NAMESPACE__.'\setup_reminder_notification_object_sms' );
+add_action( 'groundhogg/event/post_setup', __NAMESPACE__ . '\setup_reminder_notification_object_sms' );
 
 /**
  * Schedule a 1 off reminder notification
@@ -194,32 +198,41 @@ add_action( 'groundhogg/event/post_setup', __NAMESPACE__.'\setup_reminder_notifi
  *
  * @return bool whether the scheduling was successful.
  */
-function send_sms_reminder_notification( $sms_id=0, $appointment_id=0, $time=0 )
+function send_sms_reminder_notification( $sms_id = 0, $appointment_id = 0, $time = 0 )
 {
     $appointment = new Appointment( absint( $appointment_id ) );
-    $sms = new SMS( absint(  $sms_id ) );
+    $sms = new SMS( absint( $sms_id ) );
 
-    if ( ! $appointment->exists() || ! $sms->exists() ){
+    if ( !$appointment->exists() || !$sms->exists() ) {
         return false;
     }
 
-    if ( ! $time ){
+    if ( !$time ) {
         $time = time();
     }
 
-    $event = new Event([
-        'time'          => $time,
-        'funnel_id'     => $appointment_id,
-        'step_id'       => $sms->get_id(),
-        'contact_id'    => $appointment->get_contact_id(),
-        'event_type'    => SMS_Reminder::NOTIFICATION_TYPE,
-        'status'        => 'waiting',
-    ]);
+    $event = new Event( [
+        'time' => $time,
+        'funnel_id' => $appointment_id,
+        'step_id' => $sms->get_id(),
+        'contact_id' => $appointment->get_contact_id(),
+        'event_type' => SMS_Reminder::NOTIFICATION_TYPE,
+        'status' => 'waiting',
+    ] );
 
-    if ( ! $event->exists() ){
+    if ( !$event->exists() ) {
         return false;
     }
 
     return true;
 
+}
+
+
+function is_sms_plugin_active()
+{
+    if ( is_plugin_active( 'groundhogg-sms/groundhogg-sms.php' ) ) {
+        return true;
+    }
+    return false;
 }

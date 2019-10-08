@@ -15,6 +15,7 @@ use \Google_Service_Calendar_Event;
 use \Google_Service_Calendar;
 use \Exception;
 use function Groundhogg\get_request_var;
+use function GroundhoggBookingCalendar\is_sms_plugin_active;
 use function GroundhoggBookingCalendar\send_reminder_notification;
 use function GroundhoggBookingCalendar\send_sms_reminder_notification;
 
@@ -414,10 +415,11 @@ class Appointment extends Base_Object_With_Meta
     protected function schedule_reminders( $which )
     {
 
-        if ( $this->get_calendar()->get_meta( 'sms_notification' ) ) {
-            $this->schedule_sms_reminders( $which );
+        if (is_sms_plugin_active()) {
+            if ( $this->get_calendar()->get_meta( 'sms_notification' ) ) {
+                $this->schedule_sms_reminders( $which );
+            }
         }
-
 
         // Schedule Appointment Booked Email...
         if ( $booked_email_id = $this->get_calendar()->get_notification_emails( $which ) ) {
@@ -459,6 +461,7 @@ class Appointment extends Base_Object_With_Meta
 
     protected function schedule_sms_reminders( $which )
     {
+
         // Schedule Appointment Booked sms...
         if ( $booked_sms_id = $this->get_calendar()->get_notification_sms( $which ) ) {
             send_sms_reminder_notification( absint( $booked_sms_id ), absint( $this->get_id() ), time() );

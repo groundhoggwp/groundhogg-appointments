@@ -5,7 +5,7 @@ namespace GroundhoggBookingCalendar\Admin\Calendars;
 use Exception;
 use Groundhogg\Admin\Admin_Page;
 use Groundhogg\Email;
-use Groundhogg\SMS;
+use GroundhoggSMS\Classes\SMS;
 use WP_Error;
 use function Groundhogg\get_array_var;
 use function Groundhogg\get_contactdata;
@@ -18,6 +18,7 @@ use GroundhoggBookingCalendar\Classes\Appointment;
 use GroundhoggBookingCalendar\Classes\Calendar;
 use Groundhogg\Plugin;
 use function GroundhoggBookingCalendar\in_between_inclusive;
+use function GroundhoggBookingCalendar\is_sms_plugin_active;
 
 
 // Exit if accessed directly
@@ -410,53 +411,54 @@ class Calendar_Page extends Admin_Page
 
 
         //Create default SMS
+        if ( is_sms_plugin_active() ) {
+            $sms_booked = new SMS( [
+                'title' => __( 'Appointment Booked', 'groundhogg' ),
+                'message' => __( "Hey {first},\n\nThank you for booking an appointment.\n\nYour appointment will be from {appointment_start_time} to {appointment_end_time}.\n\nThank you!\n\n@ the {business_name} team", 'groundhogg' ),
 
-        $sms_booked = new SMS( [
-            'title' => __( 'Appointment Booked', 'groundhogg' ),
-            'message' => __( "Hey {first},\n\nThank you for booking an appointment.\n\nYour appointment will be from {appointment_start_time} to {appointment_end_time}.\n\nThank you!\n\n@ the {business_name} team", 'groundhogg' ),
+            ] );
 
-        ] );
+            $sms_approved = new SMS( [
+                'title' => __( 'Appointment Approved', 'groundhogg' ),
+                'message' => __( "Hey {first},\n\nThank you for booking an appointment with us.\n\nYour appointment booking on {appointment_start_time} has been approved.\n\nThank you!\n\n@ the {business_name} team\n\n", 'groundhogg' ),
 
-        $sms_approved = new SMS( [
-            'title' => __( 'Appointment Approved', 'groundhogg' ),
-            'message' => __( "Hey {first},\n\nThank you for booking an appointment with us.\n\nYour appointment booking on {appointment_start_time} has been approved.\n\nThank you!\n\n@ the {business_name} team\n\n", 'groundhogg' ),
+            ] );
 
-        ] );
+            $sms_cancelled = new SMS( [
+                'title' => __( 'Appointment Cancelled', 'groundhogg' ),
+                'message' => __( "Hey {first},\n\nYour appointment scheduled on {appointment_start_time} has been cancelled.\n\nYou can always book another appointment using our booking page.\n\nThank you!\n\n@ the {business_name} team", 'groundhogg' ),
 
-        $sms_cancelled = new SMS( [
-            'title' => __( 'Appointment Cancelled', 'groundhogg' ),
-            'message' => __( "Hey {first},\n\nYour appointment scheduled on {appointment_start_time} has been cancelled.\n\nYou can always book another appointment using our booking page.\n\nThank you!\n\n@ the {business_name} team", 'groundhogg' ),
+            ] );
 
-        ] );
+            $sms_rescheduled = new SMS( [
+                'title' => __( 'Appointment Rescheduled', 'groundhogg' ),
+                'message' => __( "Hey {first},\n\nWe successfully rescheduled your appointment. Your new appointment will be from {appointment_start_time} to {appointment_end_time}.\n\nThank you!\n\n@ the {business_name} team", 'groundhogg' ),
 
-        $sms_rescheduled = new SMS( [
-            'title' => __( 'Appointment Rescheduled', 'groundhogg' ),
-            'message' => __( "Hey {first},\n\nWe successfully rescheduled your appointment. Your new appointment will be from {appointment_start_time} to {appointment_end_time}.\n\nThank you!\n\n@ the {business_name} team", 'groundhogg' ),
+            ] );
 
-        ] );
+            $sms_reminder = new SMS( [
+                'title' => __( 'Appointment Reminder', 'groundhogg' ),
+                'message' => __( "Hey {first},\n\nJust a friendly reminder that you have appointment coming up with us on {appointment_start_time} we look forward to seeing you then.\n\nThank you!\n\n@ the {business_name} team", 'groundhogg' ),
+            ] );
 
-        $sms_reminder = new SMS( [
-            'title' => __( 'Appointment Reminder', 'groundhogg' ),
-            'message' => __( "Hey {first},\n\nJust a friendly reminder that you have appointment coming up with us on {appointment_start_time} we look forward to seeing you then.\n\nThank you!\n\n@ the {business_name} team", 'groundhogg' ),
-        ] );
+            $calendar->update_meta( 'sms', [
+                'appointment_booked' => $sms_booked->get_id(),
+                'appointment_approved' => $sms_approved->get_id(),
+                'appointment_rescheduled' => $sms_rescheduled->get_id(),
+                'appointment_cancelled' => $sms_cancelled->get_id(),
+            ] );
 
-        $calendar->update_meta( 'sms', [
-            'appointment_booked' => $sms_booked->get_id(),
-            'appointment_approved' => $sms_approved->get_id(),
-            'appointment_rescheduled' => $sms_rescheduled->get_id(),
-            'appointment_cancelled' => $sms_cancelled->get_id(),
-        ] );
+            // set one hour before reminder by default
 
-        // set one hour before reminder by default
-
-        $calendar->update_meta( 'sms_reminders', [
-            [
-                'when' => 'before',
-                'period' => 'hours',
-                'number' => 1,
-                'sms_id' => $sms_reminder->get_id()
-            ]
-        ] );
+            $calendar->update_meta( 'sms_reminders', [
+                [
+                    'when' => 'before',
+                    'period' => 'hours',
+                    'number' => 1,
+                    'sms_id' => $sms_reminder->get_id()
+                ]
+            ] );
+        }
         // update meta data to get set sms
         $this->add_notice( 'success', __( 'New calendar created successfully!', 'groundhogg' ), 'success' );
         return admin_url( 'admin.php?page=gh_calendar&action=edit&calendar=' . $calendar->get_id() . '&tab=settings' );
@@ -1018,7 +1020,7 @@ class Calendar_Page extends Admin_Page
             return new \WP_Error( 'no_code', __( 'Authentication code not found!', 'groundhogg' ) );
         }
 
-        $auth_code = get_request_var('code');
+        $auth_code = get_request_var( 'code' );
         $calendar_id = absint( get_request_var( 'calendar' ) );
         $calendar = new Calendar( $calendar_id );
 

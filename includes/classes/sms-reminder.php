@@ -5,7 +5,8 @@ namespace GroundhoggBookingCalendar\Classes;
 use Groundhogg\Contact;
 use Groundhogg\Email;
 use Groundhogg\Event_Process;
-use Groundhogg\SMS;
+use GroundhoggSMS\Classes\SMS;
+
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
