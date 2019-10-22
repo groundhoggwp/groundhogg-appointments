@@ -10,13 +10,13 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     <table class="form-table">
         <tbody>
             <tr class="form-field term-contact-wrap">
-                <th scope="row"><label ><?php _e( 'Select Owner' ,'groundhogg') ?></label></th>
+                <th scope="row"><label ><?php _e( 'Select Owner' ,'groundhogg-calendar') ?></label></th>
                 <td><?php
                     echo html()->dropdown_owners( [
                         'id' => 'user_id',
                         'required' => true,
                     ] ); ?>
-                    <p class="description"><?php _e( 'Select owner for whom you are creating the calendar.', 'groundhogg' ) ?></p>
+                    <p class="description"><?php _e( 'Select owner for whom you are creating the calendar.', 'groundhogg-calendar' ) ?></p>
                 </td>
             </tr>
             <tr>
@@ -26,22 +26,22 @@ if ( ! defined( 'ABSPATH' ) ) exit;
                         'name' => 'name' ,
                         'placeholder' => 'Calendar Name'
                     ] ) ; ?>
-                    <p class="description"><?php _e( 'A name of a calendar.', 'groundhogg' ) ?></p>
+                    <p class="description"><?php _e( 'A name of a calendar.', 'groundhogg-calendar' ) ?></p>
                 </td>
             </tr>
             <tr>
-                <th scope="row"><label><?php _e( 'Description' ,'groundhogg'); ?></label></th>
+                <th scope="row"><label><?php _e( 'Description' ,'groundhogg-calendar'); ?></label></th>
                 <td>
                 <?php echo html()->textarea( [
                         'name' => 'description' ,
                         'placeholder' => 'Calendar Description'
                 ] );?>
-                <p class="description"><?php _e( 'Calendar descriptions are only visible to admins and will never be seen by contacts.', 'groundhogg' ) ?></p>
+                <p class="description"><?php _e( 'Calendar descriptions are only visible to admins and will never be seen by contacts.', 'groundhogg-calendar' ) ?></p>
                 </td>
             </tr>
         </tbody>
     </table>
     <div class="add-calendar-actions">
-        <?php submit_button( __( 'Add Calendar' ,'groundhogg') , 'primary', 'add', false ); ?>
+        <?php submit_button( __( 'Add Calendar' ,'groundhogg-calendar') , 'primary', 'add', false ); ?>
     </div>
 </form>

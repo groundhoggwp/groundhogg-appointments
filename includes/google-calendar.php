@@ -64,7 +64,7 @@ class Google_Calendar
         $access_token = $calendar->get_access_token();
 
         if ( !$access_token ) {
-            return new WP_Error( 'ACCESS_TOKEN', __( "Access token not found!", "groundhogg" ) );
+            return new WP_Error( 'ACCESS_TOKEN', __( "Access token not found!", 'groundhogg-calendar' ) );
         }
 
         $client->setAccessToken(  $access_token ) ;
@@ -84,7 +84,7 @@ class Google_Calendar
                 $access_token = json_encode( get_array_var( $response, 'token' ) );
 
                 if ( !$access_token ) {
-                    return new WP_Error(  'no_token', __( 'Could not retrieve access token.', 'groundhogg' ) );
+                    return new WP_Error(  'no_token', __( 'Could not retrieve access token.', 'groundhogg-calendar' ) );
                 }
 
                 $client->setAccessToken( $access_token ) ;
@@ -154,14 +154,18 @@ class Google_Calendar
         $access_token = $calendar->get_access_token();
         $google_calendar_id = $calendar->get_google_calendar_id();
         if ( !$access_token || !$google_calendar_id ) {
-            return new WP_Error( 'no_access_code', __( 'Please generate access code to sync appointments. ', 'groundhogg' ) );
+            return new WP_Error( 'no_access_code', __( 'Please generate access code to sync appointments. ', 'groundhogg-calendar' ) );
         }
 
         $client = $this->get_google_client_from_access_token( $calendar->get_id() );
+
+        if( is_wp_error($client) ) {
+            return new WP_Error( $client->get_error_code(), $client->get_error_message() );
+        }
         $service = new Google_Service_Calendar( $client );
 
         if ( !$this->is_valid_calendar( $calendar->get_id(), $google_calendar_id, $service ) ) {
-            return new WP_Error( 'no_calendar', __( 'Google calendar not found.', 'groundhogg' ) );
+            return new WP_Error( 'no_calendar', __( 'Google calendar not found.', 'groundhogg-calendar' ) );
         }
 
 
@@ -175,7 +179,7 @@ class Google_Calendar
         $events = $results->getItems();
 
         if ( empty( $events ) ) {
-            return new WP_Error( 'no_events', __( 'No events found in Google calendar.', 'groundhogg' ) );
+            return new WP_Error( 'no_events', __( 'No events found in Google calendar.', 'groundhogg-calendar' ) );
         }
 
         // update values in data base
@@ -295,12 +299,12 @@ class Google_Calendar
 //    {
 //        $client_id = Plugin::$instance->settings->get_option( 'google_calendar_client_id' );
 //        if ( !$client_id ) {
-//            return new WP_Error( 'GOOGLE_CLIENT_ID', __( "Google client id not found.", "groundhogg" ) );
+//            return new WP_Error( 'GOOGLE_CLIENT_ID', __( "Google client id not found.", 'groundhogg-calendar' ) );
 //        }
 //
 //        $client_secret = Plugin::$instance->settings->get_option( 'google_calendar_secret_key' );
 //        if ( !$client_secret ) {
-//            return new WP_Error( 'GOOGLE_CLIENT_SECRET', __( "Google client secret not found.", "groundhogg" ) );
+//            return new WP_Error( 'GOOGLE_CLIENT_SECRET', __( "Google client secret not found.", 'groundhogg-calendar' ) );
 //        }
 //
 //        $client = new Google_Client();
@@ -338,7 +342,7 @@ class Google_Calendar
 //
 //        // Check to see if there was an error.
 //        if ( array_key_exists( 'error', $access_token ) ) {
-//            return new WP_Error( 'ACCESS_TOKEN_ERROR', __( 'error', "groundhogg" ) );
+//            return new WP_Error( 'ACCESS_TOKEN_ERROR', __( 'error', 'groundhogg-calendar' ) );
 //        }
 //
 //        $calendar->update_meta( 'access_token', $client->getAccessToken() );

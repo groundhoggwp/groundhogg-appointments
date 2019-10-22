@@ -61,14 +61,14 @@ switch ( $action ):
                 $appointment->cancel();
 
                 $notes = $appointment->get_meta( 'notes' );
-                $notes .= sprintf( "\n\n===== %s ===== \n\n", __( 'Cancelled', 'groundhogg' ) );
+                $notes .= sprintf( "\n\n===== %s ===== \n\n", __( 'Cancelled', 'groundhogg-calendar' ) );
                 $notes .= sanitize_textarea_field( get_request_var( 'reason' ) );
 
                 $appointment->update_meta( 'notes', $notes );
 
-                $text = __( 'Your appointment has been cancelled.', 'groundhogg' );
+                $text = __( 'Your appointment has been cancelled.', 'groundhogg-calendar' );
             } else {
-                $text = __( 'Your appointment is already cancelled.', 'groundhogg' );
+                $text = __( 'Your appointment is already cancelled.', 'groundhogg-calendar' );
             }
 
             echo html()->wrap( html()->e( 'p', [], $text ), 'div', [ 'class' => 'box' ] );
@@ -79,13 +79,13 @@ switch ( $action ):
 
                 echo html()->e( 'form', [ 'method' => 'post' ], [
                     wp_nonce_field( 'cancel_appointment', '_wpnonce', null, false ),
-                    html()->e( 'p', [], __( 'Are you sure you want to cancel?', 'groundhogg' ) ),
+                    html()->e( 'p', [], __( 'Are you sure you want to cancel?', 'groundhogg-calendar' ) ),
                     html()->wrap( html()->textarea( [
                         'cols' => '60',
                         'rows' => '7',
                         'name' => 'reason',
                         'id' => 'reason',
-                        'placeholder' => __( 'Reason for cancelling.', 'groundhogg' ),
+                        'placeholder' => __( 'Reason for cancelling.', 'groundhogg-calendar' ),
                     ] ), 'p' ),
                     html()->wrap( html()->button( [
                         'type' => 'submit',
@@ -98,7 +98,7 @@ switch ( $action ):
                 ] );
 
             } else {
-                $text = __( 'Your appointment is already cancelled.', 'groundhogg' );
+                $text = __( 'Your appointment is already cancelled.', 'groundhogg-calendar' );
                 echo html()->wrap( html()->e( 'p', [], $text ), 'div', [ 'class' => 'box' ] );
             }
         }

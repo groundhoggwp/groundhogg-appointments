@@ -72,9 +72,9 @@ class Shortcode extends Supports_Errors
         $redirect_link_status = $this->calendar->get_meta( 'redirect_link_status', true );
         $redirect_link = $this->calendar->get_meta( 'redirect_link', true );
         if ( $redirect_link_status ) {
-            wp_send_json_success( [ 'message' => __( $this->calendar->get_meta( 'message', true ), 'groundhogg' ), 'redirect_link' => $redirect_link ] );
+            wp_send_json_success( [ 'message' => __( $this->calendar->get_meta( 'message', true ), 'groundhogg-calendar' ), 'redirect_link' => $redirect_link ] );
         } else {
-            wp_send_json_success( [ 'message' => __( $this->calendar->get_meta( 'message', true ), 'groundhogg' ) ] );
+            wp_send_json_success( [ 'message' => __( $this->calendar->get_meta( 'message', true ), 'groundhogg-calendar' ) ] );
         }
     }
 
@@ -110,7 +110,7 @@ class Shortcode extends Supports_Errors
         $this->calendar = new Calendar( absint( get_array_var( $this->booking_data, 'calendar_id' ) ) );
 
         if ( !$this->calendar->exists() ) {
-            wp_send_json_error( __( 'Calendar not found!', 'groundhogg' ) );
+            wp_send_json_error( __( 'Calendar not found!', 'groundhogg-calendar' ) );
         }
 
         $validated = $this->pre_validate();
@@ -149,7 +149,7 @@ class Shortcode extends Supports_Errors
         $slots = $calendar->get_appointment_slots( $date, get_request_var( 'timeZone' ) );
 
         if ( empty( $slots ) ) {
-            wp_send_json_error( __( 'No slots available.', 'groundhogg' ) );
+            wp_send_json_error( __( 'No slots available.', 'groundhogg-calendar' ) );
         }
 
         wp_send_json_success( [ 'slots' => $slots ] );
@@ -286,7 +286,7 @@ class Shortcode extends Supports_Errors
             return;
         }
 
-        wp_send_json_success( [ 'message' => __( 'Your appointment rescheduled successfully!', 'groundhogg' ) ] );
+        wp_send_json_success( [ 'message' => __( 'Your appointment rescheduled successfully!', 'groundhogg-calendar' ) ] );
     }
 
 }

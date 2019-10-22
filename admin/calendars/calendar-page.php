@@ -74,7 +74,7 @@ class Calendar_Page extends Admin_Page
         $slots = $calendar->get_appointment_slots( $date );
 
         if ( empty( $slots ) ) {
-            wp_send_json_error( __( 'No slots available.', 'groundhogg' ) );
+            wp_send_json_error( __( 'No slots available.', 'groundhogg-calendar' ) );
         }
 
         wp_send_json_success( [ 'slots' => $slots ] );
@@ -93,19 +93,19 @@ class Calendar_Page extends Admin_Page
 
         $calendar = new Calendar( absint( get_request_var( 'calendar_id' ) ) );
         if ( !$calendar->exists() ) {
-            wp_send_json_error( __( 'Calendar not found!', 'groundhogg' ) );
+            wp_send_json_error( __( 'Calendar not found!', 'groundhogg-calendar' ) );
         }
 
         $contact = get_contactdata( absint( get_request_var( 'contact_id' ) ) );
         if ( !$contact->exists() ) {
-            wp_send_json_error( __( 'Contact not found!', 'groundhogg' ) );
+            wp_send_json_error( __( 'Contact not found!', 'groundhogg-calendar' ) );
         }
 
         $start = absint( get_request_var( 'start_time' ) );
         $end = absint( get_request_var( 'end_time' ) );
 
         if ( !$start || !$end ) {
-            wp_send_json_error( __( 'Please provide a valid date selection.', 'groundhogg' ) );
+            wp_send_json_error( __( 'Please provide a valid date selection.', 'groundhogg-calendar' ) );
         }
 
 
@@ -119,10 +119,10 @@ class Calendar_Page extends Admin_Page
 
 
         if ( !$appointment->exists() ) {
-            wp_send_json_error( __( 'Something went wrong while creating appointment.', 'groundhogg' ) );
+            wp_send_json_error( __( 'Something went wrong while creating appointment.', 'groundhogg-calendar' ) );
         }
 
-        wp_send_json_success( [ 'appointment' => $appointment->get_full_calendar_event(), 'msg' => __( 'Appointment booked successfully.', 'groundhogg' ) ] );
+        wp_send_json_success( [ 'appointment' => $appointment->get_full_calendar_event(), 'msg' => __( 'Appointment booked successfully.', 'groundhogg-calendar' ) ] );
     }
 
 //    /**
@@ -135,7 +135,7 @@ class Calendar_Page extends Admin_Page
 //        $auth_code = get_request_var( 'auth_code' );
 //
 //        if ( !$auth_code ) {
-//            wp_send_json_error( __( 'Please enter a valid code.', 'groundhogg' ) );
+//            wp_send_json_error( __( 'Please enter a valid code.', 'groundhogg-calendar' ) );
 //        }
 //
 //        $response = Plugin::instance()->proxy_service->request( 'authentication/get', [
@@ -150,14 +150,14 @@ class Calendar_Page extends Admin_Page
 //        $access_token = get_array_var( $response, 'token' );
 //
 //        if ( !$access_token ) {
-//            wp_send_json_error( __( 'Could not retrieve access token.', 'groundhogg' ) );
+//            wp_send_json_error( __( 'Could not retrieve access token.', 'groundhogg-calendar' ) );
 //        }
 //
 //        $calendar->update_meta( 'access_token', json_encode( $access_token ) );
 //
 //        $calendar->add_in_google();
 //
-//        wp_send_json_success( [ 'msg' => __( 'Your calendar synced successfully!', 'groundhogg' ) ] );
+//        wp_send_json_success( [ 'msg' => __( 'Your calendar synced successfully!', 'groundhogg-calendar' ) ] );
 //
 //    }
 
@@ -179,10 +179,10 @@ class Calendar_Page extends Admin_Page
         ] );
 
         if ( !$status ) {
-            wp_send_json_error( __( 'Something went wrong while updating appointment.', 'groundhogg' ) );
+            wp_send_json_error( __( 'Something went wrong while updating appointment.', 'groundhogg-calendar' ) );
         }
 
-        wp_send_json_success( [ 'msg' => __( 'Your appointment updated successfully!', 'groundhogg' ) ] );
+        wp_send_json_success( [ 'msg' => __( 'Your appointment updated successfully!', 'groundhogg-calendar' ) ] );
 
     }
 
@@ -193,7 +193,7 @@ class Calendar_Page extends Admin_Page
 
     public function get_name()
     {
-        return _x( 'Calendars', 'page_title', 'groundhogg' );
+        return _x( 'Calendars', 'page_title', 'groundhogg-calendar' );
     }
 
     public function get_cap()
@@ -253,7 +253,7 @@ class Calendar_Page extends Admin_Page
         }
 
         $calendars_table = new Calendars_Table();
-        $this->search_form( __( 'Search Calendars', 'groundhogg' ) );
+        $this->search_form( __( 'Search Calendars', 'groundhogg-calendar' ) );
         $calendars_table->prepare_items();
         $calendars_table->display();
     }
@@ -293,7 +293,7 @@ class Calendar_Page extends Admin_Page
 
         $calendar = new Calendar( get_request_var( 'calendar' ) );
         if ( !$calendar->exists() ) {
-            return new \WP_Error( 'failed', __( 'Operation failed Calendar not Found.', 'groundhogg' ) );
+            return new \WP_Error( 'failed', __( 'Operation failed Calendar not Found.', 'groundhogg-calendar' ) );
         }
 
         if ( $calendar->delete() ) {
@@ -319,7 +319,7 @@ class Calendar_Page extends Admin_Page
         $description = sanitize_textarea_field( get_request_var( 'description' ) );
 
         if ( ( !$name ) || ( !$description ) ) {
-            return new \WP_Error( 'no_data', __( 'Please enter name and description of calendar.', 'groundhogg' ) );
+            return new \WP_Error( 'no_data', __( 'Please enter name and description of calendar.', 'groundhogg-calendar' ) );
         }
 
         $owner_id = absint( get_request_var( 'owner_id', get_current_user_id() ) );
@@ -330,7 +330,7 @@ class Calendar_Page extends Admin_Page
         ] );
 
         if ( !$calendar->exists() ) {
-            return new \WP_Error( 'no_calendar', __( 'Something went wrong while creating calendar.', 'groundhogg' ) );
+            return new \WP_Error( 'no_calendar', __( 'Something went wrong while creating calendar.', 'groundhogg-calendar' ) );
         }
 
         /* SET DEFAULTS */
@@ -345,7 +345,7 @@ class Calendar_Page extends Admin_Page
 
         //set default settings
         $calendar->update_meta( 'slot_hour', 1 );
-        $calendar->update_meta( 'message', __( 'Appointment booked successfully!', 'groundhogg' ) );
+        $calendar->update_meta( 'message', __( 'Appointment booked successfully!', 'groundhogg-calendar' ) );
 
         // Create default emails...
         $templates = get_email_templates();
@@ -413,32 +413,32 @@ class Calendar_Page extends Admin_Page
         //Create default SMS
         if ( is_sms_plugin_active() ) {
             $sms_booked = new SMS( [
-                'title' => __( 'Appointment Booked', 'groundhogg' ),
-                'message' => __( "Hey {first},\n\nThank you for booking an appointment.\n\nYour appointment will be from {appointment_start_time} to {appointment_end_time}.\n\nThank you!\n\n@ the {business_name} team", 'groundhogg' ),
+                'title' => __( 'Appointment Booked', 'groundhogg-calendar' ),
+                'message' => __( "Hey {first},\n\nThank you for booking an appointment.\n\nYour appointment will be from {appointment_start_time} to {appointment_end_time}.\n\nThank you!\n\n@ the {business_name} team", 'groundhogg-calendar' ),
 
             ] );
 
             $sms_approved = new SMS( [
-                'title' => __( 'Appointment Approved', 'groundhogg' ),
-                'message' => __( "Hey {first},\n\nThank you for booking an appointment with us.\n\nYour appointment booking on {appointment_start_time} has been approved.\n\nThank you!\n\n@ the {business_name} team\n\n", 'groundhogg' ),
+                'title' => __( 'Appointment Approved', 'groundhogg-calendar' ),
+                'message' => __( "Hey {first},\n\nThank you for booking an appointment with us.\n\nYour appointment booking on {appointment_start_time} has been approved.\n\nThank you!\n\n@ the {business_name} team\n\n", 'groundhogg-calendar' ),
 
             ] );
 
             $sms_cancelled = new SMS( [
-                'title' => __( 'Appointment Cancelled', 'groundhogg' ),
-                'message' => __( "Hey {first},\n\nYour appointment scheduled on {appointment_start_time} has been cancelled.\n\nYou can always book another appointment using our booking page.\n\nThank you!\n\n@ the {business_name} team", 'groundhogg' ),
+                'title' => __( 'Appointment Cancelled', 'groundhogg-calendar' ),
+                'message' => __( "Hey {first},\n\nYour appointment scheduled on {appointment_start_time} has been cancelled.\n\nYou can always book another appointment using our booking page.\n\nThank you!\n\n@ the {business_name} team", 'groundhogg-calendar' ),
 
             ] );
 
             $sms_rescheduled = new SMS( [
-                'title' => __( 'Appointment Rescheduled', 'groundhogg' ),
-                'message' => __( "Hey {first},\n\nWe successfully rescheduled your appointment. Your new appointment will be from {appointment_start_time} to {appointment_end_time}.\n\nThank you!\n\n@ the {business_name} team", 'groundhogg' ),
+                'title' => __( 'Appointment Rescheduled', 'groundhogg-calendar' ),
+                'message' => __( "Hey {first},\n\nWe successfully rescheduled your appointment. Your new appointment will be from {appointment_start_time} to {appointment_end_time}.\n\nThank you!\n\n@ the {business_name} team", 'groundhogg-calendar' ),
 
             ] );
 
             $sms_reminder = new SMS( [
-                'title' => __( 'Appointment Reminder', 'groundhogg' ),
-                'message' => __( "Hey {first},\n\nJust a friendly reminder that you have appointment coming up with us on {appointment_start_time} we look forward to seeing you then.\n\nThank you!\n\n@ the {business_name} team", 'groundhogg' ),
+                'title' => __( 'Appointment Reminder', 'groundhogg-calendar' ),
+                'message' => __( "Hey {first},\n\nJust a friendly reminder that you have appointment coming up with us on {appointment_start_time} we look forward to seeing you then.\n\nThank you!\n\n@ the {business_name} team", 'groundhogg-calendar' ),
             ] );
 
             $calendar->update_meta( 'sms', [
@@ -460,7 +460,7 @@ class Calendar_Page extends Admin_Page
             ] );
         }
         // update meta data to get set sms
-        $this->add_notice( 'success', __( 'New calendar created successfully!', 'groundhogg' ), 'success' );
+        $this->add_notice( 'success', __( 'New calendar created successfully!', 'groundhogg-calendar' ), 'success' );
         return admin_url( 'admin.php?page=gh_calendar&action=edit&calendar=' . $calendar->get_id() . '&tab=settings' );
 
     }
@@ -484,7 +484,7 @@ class Calendar_Page extends Admin_Page
             return $status;
         }
 
-        $this->add_notice( 'success', __( 'Appointments synced successfully!', 'groundhogg' ), 'success' );
+        $this->add_notice( 'success', __( 'Appointments synced successfully!', 'groundhogg-calendar' ), 'success' );
 
         return admin_url( 'admin.php?page=gh_calendar&action=edit&calendar=' . $calendar->get_id() . '&tab=view' );
 
@@ -504,7 +504,7 @@ class Calendar_Page extends Admin_Page
 
         $appointment_id = absint( get_request_var( 'appointment' ) );
         if ( !$appointment_id ) {
-            return new \WP_Error( 'no_appointment', __( 'Appointment not found!', 'groundhogg' ) );
+            return new \WP_Error( 'no_appointment', __( 'Appointment not found!', 'groundhogg-calendar' ) );
         }
 
         $appointment = new Appointment( $appointment_id );
@@ -512,17 +512,17 @@ class Calendar_Page extends Admin_Page
         $contact_id = absint( get_request_var( 'contact_id' ) );
 
         if ( !$contact_id ) {
-            return new \WP_Error( 'no_contact', __( 'Contact with this appointment not found!', 'groundhogg' ) );
+            return new \WP_Error( 'no_contact', __( 'Contact with this appointment not found!', 'groundhogg-calendar' ) );
         }
 
         if ( !( get_request_var( 'start_date' ) === get_request_var( 'end_date' ) ) ) {
-            return new \WP_Error( 'different_date', __( 'Start date and end date needs to be same.', 'groundhogg' ) );
+            return new \WP_Error( 'different_date', __( 'Start date and end date needs to be same.', 'groundhogg-calendar' ) );
         }
 
         //check appointment is in working hours.....
         $availability = $appointment->get_calendar()->get_todays_available_periods( get_request_var( 'start_date' ) );
         if ( empty( $availability ) ) {
-            return new \WP_Error( 'not_available', __( 'This date is not available.', 'groundhogg' ) );
+            return new \WP_Error( 'not_available', __( 'This date is not available.', 'groundhogg-calendar' ) );
         }
 
         $flag = false;
@@ -533,7 +533,7 @@ class Calendar_Page extends Admin_Page
         }
 
         if ( !$flag ) {
-            return new \WP_Error( 'not_available', __( 'Appointment is out of availability.', 'groundhogg' ) );
+            return new \WP_Error( 'not_available', __( 'Appointment is out of availability.', 'groundhogg-calendar' ) );
         }
 
         $start_time = Plugin::$instance->utils->date_time->convert_to_utc_0( strtotime( get_request_var( 'start_date' ) . ' ' . get_request_var( 'start_time' ) ) );
@@ -541,7 +541,7 @@ class Calendar_Page extends Admin_Page
 
         //check for times
         if ( $start_time > $end_time ) {
-            return new \WP_Error( 'no_contact', __( 'End time can not be smaller then start time.', 'groundhogg' ) );
+            return new \WP_Error( 'no_contact', __( 'End time can not be smaller then start time.', 'groundhogg-calendar' ) );
         }
 
         /**
@@ -550,7 +550,7 @@ class Calendar_Page extends Admin_Page
         $appointments_table = get_db( 'appointments' );
 
         if ( $appointments_table->appointments_exist_in_range_except_same_appointment( $start_time, $end_time, $appointment->get_calendar_id(), $appointment->get_id() ) ) {
-            return new \WP_Error( 'appointment_clash', __( 'You already have an appointment in this time slot.', 'groundhogg' ) );
+            return new \WP_Error( 'appointment_clash', __( 'You already have an appointment in this time slot.', 'groundhogg-calendar' ) );
         }
 
         // updates current appointment with the updated details and updates google appointment
@@ -565,7 +565,7 @@ class Calendar_Page extends Admin_Page
         if ( !$status ) {
             $this->add_notice( new \WP_Error( 'error', 'Something went wrong...' ) );
         } else {
-            $this->add_notice( 'success', __( "Appointment updated!", 'groundhogg' ), 'success' );
+            $this->add_notice( 'success', __( "Appointment updated!", 'groundhogg-calendar' ), 'success' );
         }
 
         return true;
@@ -584,18 +584,18 @@ class Calendar_Page extends Admin_Page
 
         $appointment_id = get_request_var( 'appointment' );
         if ( !$appointment_id ) {
-            return new \WP_Error( 'no_appointment_id', __( 'Appointment ID not found', 'groundhogg' ) );
+            return new \WP_Error( 'no_appointment_id', __( 'Appointment ID not found', 'groundhogg-calendar' ) );
         }
         $appointment = new Appointment( $appointment_id );
         if ( !$appointment->exists() ) {
-            wp_die( __( "Appointment not found!", 'groundhogg' ) );
+            wp_die( __( "Appointment not found!", 'groundhogg-calendar' ) );
         }
 
         $status = $appointment->approve();
         if ( !$status ) {
-            return new \WP_Error( 'update_failed', __( 'Status not updated.', 'groundhogg' ) );
+            return new \WP_Error( 'update_failed', __( 'Status not updated.', 'groundhogg-calendar' ) );
         } else {
-            $this->add_notice( 'success', __( 'Appointment status changed!', 'groundhogg' ), 'success' );
+            $this->add_notice( 'success', __( 'Appointment status changed!', 'groundhogg-calendar' ), 'success' );
         }
 
         return admin_url( 'admin.php?page=gh_calendar&calendar=' . $appointment->get_calendar_id() . '&action=edit' );
@@ -614,19 +614,19 @@ class Calendar_Page extends Admin_Page
 
         $appointment_id = get_request_var( 'appointment' );
         if ( !$appointment_id ) {
-            return new \WP_Error( 'no_appointment_id', __( 'Appointment ID not found', 'groundhogg' ) );
+            return new \WP_Error( 'no_appointment_id', __( 'Appointment ID not found', 'groundhogg-calendar' ) );
         }
 
         $appointment = new Appointment( $appointment_id );
         if ( !$appointment->exists() ) {
-            wp_die( __( "Appointment not found!", 'groundhogg' ) );
+            wp_die( __( "Appointment not found!", 'groundhogg-calendar' ) );
         }
 
         $status = $appointment->cancel();
         if ( !$status ) {
-            return new \WP_Error( 'update_failed', __( 'Status not updated.', 'groundhogg' ) );
+            return new \WP_Error( 'update_failed', __( 'Status not updated.', 'groundhogg-calendar' ) );
         } else {
-            $this->add_notice( 'success', __( 'Appointment status changed!', 'groundhogg' ), 'success' );
+            $this->add_notice( 'success', __( 'Appointment status changed!', 'groundhogg-calendar' ), 'success' );
         }
         return admin_url( 'admin.php?page=gh_calendar&calendar=' . $appointment->get_calendar_id() . '&action=edit' );
     }
@@ -644,21 +644,21 @@ class Calendar_Page extends Admin_Page
 
         $appointment_id = get_request_var( 'appointment' );
         if ( !$appointment_id ) {
-            return new \WP_Error( 'no_appointment_id', __( 'Appointment ID not found', 'groundhogg' ) );
+            return new \WP_Error( 'no_appointment_id', __( 'Appointment ID not found', 'groundhogg-calendar' ) );
         }
 
         $appointment = new Appointment( $appointment_id );
         if ( !$appointment->exists() ) {
-            wp_die( __( "Appointment not found!", 'groundhogg' ) );
+            wp_die( __( "Appointment not found!", 'groundhogg-calendar' ) );
         }
 
         $calendar_id = $appointment->get_calendar_id();
 
         $status = $appointment->delete();
         if ( !$status ) {
-            return new \WP_Error( 'delete_failed', __( 'Something went wrong while deleting appointment.', 'groundhogg' ) );
+            return new \WP_Error( 'delete_failed', __( 'Something went wrong while deleting appointment.', 'groundhogg-calendar' ) );
         } else {
-            $this->add_notice( 'success', __( 'Appointment deleted!', 'groundhogg' ), 'success' );
+            $this->add_notice( 'success', __( 'Appointment deleted!', 'groundhogg-calendar' ), 'success' );
         }
 
         return admin_url( 'admin.php?page=gh_calendar&calendar=' . $calendar_id . '&action=edit&tab=list' );
@@ -908,7 +908,7 @@ class Calendar_Page extends Admin_Page
             $calendar->delete_meta( 'zoom_enable' );
         }
 
-        $this->add_notice( 'success', _x( 'Settings updated.', 'notice', 'groundhogg' ), 'success' );
+        $this->add_notice( 'success', _x( 'Settings updated.', 'notice', 'groundhogg-calendar' ), 'success' );
 
 
 //          /* unused in 2.0 */
@@ -975,7 +975,7 @@ class Calendar_Page extends Admin_Page
     {
 
         if ( !get_request_var( 'code' ) ) {
-            return new \WP_Error( 'no_code', __( 'Authentication code not found!', 'groundhogg' ) );
+            return new \WP_Error( 'no_code', __( 'Authentication code not found!', 'groundhogg-calendar' ) );
         }
 
         $auth_code = get_request_var( 'code' );
@@ -1001,7 +1001,7 @@ class Calendar_Page extends Admin_Page
 
         $calendar->add_in_google();
 
-        $this->add_notice( 'success', __( 'Connection to Google calendar successfully completed!', 'groundhogg' ), 'success' );
+        $this->add_notice( 'success', __( 'Connection to Google calendar successfully completed!', 'groundhogg-calendar' ), 'success' );
 
         return true;
     }
@@ -1017,7 +1017,7 @@ class Calendar_Page extends Admin_Page
     {
 
         if ( !get_request_var( 'code' ) ) {
-            return new \WP_Error( 'no_code', __( 'Authentication code not found!', 'groundhogg' ) );
+            return new \WP_Error( 'no_code', __( 'Authentication code not found!', 'groundhogg-calendar' ) );
         }
 
         $auth_code = get_request_var( 'code' );
@@ -1041,7 +1041,7 @@ class Calendar_Page extends Admin_Page
 
         $calendar->update_meta( 'access_token_zoom', json_encode( $access_token ) );
 
-        $this->add_notice( 'success', __( 'Connection to zoom successfully completed!', 'groundhogg' ), 'success' );
+        $this->add_notice( 'success', __( 'Connection to zoom successfully completed!', 'groundhogg-calendar' ), 'success' );
 
         return true;
     }

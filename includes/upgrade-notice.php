@@ -25,8 +25,8 @@ class Upgrade_Notice
         }
 
         $message = sprintf(
-            esc_html__( ' The Google integration has changed and you will need to re-sync your calendar. Follow these instructions for more >> %s', 'groundhogg' ),
-            html()->e( 'a', [ 'class' => '', 'style' => [ 'color' => 'green' ], 'href' => 'https://docs.groundhogg.io/docs/extensions/booking-calendar/new-in-2-0/', 'target' => '_blank' ], __( "Re-sync Google Calendar Instructions.", 'groundhogg' ) )
+            esc_html__( ' The Google integration has changed and you will need to re-sync your calendar. Follow these instructions for more >> %s', 'groundhogg-calendar' ),
+            html()->e( 'a', [ 'class' => '', 'style' => [ 'color' => 'green' ], 'href' => 'https://docs.groundhogg.io/docs/extensions/booking-calendar/new-in-2-0/', 'target' => '_blank' ], __( "Re-sync Google Calendar Instructions.", 'groundhogg-calendar' ) )
         );
 
         $html_message = sprintf( '<div class="upgrade-notice notice notice-warning is-dismissible">%s</div>', wpautop( $message ) );

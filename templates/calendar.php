@@ -98,7 +98,7 @@ function default_form()
                 <div class="gh-form-column col-1-of-1">
                     <div class="gh-form-field">
                         <?php
-                        $book_text = apply_filters( 'groundhogg/calendar/shortcode/confirm_text', __( 'Book Appointment', 'groundhogg' ) );
+                        $book_text = apply_filters( 'groundhogg/calendar/shortcode/confirm_text', __( 'Book Appointment', 'groundhogg-calendar' ) );
                         echo html()->input( [
                             'type' => 'submit',
                             'name' => 'book_appointment',
@@ -131,7 +131,7 @@ function enqueue_calendar_scripts()
         'disabled_days' => $calendar->get_dates_no_slots(),
         'day_names' => [ "SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT" ],
         'ajaxurl' => admin_url( 'admin-ajax.php' ),
-        'invalidDateMsg' => __( 'Please select a valid time slot.', 'groundhogg' )
+        'invalidDateMsg' => __( 'Please select a valid time slot.', 'groundhogg-calendar' )
     ] );
 
     do_action( 'enqueue_groundhogg_calendar_scripts' );
@@ -175,7 +175,7 @@ nocache_headers();
     $title = $calendar->get_meta( 'slot_title', true );
 
     if ( $title === null ) {
-        $title = __( 'Time Slot', 'groundhogg' );
+        $title = __( 'Time Slot', 'groundhogg-calendar' );
     }
 
     ?>
@@ -194,7 +194,7 @@ nocache_headers();
                     </div>
                     <div class="gh-form-column col-1-of-3">
                         <div id="time-slots" class="select-time hidden">
-                            <p class="time-slot-select-text"><b><?php _e( $title, 'groundhogg' ); ?></b></p>
+                            <p class="time-slot-select-text"><b><?php _e( $title, 'groundhogg-calendar' ); ?></b></p>
                             <hr class="time-slot-divider"/>
                             <div id="time-slots-inner"></div>
                         </div>

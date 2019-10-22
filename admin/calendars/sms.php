@@ -74,8 +74,8 @@ foreach ( $reminders as $reminder ):
             html()->dropdown( [
                 'name' => reminder_name( 'when' ),
                 'options' => [
-                    'before' => __( 'Before', 'groundhogg' ),
-                    'after' => __( 'After', 'groundhogg' )
+                    'before' => __( 'Before', 'groundhogg-calendar' ),
+                    'after' => __( 'After', 'groundhogg-calendar' )
                 ],
                 'option_none' => false,
                 'selected' => get_array_var( $reminder, 'when' ),
@@ -114,27 +114,27 @@ enqueue_groundhogg_modal();
 
 
         html()->start_form_table( [
-            'title' => __( 'Notifications', 'groundhogg' )
+            'title' => __( 'Notifications', 'groundhogg-calendar' )
         ] );
 
 
         html()->start_row();
 
-        html()->th( __( 'SMS Notification', 'groundhogg' ) );
+        html()->th( __( 'SMS Notification', 'groundhogg-calendar' ) );
         html()->td( [
             html()->checkbox( [
                 'name' => 'sms_notification',
                 'id' => 'sms_notification',
                 'checked' => $calendar->get_meta('sms_notification') ? $calendar->get_meta('sms_notification') : 0
             ] ),
-            html()->description( __( 'Enable SMS reminders for appointments.', 'groundhogg' ) ),
+            html()->description( __( 'Enable SMS reminders for appointments.', 'groundhogg-calendar' ) ),
         ] );
 
         html()->end_row();
 
         html()->start_row();
 
-        html()->th( __( 'Appointment Booked', 'groundhogg' ) );
+        html()->th( __( 'Appointment Booked', 'groundhogg-calendar' ) );
         html()->td( [
             html()->dropdown_sms( [
                 'name' => 'appointment_booked',
@@ -143,14 +143,14 @@ enqueue_groundhogg_modal();
             ] ),
             '&nbsp;',
             html()->e( 'a', [ 'href' => '#', 'class' => 'button edit-sms' ], __( 'Edit SMS' ) ),
-            html()->description( __( 'SMS that is sent when an appointment is booked.', 'groundhogg' ) ),
+            html()->description( __( 'SMS that is sent when an appointment is booked.', 'groundhogg-calendar' ) ),
         ] );
 
         html()->end_row();
 
         html()->start_row();
 
-        html()->th( __( 'Appointment Approved', 'groundhogg' ) );
+        html()->th( __( 'Appointment Approved', 'groundhogg-calendar' ) );
         html()->td( [
             html()->dropdown_sms( [
                 'name' => 'appointment_approved',
@@ -159,13 +159,13 @@ enqueue_groundhogg_modal();
             ] ),
             '&nbsp;',
             html()->e( 'a', [ 'href' => '#', 'class' => 'button edit-sms' ], __( 'Edit SMS' ) ),
-            html()->description( __( 'SMS that is sent when an appointment is approved.', 'groundhogg' ) ),
+            html()->description( __( 'SMS that is sent when an appointment is approved.', 'groundhogg-calendar' ) ),
         ] );
 
         html()->end_row();
         html()->start_row();
 
-        html()->th( __( 'Appointment Rescheduled', 'groundhogg' ) );
+        html()->th( __( 'Appointment Rescheduled', 'groundhogg-calendar' ) );
         html()->td( [
             html()->dropdown_sms( [
                 'name' => 'appointment_rescheduled',
@@ -174,14 +174,14 @@ enqueue_groundhogg_modal();
             ] ),
             '&nbsp;',
             html()->e( 'a', [ 'href' => '#', 'class' => 'button edit-sms' ], __( 'Edit SMS' ) ),
-            html()->description( __( 'SMS that is sent when an appointment is rescheduled.', 'groundhogg' ) ),
+            html()->description( __( 'SMS that is sent when an appointment is rescheduled.', 'groundhogg-calendar' ) ),
         ] );
 
         html()->end_row();
 
         html()->start_row();
 
-        html()->th( __( 'Appointment Cancelled', 'groundhogg' ) );
+        html()->th( __( 'Appointment Cancelled', 'groundhogg-calendar' ) );
         html()->td( [
             html()->dropdown_sms( [
                 'name' => 'appointment_cancelled',
@@ -190,7 +190,7 @@ enqueue_groundhogg_modal();
             ] ),
             '&nbsp;',
             html()->e( 'a', [ 'href' => '#', 'class' => 'button edit-sms' ], __( 'Edit SMS' ) ),
-            html()->description( __( 'SMS that is sent when an appointment is Cancelled.', 'groundhogg' ) ),
+            html()->description( __( 'SMS that is sent when an appointment is Cancelled.', 'groundhogg-calendar' ) ),
         ] );
 
         html()->end_row();
@@ -198,7 +198,7 @@ enqueue_groundhogg_modal();
         html()->end_form_table();
 
         html()->start_form_table( [
-            'title' => __( 'Reminders', 'groundhogg' )
+            'title' => __( 'Reminders', 'groundhogg-calendar' )
         ] );
 
         html()->start_form_table();

@@ -685,7 +685,7 @@ class Appointment extends Base_Object_With_Meta
     public function get_zoom_meeting_detail()
     {
         if ( !$this->get_calendar()->is_zoom_enabled() ) {
-            return __( 'Zoom is not enabled.', 'groundhogg' );
+            return __( 'Zoom is not enabled.', 'groundhogg-calendar' );
         }
 
         $access_token = $this->get_calendar()->get_access_token_zoom();
@@ -696,7 +696,7 @@ class Appointment extends Base_Object_With_Meta
 
         // create meeting if meeting does not exist
         if ( !$this->get_zoom_meeting_id() ) {
-            return __( 'Zoom meeting details not found!', 'groundhogg' );
+            return __( 'Zoom meeting details not found!', 'groundhogg-calendar' );
         }
 
         // Update meeting by making post request
@@ -717,7 +717,7 @@ class Appointment extends Base_Object_With_Meta
             return $body->invitation;
         }
 
-        return __( 'Zoom meeting details not found!', 'groundhogg' );
+        return __( 'Zoom meeting details not found!', 'groundhogg-calendar' );
 
     }
 

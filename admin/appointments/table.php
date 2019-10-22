@@ -51,11 +51,11 @@ class Appointments_Table extends WP_List_Table
     public function get_columns()
     {
         $columns = array(
-            'appointment_id' => _x('Name', 'Column label', 'groundhogg'),
-            'contact' => _x('Contact Name', 'Column label', 'groundhogg'),
-            'status' => _x('Status', 'Column label', 'groundhogg'),
-            'stat_time' => _x('Start Time', 'Column label', 'groundhogg'),
-            'end_time' => _x('End Time', 'Column label', 'groundhogg'),
+            'appointment_id' => _x('Name', 'Column label', 'groundhogg-calendar'),
+            'contact' => _x('Contact Name', 'Column label', 'groundhogg-calendar'),
+            'status' => _x('Status', 'Column label', 'groundhogg-calendar'),
+            'stat_time' => _x('Start Time', 'Column label', 'groundhogg-calendar'),
+            'end_time' => _x('End Time', 'Column label', 'groundhogg-calendar'),
         );
         return apply_filters('wpgh_appointment_columns', $columns);
     }

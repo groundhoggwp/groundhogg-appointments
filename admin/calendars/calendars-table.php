@@ -45,10 +45,10 @@ class Calendars_Table extends WP_List_Table {
 	 */
 	public function get_columns() {
 		$columns = array(
-			'calendar_id'     => _x( 'Calendar Name', 'Column label', 'groundhogg' ),
-            'short_code'       => _x( 'Calendar Short Code', 'Column label', 'groundhogg' ),
-			'user_id'         => _x( 'Calendar Owner', 'Column label', 'groundhogg' ),
-			'description'     => _x( 'Description', 'Column label', 'groundhogg' ),
+			'calendar_id'     => _x( 'Calendar Name', 'Column label', 'groundhogg-calendar' ),
+            'short_code'       => _x( 'Calendar Short Code', 'Column label', 'groundhogg-calendar' ),
+			'user_id'         => _x( 'Calendar Owner', 'Column label', 'groundhogg-calendar' ),
+			'description'     => _x( 'Description', 'Column label', 'groundhogg-calendar' ),
 		);
 		return apply_filters( 'wpgh_calendar_columns', $columns );
 	}

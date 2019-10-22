@@ -54,27 +54,27 @@ class Replacements
             [
                 'code' => 'appointment_start_time',
                 'callback' => array( $this, 'start_time' ),
-                'description' => __( 'Returns the start date & time of a contact\'s appointment.', 'groundhogg' ),
+                'description' => __( 'Returns the start date & time of a contact\'s appointment.', 'groundhogg-calendar' ),
             ],
             [
                 'code' => 'appointment_end_time',
                 'callback' => array( $this, 'end_time' ),
-                'description' => __( 'Returns the end date & time of a contact\'s appointment.', 'groundhogg' ),
+                'description' => __( 'Returns the end date & time of a contact\'s appointment.', 'groundhogg-calendar' ),
             ],
             [
                 'code' => 'appointment_actions',
                 'callback' => array( $this, 'appointment_actions' ),
-                'description' => __( 'Links to allow cancelling or re-scheduling appointments.', 'groundhogg' ),
+                'description' => __( 'Links to allow cancelling or re-scheduling appointments.', 'groundhogg-calendar' ),
             ],
             [
                 'code' => 'appointment_notes',
                 'callback' => array( $this, 'appointment_notes' ),
-                'description' => __( 'Any notes about the appointment.', 'groundhogg' ),
+                'description' => __( 'Any notes about the appointment.', 'groundhogg-calendar' ),
             ],
             [
                 'code' => 'zoom_meeting_details',
                 'callback' => array( $this, 'zoom_meeting_details' ),
-                'description' => __( 'Detail Description about zoom meeting.( needs zoom enabled and synced )', 'groundhogg' ),
+                'description' => __( 'Detail Description about zoom meeting.( needs zoom enabled and synced )', 'groundhogg-calendar' ),
             ]
         ];
     }
@@ -187,7 +187,7 @@ class Replacements
         }
 
         if ( !$this->get_appointment()->get_meta( 'notes' ) ) {
-            return __( 'There is no additional note with this appointment.', 'groundhogg' );
+            return __( 'There is no additional note with this appointment.', 'groundhogg-calendar' );
         }
 
         return wpautop( $this->get_appointment()->get_meta( 'notes' ) );

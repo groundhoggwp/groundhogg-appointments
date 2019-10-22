@@ -1060,7 +1060,7 @@ class Calendar extends Base_Object_With_Meta
 
         if ( !$access_token ) {
             $this->delete_meta( 'access_token_zoom' );
-            return new WP_Error( 'no_token', __( 'Could not retrieve access token.', 'groundhogg' ) );
+            return new WP_Error( 'no_token', __( 'Could not retrieve access token.', 'groundhogg-calendar' ) );
         }
 
         $access_token_json_encoded = json_encode($access_token);
@@ -1071,7 +1071,7 @@ class Calendar extends Base_Object_With_Meta
             return $access_token_json_decoded->access_token;
         }
         $this->delete_meta( 'access_token_zoom' );
-        return new WP_Error( 'no_token', __( 'Token refresh Failed', 'groundhogg' ) );
+        return new WP_Error( 'no_token', __( 'Token refresh Failed', 'groundhogg-calendar' ) );
     }
 
     public function is_access_token_zoom()

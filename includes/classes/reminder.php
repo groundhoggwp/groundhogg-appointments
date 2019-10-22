@@ -43,7 +43,7 @@ class Reminder implements Event_Process
 
     public function get_funnel_title()
     {
-        return sprintf( __( 'Appointment Reminder: %s', 'groundhogg' ), $this->appointment->get_name() );
+        return sprintf( __( 'Appointment Reminder: %s', 'groundhogg-calendar' ), $this->appointment->get_name() );
     }
 
     public function get_step_title()

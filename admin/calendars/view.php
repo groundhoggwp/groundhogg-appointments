@@ -41,7 +41,7 @@ $google_calendar_id = $calendar->get_google_calendar_id();
                                 'name' => 'contact_id',
                                 'id' => 'contact-id'
                             ] ); ?>
-                            <p class="description"><?php _e( 'Please select client contact from contact list.', 'groundhogg' ) ?></p>
+                            <p class="description"><?php _e( 'Please select client contact from contact list.', 'groundhogg-calendar' ) ?></p>
                         </td>
                     </tr>
                     <tr class="form-field term-calendar-name-wrap">
@@ -57,12 +57,12 @@ $google_calendar_id = $calendar->get_google_calendar_id();
                             ] ); ?>
 
                             <!--                                    <input name="name" id="appointmentname"type="text"  size="40" aria-required="true" placeholder="Appointment Name">-->
-                            <p class="description"><?php _e( 'Give nice name for your appointment.', 'groundhogg' ) ?></p>
+                            <p class="description"><?php _e( 'Give nice name for your appointment.', 'groundhogg-calendar' ) ?></p>
                         </td>
                     </tr>
                     <tr class="form-field term-calendar-description-wrap">
                         <th scope="row">
-                            <label><?php _e( 'Note', 'groundhogg' ); ?></label>
+                            <label><?php _e( 'Note', 'groundhogg-calendar' ); ?></label>
                         </th>
                         <td>
                             <?php echo html()->textarea( [
@@ -70,11 +70,11 @@ $google_calendar_id = $calendar->get_google_calendar_id();
                                 'id' => 'notes',
                                 'placeholder' => 'Any information that might be important.'
                             ] ); ?>
-                            <p class="description"><?php _e( 'Additional information about appointment.', 'groundhogg' ) ?></p>
+                            <p class="description"><?php _e( 'Additional information about appointment.', 'groundhogg-calendar' ) ?></p>
                         </td>
                     </tr>
                     <tr>
-                        <th scope="row"><label><?php _e( 'Date', 'groundhogg' ); ?></label></th>
+                        <th scope="row"><label><?php _e( 'Date', 'groundhogg-calendar' ); ?></label></th>
                         <td>
 
                             <?php echo html()->date_picker( [
@@ -86,7 +86,7 @@ $google_calendar_id = $calendar->get_google_calendar_id();
                         </td>
                     </tr>
                     <tr>
-                        <th scope="row"><label><?php _e( 'Time', 'groundhogg' ); ?></label></th>
+                        <th scope="row"><label><?php _e( 'Time', 'groundhogg-calendar' ); ?></label></th>
                         <td>
                             <div style="text-align: center;" id="spinner">
                                 <span class="spinner" style="float: none; visibility: visible"></span>
@@ -106,19 +106,19 @@ $google_calendar_id = $calendar->get_google_calendar_id();
                         <tr>
                             <td class="fc-button-group"
                                 style="background-color:#0073aa; color: #ffffff ;padding: 5px; border-radius: .25rem"></td>
-                            <td><b> <?php _e( 'Pending', 'groundhogg' ); ?></b></td>
+                            <td><b> <?php _e( 'Pending', 'groundhogg-calendar' ); ?></b></td>
                             <td class="fc-button-group"
                                 style="background-color:#28a745; color: #ffffff ;padding: 5px; border-radius: .25rem"></td>
-                            <td><b> <?php _e( 'Booked', 'groundhogg' ); ?></b></td>
+                            <td><b> <?php _e( 'Booked', 'groundhogg-calendar' ); ?></b></td>
                             <td class="fc-button-group"
                                 style="background-color:#dc3545; color: #ffffff ;padding: 5px; border-radius: .25rem"></td>
-                            <td><b> <?php _e( 'canceled', 'groundhogg' ); ?></b></td>
+                            <td><b> <?php _e( 'canceled', 'groundhogg-calendar' ); ?></b></td>
                         </tr>
                     </table>
                 </div>
                 <?php if ( $access_token && $google_calendar_id ) : ?>
                     <div class="alert alert-success">
-                        <b><?php _e( 'Google sync is on.', 'groundhogg' ); ?></b>
+                        <b><?php _e( 'Google sync is on.', 'groundhogg-calendar' ); ?></b>
                         <a class="button"
                            href="<?php echo wp_nonce_url( admin_url( 'admin.php?page=gh_calendar&action=google_sync&calendar=' . $_GET[ 'calendar' ] ) ); ?>"><?php _e( 'Sync Now' ); ?></a>
                     </div>
@@ -126,7 +126,7 @@ $google_calendar_id = $calendar->get_google_calendar_id();
 
                 <?php if ( $calendar->is_zoom_enabled() && ( !is_wp_error( $calendar->get_access_token_zoom() ) ) ) : ?>
                     <div class="alert alert-success">
-                        <b><?php _e( 'Zoom sync is on.', 'groundhogg' ); ?></b>
+                        <b><?php _e( 'Zoom sync is on.', 'groundhogg-calendar' ); ?></b>
                     </div>
 <!--                    --><?php
 //                    $response = wp_remote_get( GROUNDHOGG_BOOKING_CALENDAR_ZOOM_BASE_URL . '/users/me/meetings', [

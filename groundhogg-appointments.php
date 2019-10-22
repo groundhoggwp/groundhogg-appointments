@@ -3,10 +3,10 @@
  * Plugin Name: Groundhogg - Booking Calendar
  * Plugin URI:  https://www.groundhogg.io/downloads/booking-calendar/?utm_source=wp-plugins&utm_campaign=plugin-uri&utm_medium=wp-dash
  * Description: Create calendars and appointments.
- * Version: 2.0.5
+ * Version: 2.0.6
  * Author: Groundhogg Inc.
  * Author URI: https://www.groundhogg.io/?utm_source=wp-plugins&utm_campaign=author-uri&utm_medium=wp-dash
- * Text Domain: groundhogg
+ * Text Domain: groundhogg-calendar
  * Domain Path: /languages
  *
  * Groundhogg is free software: you can redistribute it and/or modify
@@ -22,7 +22,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-define( 'GROUNDHOGG_BOOKING_CALENDAR_VERSION', '2.0.5' );
+define( 'GROUNDHOGG_BOOKING_CALENDAR_VERSION', '2.0.6' );
 define( 'GROUNDHOGG_BOOKING_CALENDAR_PREVIOUS_STABLE_VERSION', '2.0.3' );
 define( 'GROUNDHOGG_BOOKING_CALENDAR_NAME', 'Booking Calendar' );
 
@@ -40,17 +40,17 @@ add_action( 'plugins_loaded', function (){
     load_plugin_textdomain( GROUNDHOGG_BOOKING_CALENDAR_TEXT_DOMAIN, false, basename( dirname( __FILE__ ) ) . '/languages' );
 } );
 
-define( 'GROUNDHOGG_BOOKING_CALENDAR_TEXT_DOMAIN', 'groundhogg' );
+define( 'GROUNDHOGG_BOOKING_CALENDAR_TEXT_DOMAIN', 'groundhogg-calendar' );
 
 if ( ! version_compare( PHP_VERSION, '5.6', '>=' ) ) {
     add_action( 'admin_notices', function(){
-        $message = sprintf( esc_html__( '%s requires PHP version %s+, plugin is currently NOT RUNNING.', 'groundhogg' ), GROUNDHOGG_BOOKING_CALENDAR_NAME, '5.6' );
+        $message = sprintf( esc_html__( '%s requires PHP version %s+, plugin is currently NOT RUNNING.', 'groundhogg-calendar' ), GROUNDHOGG_BOOKING_CALENDAR_NAME, '5.6' );
         $html_message = sprintf( '<div class="notice notice-error">%s</div>', wpautop( $message ) );
         echo wp_kses_post( $html_message );
     } );
 } elseif ( ! version_compare( get_bloginfo( 'version' ), '4.9', '>=' ) ) {
     add_action( 'admin_notices', function (){
-        $message = sprintf( esc_html__( '%s requires WordPress version %s+. Because you are using an earlier version, the plugin is currently NOT RUNNING.', 'groundhogg' ), GROUNDHOGG_BOOKING_CALENDAR_NAME, '4.9' );
+        $message = sprintf( esc_html__( '%s requires WordPress version %s+. Because you are using an earlier version, the plugin is currently NOT RUNNING.', 'groundhogg-calendar' ), GROUNDHOGG_BOOKING_CALENDAR_NAME, '4.9' );
         $html_message = sprintf( '<div class="notice notice-error">%s</div>', wpautop( $message ) );
         echo wp_kses_post( $html_message );
     } );
@@ -72,7 +72,7 @@ if ( ! version_compare( PHP_VERSION, '5.6', '>=' ) ) {
 
             // Is not loaded!
             if ( ! defined( 'GROUNDHOGG_VERSION' ) ){
-                $message = sprintf(esc_html__('Groundhoggg is not currently active, it must be active for %s to work.', 'groundhogg'), GROUNDHOGG_BOOKING_CALENDAR_NAME );
+                $message = sprintf(esc_html__('Groundhoggg is not currently active, it must be active for %s to work.', 'groundhogg-calendar'), GROUNDHOGG_BOOKING_CALENDAR_NAME );
                 $html_message = sprintf('<div class="notice notice-warning">%s</div>', wpautop($message));
                 echo wp_kses_post($html_message);
             }

@@ -162,8 +162,8 @@ class Plugin extends Extension
 
         include GROUNDHOGG_BOOKING_CALENDAR_PATH . '/templates/emails/approved.php';
 
-        $email_templates['approved']['title'] = _x( "Appointment Approved", 'email_template_name', 'groundhogg' );
-        $email_templates['approved']['description'] = _x( "Email sent when appointment is approved.", 'email_template_description', 'groundhogg' );
+        $email_templates['approved']['title'] = _x( "Appointment Approved", 'email_template_name', 'groundhogg-calendar' );
+        $email_templates['approved']['description'] = _x( "Email sent when appointment is approved.", 'email_template_description', 'groundhogg-calendar' );
         $email_templates['approved']['content'] = ob_get_contents();
 
         ob_clean();
@@ -173,8 +173,8 @@ class Plugin extends Extension
 
         include GROUNDHOGG_BOOKING_CALENDAR_PATH . '/templates/emails/booked.php';
 
-        $email_templates['booked']['title'] = _x( "Appointment Booked", 'email_template_name', 'groundhogg' );
-        $email_templates['booked']['description'] = _x( "Email sent when appointment is booked.", 'email_template_description', 'groundhogg' );
+        $email_templates['booked']['title'] = _x( "Appointment Booked", 'email_template_name', 'groundhogg-calendar' );
+        $email_templates['booked']['description'] = _x( "Email sent when appointment is booked.", 'email_template_description', 'groundhogg-calendar' );
         $email_templates['booked']['content'] = ob_get_contents();
 
         ob_clean();
@@ -183,8 +183,8 @@ class Plugin extends Extension
 
         include GROUNDHOGG_BOOKING_CALENDAR_PATH . '/templates/emails/cancelled.php';
 
-        $email_templates['cancelled']['title'] = _x( "Appointment Cancelled", 'email_template_name', 'groundhogg' );
-        $email_templates['cancelled']['description'] = _x( "Email sent when appointment is cancelled.", 'email_template_description', 'groundhogg' );
+        $email_templates['cancelled']['title'] = _x( "Appointment Cancelled", 'email_template_name', 'groundhogg-calendar' );
+        $email_templates['cancelled']['description'] = _x( "Email sent when appointment is cancelled.", 'email_template_description', 'groundhogg-calendar' );
         $email_templates['cancelled']['content'] = ob_get_contents();
 
         ob_clean();
@@ -194,8 +194,8 @@ class Plugin extends Extension
 
         include GROUNDHOGG_BOOKING_CALENDAR_PATH . '/templates/emails/rescheduled.php';
 
-        $email_templates['rescheduled']['title'] = _x( "Appointment Rescheduled", 'email_template_name', 'groundhogg' );
-        $email_templates['rescheduled']['description'] = _x( "Email sent when appointment is rescheduled.", 'email_template_description', 'groundhogg' );
+        $email_templates['rescheduled']['title'] = _x( "Appointment Rescheduled", 'email_template_name', 'groundhogg-calendar' );
+        $email_templates['rescheduled']['description'] = _x( "Email sent when appointment is rescheduled.", 'email_template_description', 'groundhogg-calendar' );
         $email_templates['rescheduled']['content'] = ob_get_contents();
 
         ob_clean();
@@ -204,8 +204,8 @@ class Plugin extends Extension
 
         include GROUNDHOGG_BOOKING_CALENDAR_PATH . '/templates/emails/reminder.php';
 
-        $email_templates['reminder']['title'] = _x( "Appointment Reminder", 'email_template_name', 'groundhogg' );
-        $email_templates['reminder']['description'] = _x( "Email sent when appointment is reminder.", 'email_template_description', 'groundhogg' );
+        $email_templates['reminder']['title'] = _x( "Appointment Reminder", 'email_template_name', 'groundhogg-calendar' );
+        $email_templates['reminder']['description'] = _x( "Email sent when appointment is reminder.", 'email_template_description', 'groundhogg-calendar' );
         $email_templates['reminder']['content'] = ob_get_contents();
 
         ob_clean();

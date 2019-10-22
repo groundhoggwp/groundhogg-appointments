@@ -16,7 +16,7 @@ class Booking_Calendar extends Benchmark
 {
     public function get_name()
     {
-        return __( 'Booking Calendar', 'groundhogg' );
+        return __( 'Booking Calendar', 'groundhogg-calendar' );
     }
 
     public function get_type()
@@ -26,7 +26,7 @@ class Booking_Calendar extends Benchmark
 
     public function get_description()
     {
-        return __( 'Run automation based on appointment booked in booking calendar.', 'groundhogg' );
+        return __( 'Run automation based on appointment booked in booking calendar.', 'groundhogg-calendar' );
     }
 
     public function get_icon()
@@ -49,7 +49,7 @@ class Booking_Calendar extends Benchmark
     {
         html()->start_form_table();
         html()->start_row();
-        html()->th( __( 'Run when appointment book in this calendar:', 'groundhogg' ) );
+        html()->th( __( 'Run when appointment book in this calendar:', 'groundhogg-calendar' ) );
         html()->td(
             [
                $this->dropdown_calendar( ['selected' => $this->get_setting('calendar')] ),
@@ -57,7 +57,7 @@ class Booking_Calendar extends Benchmark
         );
         html()->end_row();
         html()->start_row();
-        html()->th( __( 'Run when appointment book in this calendar:', 'groundhogg' ) );
+        html()->th( __( 'Run when appointment book in this calendar:', 'groundhogg-calendar' ) );
         html()->td(
             [
                 html()->dropdown( [
@@ -86,7 +86,7 @@ class Booking_Calendar extends Benchmark
             'selected' => 0,
             'class' => 'gh_calendar-picker gh-select2',
             'multiple' => false,
-            'placeholder' => __( 'Please Select a calendar', 'groundhogg' ),
+            'placeholder' => __( 'Please Select a calendar', 'groundhogg-calendar' ),
             'tags' => false,
         ) );
         $calendars = get_db( 'calendars' )->query();

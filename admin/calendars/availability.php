@@ -78,7 +78,7 @@ endforeach;
 ?>
 <form method="post">
     <?php wp_nonce_field(); ?>
-    <h2><?php _e('Availability', 'groundhogg'); ?></h2>
+    <h2><?php _e('Availability', 'groundhogg-calendar'); ?></h2>
     <style>select{ vertical-align: top !important;}</style>
 
     <?php
@@ -105,7 +105,7 @@ endforeach;
                 'months'    => __( 'Months' ),
             ],
         ]),
-        html()->description( __( 'The minimum amount of time from the current date and time someone can book an appointment.', 'groundhogg' ) ),
+        html()->description( __( 'The minimum amount of time from the current date and time someone can book an appointment.', 'groundhogg-calendar' ) ),
     ] );
 
     html()->end_row();
@@ -131,7 +131,7 @@ endforeach;
                 'months'    => __( 'Months' ),
             ],
         ]),
-        html()->description( __( 'The maximum amount of time from the current day that someone can book an appointment.', 'groundhogg' ) ),
+        html()->description( __( 'The maximum amount of time from the current day that someone can book an appointment.', 'groundhogg-calendar' ) ),
     ] );
 
     html()->end_row();
@@ -165,6 +165,6 @@ html()->list_table( [ 'style' => [ 'max-width' => '700px' ] ], $cols, $rows );
 <?php
 
 
-submit_button( __( 'Update Availabiliy', 'groundhogg' ) );
+submit_button( __( 'Update Availabiliy', 'groundhogg-calendar' ) );
 ?>
 </form>

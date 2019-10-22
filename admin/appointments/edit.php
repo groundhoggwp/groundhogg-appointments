@@ -17,7 +17,7 @@ $appointment_id = absint( get_request_var( 'appointment' ) );
 
 $appointment = new Appointment( $appointment_id );
 if ( !$appointment->exists() ) {
-    wp_die( __( "Appointment not found!", 'groundhogg' ) );
+    wp_die( __( "Appointment not found!", 'groundhogg-calendar' ) );
 }
 ?>
 <form name="" id="" method="post" action="">
@@ -27,14 +27,14 @@ if ( !$appointment->exists() ) {
     <table class="form-table">
         <tbody>
         <tr>
-            <th scope="row"><label for="user_id"><?php _e( 'Appointment Name', 'groundhogg' ) ?></label></th>
+            <th scope="row"><label for="user_id"><?php _e( 'Appointment Name', 'groundhogg-calendar' ) ?></label></th>
             <td><?php echo html()->input( [
                     'name' => 'appointmentname',
                     'value' => $appointment->get_name()
                 ] ); ?></td>
         </tr>
         <tr>
-            <th scope="row"><label for="user_id"><?php _e( 'Owner Name', 'groundhogg' ) ?></label></th>
+            <th scope="row"><label for="user_id"><?php _e( 'Owner Name', 'groundhogg-calendar' ) ?></label></th>
             <td>
                 <?php
                 $user_data = get_userdata( $appointment->get_owner_id() );
@@ -47,7 +47,7 @@ if ( !$appointment->exists() ) {
             </td>
         </tr>
         <tr>
-            <th scope="row"><label for="user_id"><?php _e( 'Contact', 'groundhogg' ) ?></label></th>
+            <th scope="row"><label for="user_id"><?php _e( 'Contact', 'groundhogg-calendar' ) ?></label></th>
             <td>
                 <div style="max-width: 350px">
                     <?php echo html()->dropdown_contacts( [ 'selected' => [ $appointment->get_contact_id() ] ] ); ?>
@@ -55,12 +55,12 @@ if ( !$appointment->exists() ) {
                         'page' => 'gh_contacts',
                         'action' => 'edit',
                         'contact' => $appointment->get_contact_id()
-                    ], admin_url( 'admin.php' ) ) ], __( 'Edit Contact', 'groundhogg' ) ), 'span', [ 'class' => 'row-actions' ] ); ?>
+                    ], admin_url( 'admin.php' ) ) ], __( 'Edit Contact', 'groundhogg-calendar' ) ), 'span', [ 'class' => 'row-actions' ] ); ?>
                 </div>
             </td>
         </tr>
         <tr>
-            <th scope="row"><label for="appointment-status"><?php _e( 'Appointment Status', 'groundhogg' ) ?></label>
+            <th scope="row"><label for="appointment-status"><?php _e( 'Appointment Status', 'groundhogg-calendar' ) ?></label>
             </th>
             <td id="appointment-status">
                 <?php echo html()->input( [
@@ -78,7 +78,7 @@ if ( !$appointment->exists() ) {
             </td>
         </tr>
         <tr>
-            <th scope="row"><label for="start_date"><?php _e( 'Appointment Start Time', 'groundhogg' ) ?></label></th>
+            <th scope="row"><label for="start_date"><?php _e( 'Appointment Start Time', 'groundhogg-calendar' ) ?></label></th>
             <td>
                 <?php
                 echo html()->date_picker( [
@@ -102,7 +102,7 @@ if ( !$appointment->exists() ) {
             </td>
         </tr>
         <tr>
-            <th scope="row"><label for="end_date"><?php _e( 'Appointment End Time', 'groundhogg' ) ?></label></th>
+            <th scope="row"><label for="end_date"><?php _e( 'Appointment End Time', 'groundhogg-calendar' ) ?></label></th>
             <td>
                 <?php
                 echo html()->date_picker( [
@@ -126,7 +126,7 @@ if ( !$appointment->exists() ) {
             </td>
         </tr>
         <tr>
-            <th scope="row"><label for="notes"><?php _e( 'Notes', 'groundhogg' ) ?></label></th>
+            <th scope="row"><label for="notes"><?php _e( 'Notes', 'groundhogg-calendar' ) ?></label></th>
             <td>
                 <?php
                 $note = $appointment->get_meta( 'notes', true );
@@ -136,7 +136,7 @@ if ( !$appointment->exists() ) {
                     'value' => $note
                 ] );
                 ?>
-                <p class="description"><?php _e( 'Additional information about appointment.', 'groundhogg' ) ?></p>
+                <p class="description"><?php _e( 'Additional information about appointment.', 'groundhogg-calendar' ) ?></p>
             </td>
         </tr>
         </tbody>
