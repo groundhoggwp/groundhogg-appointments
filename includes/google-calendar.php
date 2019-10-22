@@ -158,6 +158,11 @@ class Google_Calendar
         }
 
         $client = $this->get_google_client_from_access_token( $calendar->get_id() );
+
+        if ( is_wp_error($client) ) {
+            return new WP_Error( 'invalid_access_code', __( 'Groundhogg is not able to authorize your request. Please re-generate your access code from settings and re-sync your calendar.', 'groundhogg' ) , $client->get_error_message());
+        }
+
         $service = new Google_Service_Calendar( $client );
 
         if ( !$this->is_valid_calendar( $calendar->get_id(), $google_calendar_id, $service ) ) {
