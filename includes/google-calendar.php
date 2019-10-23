@@ -180,7 +180,7 @@ class Google_Calendar
         $events = $results->getItems();
 
         if ( empty( $events ) ) {
-            return new WP_Error( 'no_events', __( 'No events found in Google calendar.', 'groundhogg' ) );
+            return new WP_Error( 'no_events', __( 'No future appointment found in Google calendar for sync.', 'groundhogg' ) );
         }
 
         // update values in data base
