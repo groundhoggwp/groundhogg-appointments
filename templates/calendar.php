@@ -248,7 +248,7 @@ nocache_headers();
     </div>
 </div>
 <?php
-wp_footer();
+//wp_footer();
 ?>
 <div class="clear"></div>
 </body>
