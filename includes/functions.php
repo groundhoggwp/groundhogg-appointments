@@ -5,12 +5,9 @@ namespace GroundhoggBookingCalendar;
 
 use Groundhogg\Email;
 use Groundhogg\Event;
-use Groundhogg\Event_Process;
-use GroundhoggBookingCalendar\Classes\Email_Reminder;
 use GroundhoggBookingCalendar\Classes\SMS_Reminder;
 use GroundhoggSMS\Classes\SMS;
 use function Groundhogg\get_array_var;
-use function Groundhogg\get_db;
 use GroundhoggBookingCalendar\Classes\Appointment;
 use GroundhoggBookingCalendar\Classes\Reminder;
 
