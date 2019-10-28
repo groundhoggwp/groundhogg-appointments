@@ -986,6 +986,8 @@ class Calendar extends Base_Object_With_Meta
 
         do_action( 'groundhogg/calendar/schedule_appointment/before', $this, $args );
 
+        $args = apply_filters( 'groundhogg/calendar/schedule_appointment', $args, $this );
+
         $note = $args[ 'notes' ];
         unset( $args[ 'notes' ] );
         $appointment = new Appointment( $args );
