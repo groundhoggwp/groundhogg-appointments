@@ -1015,6 +1015,13 @@ class Calendar extends Base_Object_With_Meta
 
         do_action( 'groundhogg/calendar/appointment/book', $appointment->get_id(), Reminder::BOOKED );
 
+        if ($args['status'] ==='approved') {
+            $appointment->approve();
+        }
+
+        if ($args['status'] ==='cancelled') {
+            $appointment->cancel();
+        }
         return $appointment;
 
     }
