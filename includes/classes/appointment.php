@@ -401,7 +401,7 @@ class Appointment extends Base_Object_With_Meta
             return false;
         }
 
-        $this->cancel_reminders();
+//        $this->cancel_reminders();
 
         do_action( 'groundhogg/calendar/appointment/approve/before' );
         $this->schedule_reminders( Reminder::APPROVED );
