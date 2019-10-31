@@ -84,7 +84,7 @@ class Replacements
      */
     protected function get_appointment()
     {
-        if ( $this->appointment ) {
+        if ( isset($this->appointment ) ) {
             return $this->appointment;
         }
 

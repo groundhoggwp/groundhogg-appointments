@@ -203,4 +203,3 @@ enqueue_groundhogg_modal();
         submit_button();
         ?>
     </form>
-<?php
