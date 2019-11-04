@@ -5,11 +5,17 @@ namespace GroundhoggBookingCalendar;
 
 use Groundhogg\Email;
 use Groundhogg\Event;
+use Groundhogg\Plugin;
+use GroundhoggBookingCalendar\Classes\Calendar;
 use GroundhoggBookingCalendar\Classes\SMS_Reminder;
 use GroundhoggSMS\Classes\SMS;
+use function Groundhogg\admin_page_url;
 use function Groundhogg\get_array_var;
 use GroundhoggBookingCalendar\Classes\Appointment;
 use GroundhoggBookingCalendar\Classes\Reminder;
+use function Groundhogg\get_form_list;
+use function Groundhogg\get_request_var;
+use function Groundhogg\groundhogg_url;
 
 function convert_to_client_timezone( $time, $timezone = '' )
 {
@@ -230,3 +236,71 @@ function is_sms_plugin_active()
 {
     return \Groundhogg\is_sms_plugin_active();
 }
+
+
+function add_booking_appointment()
+{
+?>
+<table  class="form-table">
+    <tr>
+        <th><?php _ex( 'Book Appointment', 'contact_record', 'groundhogg-calendar' ); ?></th>
+        <td>
+            <div style="max-width: 400px;">
+                <?php
+                $calendars = get_calendar_list();
+                echo Plugin::$instance->utils->html->select2( [
+                    'name' => 'appointment_booking_from_contact',
+                    'id' => 'appointment_booking_from_contact',
+                    'class' => 'appointment_booking_from_contact gh-select2',
+                    'data' => $calendars,
+                    'multiple' => false,
+                    'placeholder' => __( 'Please select a calendar', 'groundhogg-calendar' ),
+                ] );
+                ?>
+                <div class="row-actions">
+                    <button type="submit" name="appointment_book" value="appointment_book"
+                            class="button"><?php _e( 'Book Appointment', 'groundhogg-calendar' ); ?></button>
+                </div>
+            </div>
+        </td>
+    </tr>
+</table>
+<?php
+}
+
+add_action( 'groundhogg/admin/contact/record/tab/actions' , __NAMESPACE__ . '\add_booking_appointment' , 12);
+
+
+
+
+function get_calendar_list()
+{
+
+    $calendars = Plugin::$instance->dbs->get_db( 'calendars' )->query();
+
+    $calendar_list = array();
+    $default = 0;
+    foreach ( $calendars as $calendar ) {
+        if ( !$default ) {
+            $default = $calendar->ID;
+        }
+        $calendar_list[ $calendar->ID ] = $calendar->name;
+    }
+
+    return $calendar_list;
+}
+
+
+
+function display_calendar_contact($contact_id , $contact )
+{
+    if ( get_request_var( 'appointment_book' ) ) {
+        wp_safe_redirect( admin_page_url('gh_calendar' ,  [
+            'action' => 'edit',
+            'contact' => $contact_id,
+            'calendar' => absint( get_request_var( 'appointment_booking_from_contact' ) ),
+        ]));
+    }
+}
+
+add_action('groundhogg/admin/contact/save' , __NAMESPACE__. '\display_calendar_contact', 10 , 2 );

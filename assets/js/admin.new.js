@@ -120,6 +120,7 @@
                     notes: $('#notes').val(),
                     calendar_id: $('#calendar_id').val(),
                     appointment_name: $('#appointmentname').val()
+
                 },
                 function callback(response) {
                     // Handler
@@ -128,6 +129,12 @@
                         $('#calendar').fullCalendar('renderEvent', response.data.appointment, 'stick');
                         alert(response.data.msg);
                         calendar.clearData();
+                        var url_string = window.location.href;
+                        var url = new URL(url_string);
+                        var c = url.searchParams.get("contact");
+                        if(c) {
+                            location.replace(response.data.url);
+                        }
                     } else {
                         alert(response.data);
                     }

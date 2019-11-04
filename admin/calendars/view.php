@@ -1,6 +1,7 @@
 <?php
 namespace GroundhoggBookingCalendar\Admin\Appointments;
 
+use function Groundhogg\get_request_var;
 use function Groundhogg\html;
 use function Groundhogg\get_db;
 use GroundhoggBookingCalendar\Classes\Appointment;
@@ -37,10 +38,18 @@ $google_calendar_id = $calendar->get_google_calendar_id();
                             <label><?php _e( 'Select Contact' ) ?></label>
                         </th>
                         <td>
-                            <?php echo html()->dropdown_contacts( [
+                            <?php
+                            $contact_details = [
                                 'name' => 'contact_id',
-                                'id' => 'contact-id'
-                            ] ); ?>
+                                'id' => 'contact-id',
+                            ] ;
+                            $contact_id =  absint(get_request_var('contact') ) ;
+                            if ($contact_id) {
+                                $contact_details [ 'selected' ] = [ $contact_id ];
+                                $contact_details [ 'disabled' ] = true;
+                               echo "<input type='hidden' name='redirect' value='true' />";
+                            }
+                            echo html()->dropdown_contacts($contact_details); ?>
                             <p class="description"><?php _e( 'Please select client contact from contact list.', 'groundhogg-calendar' ) ?></p>
                         </td>
                     </tr>

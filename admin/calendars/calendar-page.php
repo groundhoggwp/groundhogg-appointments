@@ -7,6 +7,7 @@ use Groundhogg\Admin\Admin_Page;
 use Groundhogg\Email;
 use GroundhoggSMS\Classes\SMS;
 use WP_Error;
+use function Groundhogg\admin_page_url;
 use function Groundhogg\get_array_var;
 use function Groundhogg\get_contactdata;
 use function Groundhogg\get_db;
@@ -122,7 +123,17 @@ class Calendar_Page extends Admin_Page
             wp_send_json_error( __( 'Something went wrong while creating appointment.', 'groundhogg-calendar' ) );
         }
 
-        wp_send_json_success( [ 'appointment' => $appointment->get_full_calendar_event(), 'msg' => __( 'Appointment booked successfully.', 'groundhogg-calendar' ) ] );
+        $response = [
+            'appointment' => $appointment->get_full_calendar_event(),
+            'msg' => __( 'Appointment booked successfully.', 'groundhogg-calendar' ),
+            'url' => admin_page_url( 'gh_contacts', [
+                'action' => 'edit',
+                'contact' => $appointment->get_contact_id(),
+            ] )
+        ];
+
+        wp_send_json_success( $response );
+
     }
 
 //    /**
@@ -164,7 +175,8 @@ class Calendar_Page extends Admin_Page
     /**
      * process AJAX request to update an appointment.
      */
-    public function update_appointment_ajax()
+    public
+    function update_appointment_ajax()
     {
         if ( !current_user_can( 'edit_appointment' ) ) {
             wp_send_json_error();
@@ -186,27 +198,32 @@ class Calendar_Page extends Admin_Page
 
     }
 
-    public function get_slug()
+    public
+    function get_slug()
     {
         return 'gh_calendar';
     }
 
-    public function get_name()
+    public
+    function get_name()
     {
         return _x( 'Calendars', 'page_title', 'groundhogg-calendar' );
     }
 
-    public function get_cap()
+    public
+    function get_cap()
     {
         return 'view_calendar';
     }
 
-    public function get_item_type()
+    public
+    function get_item_type()
     {
         return 'calendar';
     }
 
-    public function get_priority()
+    public
+    function get_priority()
     {
         return 48;
     }
@@ -214,7 +231,8 @@ class Calendar_Page extends Admin_Page
     /**
      * enqueue editor scripts for full calendar
      */
-    public function scripts()
+    public
+    function scripts()
     {
         if ( $this->get_current_action() === 'edit' || $this->get_current_action() === 'edit_appointment' ) {
             wp_enqueue_script( 'groundhogg-appointments-admin' );
@@ -246,7 +264,8 @@ class Calendar_Page extends Admin_Page
     }
 
 
-    public function view()
+    public
+    function view()
     {
         if ( !class_exists( 'Calendars_Table' ) ) {
             include dirname( __FILE__ ) . '/calendars-table.php';
@@ -258,7 +277,8 @@ class Calendar_Page extends Admin_Page
         $calendars_table->display();
     }
 
-    public function edit()
+    public
+    function edit()
     {
         if ( !current_user_can( 'edit_calendar' ) ) {
             $this->wp_die_no_access();
@@ -267,7 +287,8 @@ class Calendar_Page extends Admin_Page
         include dirname( __FILE__ ) . '/edit.php';
     }
 
-    public function add()
+    public
+    function add()
     {
         if ( !current_user_can( 'add_calendar' ) ) {
             $this->wp_die_no_access();
@@ -276,7 +297,8 @@ class Calendar_Page extends Admin_Page
         include dirname( __FILE__ ) . '/add.php';
     }
 
-    public function edit_appointment()
+    public
+    function edit_appointment()
     {
         if ( !current_user_can( 'view_appointment' ) ) {
             $this->wp_die_no_access();
@@ -285,7 +307,8 @@ class Calendar_Page extends Admin_Page
     }
 
 
-    public function process_delete()
+    public
+    function process_delete()
     {
         if ( !current_user_can( 'delete_calendar' ) ) {
             $this->wp_die_no_access();
@@ -308,7 +331,8 @@ class Calendar_Page extends Admin_Page
      *
      * @return string|\WP_Error
      */
-    public function process_add()
+    public
+    function process_add()
     {
 
         if ( !current_user_can( 'add_calendar' ) ) {
@@ -471,7 +495,8 @@ class Calendar_Page extends Admin_Page
      *
      * @return bool|string|void|WP_Error
      */
-    public function process_google_sync()
+    public
+    function process_google_sync()
     {
         if ( !current_user_can( 'edit_appointment' ) ) {
             $this->wp_die_no_access();
@@ -495,7 +520,8 @@ class Calendar_Page extends Admin_Page
      *
      * @return bool|\WP_Error
      */
-    public function process_edit_appointment()
+    public
+    function process_edit_appointment()
     {
 
         if ( !current_user_can( 'edit_appointment' ) ) {
@@ -576,7 +602,8 @@ class Calendar_Page extends Admin_Page
      *
      * @return string|void|WP_Error
      */
-    public function process_approve_appointment()
+    public
+    function process_approve_appointment()
     {
         if ( !current_user_can( 'edit_appointment' ) ) {
             $this->wp_die_no_access();
@@ -606,7 +633,8 @@ class Calendar_Page extends Admin_Page
      *
      * @return string|void|WP_Error
      */
-    public function process_cancel_appointment()
+    public
+    function process_cancel_appointment()
     {
         if ( !current_user_can( 'edit_appointment' ) ) {
             $this->wp_die_no_access();
@@ -636,7 +664,8 @@ class Calendar_Page extends Admin_Page
      *
      * @return string|\WP_Error
      */
-    public function process_delete_appointment()
+    public
+    function process_delete_appointment()
     {
         if ( !current_user_can( 'delete_appointment' ) ) {
             $this->wp_die_no_access();
@@ -669,7 +698,8 @@ class Calendar_Page extends Admin_Page
      *
      * @return bool
      */
-    public function process_edit()
+    public
+    function process_edit()
     {
         if ( !current_user_can( 'edit_calendar' ) ) {
             $this->wp_die_no_access();
@@ -704,7 +734,8 @@ class Calendar_Page extends Admin_Page
         return true;
     }
 
-    protected function update_sms()
+    protected
+    function update_sms()
     {
         if ( !current_user_can( 'edit_calendar' ) ) {
             $this->wp_die_no_access();
@@ -752,7 +783,8 @@ class Calendar_Page extends Admin_Page
 
     }
 
-    protected function update_emails()
+    protected
+    function update_emails()
     {
 
         if ( !current_user_can( 'edit_calendar' ) ) {
@@ -796,7 +828,8 @@ class Calendar_Page extends Admin_Page
     /**
      * Update calendar availability
      */
-    protected function update_availability()
+    protected
+    function update_availability()
     {
 
         if ( !current_user_can( 'edit_calendar' ) ) {
@@ -848,7 +881,8 @@ class Calendar_Page extends Admin_Page
     /**
      *  Updates the calendar settings.
      */
-    protected function update_calendar_settings()
+    protected
+    function update_calendar_settings()
     {
         $calendar_id = absint( get_request_var( 'calendar' ) );
 
@@ -931,7 +965,8 @@ class Calendar_Page extends Admin_Page
      *
      * @return string
      */
-    public function process_access_code()
+    public
+    function process_access_code()
     {
         $return = add_query_arg( [
             'page' => 'gh_calendar',
@@ -951,7 +986,8 @@ class Calendar_Page extends Admin_Page
      *
      * @return string
      */
-    public function process_access_code_zoom()
+    public
+    function process_access_code_zoom()
     {
         $return = add_query_arg( [
             'page' => 'gh_calendar',
@@ -971,7 +1007,8 @@ class Calendar_Page extends Admin_Page
      *
      * @return bool|WP_Error
      */
-    public function process_verify_google_code()
+    public
+    function process_verify_google_code()
     {
 
         if ( !get_request_var( 'code' ) ) {
@@ -1013,7 +1050,8 @@ class Calendar_Page extends Admin_Page
      * @return bool|WP_Error
      */
 
-    public function process_verify_zoom_code()
+    public
+    function process_verify_zoom_code()
     {
 
         if ( !get_request_var( 'code' ) ) {
