@@ -3,6 +3,7 @@
 namespace GroundhoggBookingCalendar;
 
 use Groundhogg\Event;
+use GroundhoggBookingCalendar\Classes\Calendar;
 use GroundhoggBookingCalendar\Classes\SMS_Reminder;
 use function Groundhogg\get_contactdata;
 use function Groundhogg\get_db;
@@ -75,7 +76,28 @@ class Replacements
                 'code' => 'zoom_meeting_details',
                 'callback' => array( $this, 'zoom_meeting_details' ),
                 'description' => __( 'Detail Description about zoom meeting.( needs zoom enabled and synced )', 'groundhogg-calendar' ),
+            ],
+            [
+                'code' => 'calendar_owner_first_name',
+                'callback' => array( $this, 'calendar_owner_first_name' ),
+                'description' => __( 'First name of calendar owner.', 'groundhogg-calendar' ),
+            ],
+            [
+                'code' => 'calendar_owner_last_name',
+                'callback' => array( $this, 'calendar_owner_last_name' ),
+                'description' => __( 'Last name of calendar owner.', 'groundhogg-calendar' ),
+            ],
+            [
+                'code' => 'calendar_owner_email',
+                'callback' => array( $this, 'calendar_owner_email' ),
+                'description' => __( 'Email address of calendar owner.', 'groundhogg-calendar' ),
+            ],
+            [
+                'code' => 'calendar_owner_phone',
+                'callback' => array( $this, 'calendar_owner_phone' ),
+                'description' => __( 'Phone number of calendar owner.', 'groundhogg-calendar' ),
             ]
+
         ];
     }
 
@@ -214,12 +236,12 @@ class Replacements
     }
 
 
-    /**
-     * fetch Zoom meting description from zoom
-     *
-     * @return bool|string
-     */
-    public function zoom_meeting_details( )
+           /**
+         * fetch Zoom meting description from zoom
+         *
+         * @return bool|string
+         */
+        public function zoom_meeting_details( )
     {
         if ( !$this->get_appointment() ) {
             return false;
@@ -228,5 +250,94 @@ class Replacements
         return wpautop( $this->get_appointment()->get_zoom_meeting_detail() );
 
     }
+
+
+    /**
+     * Get the appointment end time.
+     *
+     * @param int $contact_id
+     * @return bool|string
+     */
+    public function calendar_owner_first_name( $contact_id = 0 )
+    {
+        if ( !$this->get_appointment() ) {
+            return false;
+        }
+
+        $owner_id = $this->get_appointment()->get_owner_id();
+
+        $user = get_user_by( 'ID' , $owner_id );
+        if ( !$user ) {
+            //return admin details
+            $user = get_user_by( 'email', get_bloginfo( 'admin_email' ) );
+        }
+
+        return $user->first_name;
+    }
+
+    /**
+     * Get the appointment end time.
+     *
+     * @param int $contact_id
+     * @return bool|string
+     */
+    public function calendar_owner_last_name( $contact_id = 0 )
+    {
+        if ( !$this->get_appointment() ) {
+            return false;
+        }
+
+        $owner_id = $this->get_appointment()->get_owner_id();
+
+        $user = get_user_by( 'ID' , $owner_id );
+        if ( !$user ) {
+            //return admin details
+            $user = get_user_by( 'email', get_bloginfo( 'admin_email' ) );
+        }
+
+        return $user->last_name;
+    }
+
+    /**
+     * Get the appointment end time.
+     *
+     * @param int $contact_id
+     * @return bool|string
+     */
+    public function calendar_owner_email( $contact_id = 0 )
+    {
+        if ( !$this->get_appointment() ) {
+            return false;
+        }
+
+        $owner_id = $this->get_appointment()->get_owner_id();
+
+        $user = get_user_by( 'ID' , $owner_id );
+        if ( !$user ) {
+            //return admin details
+            $user = get_user_by( 'email', get_bloginfo( 'admin_email' ) );
+        }
+
+        return $user->user_email;
+    }
+
+    public function calendar_owner_phone( $contact_id = 0 )
+    {
+        if ( !$this->get_appointment() ) {
+            return false;
+        }
+
+        $owner_id = $this->get_appointment()->get_owner_id();
+
+        $user = get_user_by( 'ID' , $owner_id );
+        if ( !$user || !$user->phone ) {
+            //return admin details
+            return \Groundhogg\Plugin::instance()->replacements->replacement_business_phone();
+        }
+
+        return $user->phone;
+    }
+
+
 
 }
