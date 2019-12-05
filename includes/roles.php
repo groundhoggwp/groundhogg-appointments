@@ -55,7 +55,7 @@ class Roles extends \Groundhogg\Roles
     {
         return [
             'view_own_calendar',
-            'edit_own_calendar',
+            'edit_calendar',
 
             'view_appointment',
             'add_appointment',
