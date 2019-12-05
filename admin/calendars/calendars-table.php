@@ -1,6 +1,7 @@
 <?php
 namespace GroundhoggBookingCalendar\Admin\Calendars;
 
+use function Groundhogg\current_user_is;
 use function Groundhogg\get_db;
 use function Groundhogg\get_request_query;
 use function Groundhogg\get_url_var;
@@ -155,8 +156,9 @@ class Calendars_Table extends WP_List_Table {
 		    'id'    => '',
 		    'class' => 'regular-text code',
 		    'value' => sprintf( '[gh_calendar id="%d" appointment_name="%s"]', $calendar->get_id(), $calendar->get_name() ) ,
-		    'attributes' => ' onfocus="this.select()" readonly',
-		    'placeholder' => ''
+		    'attributes' => ' onfocus="this.select()"',
+            'readonly' => true,
+            'onfocus' => 'this.select()'
 	    ) );
     }
 
@@ -225,7 +227,13 @@ class Calendars_Table extends WP_List_Table {
         $search  = get_url_var( 's' );
         $order   = get_url_var( 'order', 'DESC' );
         $orderby = get_url_var( 'orderby', $this->get_db()->get_primary_key() );
-        $where = [];
+        $where = [
+            'relationship' => "AND",
+        ];
+        // Sales person can only see their own contacts...
+        if ( current_user_is( 'sales_manager' ) ) {
+            $where[] = [ 'col' => 'user_id', 'val' => get_current_user_id(), 'compare' => '=' ];
+        }
         $args = array(
             'where'   => $where,
             'limit'   => $per_page,

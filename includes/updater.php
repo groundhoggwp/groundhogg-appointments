@@ -32,6 +32,7 @@ class Updater extends \Groundhogg\Updater
         return [
             '2.0',
             '2.0.3',
+            '2.1.2',
         ];
     }
 
@@ -176,6 +177,15 @@ class Updater extends \Groundhogg\Updater
 
         $calendar->update_meta( 'rules', $availability );
 
+    }
+
+    public function  version_2_1_2()
+    {
+        \GroundhoggBookingCalendar\Plugin::$instance->roles->remove_roles_and_caps();
+        $sales_manager_role = get_role( 'sales_manager' );
+        $sales_manager_role->remove_cap('view_calendar' );
+        \GroundhoggBookingCalendar\Plugin::$instance->roles->add_roles();
+        \GroundhoggBookingCalendar\Plugin::$instance->roles->add_caps();
     }
 
 

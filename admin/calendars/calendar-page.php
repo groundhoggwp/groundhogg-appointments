@@ -8,6 +8,7 @@ use Groundhogg\Email;
 use GroundhoggSMS\Classes\SMS;
 use WP_Error;
 use function Groundhogg\admin_page_url;
+use function Groundhogg\current_user_is;
 use function Groundhogg\get_array_var;
 use function Groundhogg\get_contactdata;
 use function Groundhogg\get_db;
@@ -198,8 +199,7 @@ class Calendar_Page extends Admin_Page
 
     }
 
-    public
-    function get_slug()
+    public function get_slug()
     {
         return 'gh_calendar';
     }
@@ -213,7 +213,7 @@ class Calendar_Page extends Admin_Page
     public
     function get_cap()
     {
-        return 'view_calendar';
+        return 'view_appointment';
     }
 
     public
@@ -227,6 +227,16 @@ class Calendar_Page extends Admin_Page
     {
         return 48;
     }
+
+    public function get_title_actions()
+    {
+        if ( current_user_is( 'sales_manager' ) ) {
+            return [];
+        } else {
+           return parent::get_title_actions();
+        }
+    }
+
 
     /**
      * enqueue editor scripts for full calendar
@@ -277,13 +287,11 @@ class Calendar_Page extends Admin_Page
         $calendars_table->display();
     }
 
-    public
-    function edit()
+    public function edit()
     {
         if ( !current_user_can( 'edit_calendar' ) ) {
             $this->wp_die_no_access();
         }
-
         include dirname( __FILE__ ) . '/edit.php';
     }
 
@@ -884,8 +892,8 @@ class Calendar_Page extends Admin_Page
     protected
     function update_calendar_settings()
     {
-        $calendar_id = absint( get_request_var( 'calendar' ) );
 
+        $calendar_id = absint( get_request_var( 'calendar' ) );
         $calendar = new Calendar( $calendar_id );
 
         $args = array(
