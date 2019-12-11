@@ -13,7 +13,7 @@ include GROUNDHOGG_PATH . 'templates/managed-page.php';
 add_action( 'wp_head', function(){
     ?>
     <style>
-        #main {max-width: 800px;}
+        #main {max-width: 1000px;}
     </style>
     <?php
 } );

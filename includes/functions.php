@@ -290,8 +290,12 @@ function get_calendar_list()
     return $calendar_list;
 }
 
-
-
+/**
+ * Action for adding an appointment via the contact screen
+ *
+ * @param $contact_id
+ * @param $contact
+ */
 function display_calendar_contact($contact_id , $contact )
 {
     if ( get_request_var( 'appointment_book' ) ) {
@@ -304,3 +308,74 @@ function display_calendar_contact($contact_id , $contact )
 }
 
 add_action('groundhogg/admin/contact/save' , __NAMESPACE__. '\display_calendar_contact', 10 , 2 );
+
+
+/**
+ * Convert a duration to human readable format.
+ *
+ * @since 5.1.0
+ *
+ * @param string $duration Duration will be in string format (HH:ii:ss) OR (ii:ss),
+ *                         with a possible prepended negative sign (-).
+ * @return string|false A human readable duration string, false on failure.
+ */
+function better_human_readable_duration( $duration = '' ) {
+    if ( ( empty( $duration ) || ! is_string( $duration ) ) ) {
+        return false;
+    }
+
+    $duration = trim( $duration );
+
+    // Remove prepended negative sign.
+    if ( '-' === substr( $duration, 0, 1 ) ) {
+        $duration = substr( $duration, 1 );
+    }
+
+    // Extract duration parts.
+    $duration_parts = array_reverse( explode( ':', $duration ) );
+    $duration_count = count( $duration_parts );
+
+    $hour   = null;
+    $minute = null;
+    $second = null;
+
+    if ( 3 === $duration_count ) {
+        // Validate HH:ii:ss duration format.
+        if ( ! ( (bool) preg_match( '/^([0-9]+):([0-5]?[0-9]):([0-5]?[0-9])$/', $duration ) ) ) {
+            return false;
+        }
+        // Three parts: hours, minutes & seconds.
+        list( $second, $minute, $hour ) = $duration_parts;
+    } elseif ( 2 === $duration_count ) {
+        // Validate ii:ss duration format.
+        if ( ! ( (bool) preg_match( '/^([0-5]?[0-9]):([0-5]?[0-9])$/', $duration ) ) ) {
+            return false;
+        }
+        // Two parts: minutes & seconds.
+        list( $second, $minute ) = $duration_parts;
+    } else {
+        return false;
+    }
+
+    $human_readable_duration = array();
+
+    // Add the hour part to the string.
+    if ( is_numeric( $hour ) && $hour > 0 ) {
+        /* translators: Time duration in hour or hours. */
+        $human_readable_duration[] = sprintf( _n( '%s hour', '%s hours', $hour ), (int) $hour );
+    }
+
+    // Add the minute part to the string.
+    if ( is_numeric( $minute ) && $minute > 0  ) {
+        /* translators: Time duration in minute or minutes. */
+        $human_readable_duration[] = sprintf( _n( '%s minute', '%s minutes', $minute ), (int) $minute );
+    }
+
+    // Add the second part to the string.
+    if ( is_numeric( $second ) && $second > 0  ) {
+        /* translators: Time duration in second or seconds. */
+        $human_readable_duration[] = sprintf( _n( '%s second', '%s seconds', $second ), (int) $second );
+    }
+
+    return implode( ', ', $human_readable_duration );
+}

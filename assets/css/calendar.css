@@ -9,30 +9,6 @@
     -moz-border-radius: 0;
 }
 
-/*
-body.groundhogg-calendar-body {
-    background-color: #FFF !important;
-}
-
-#booking-calendar .ui-datepicker {
-    font-family: inherit;
-}
-
-.ui-datepicker-current-day{
-    border-style: solid;
-    font-weight: bold;
-    color: #ffffff;
-}
-
-.ui-datepicker-next span:after {
-    content: "\2193";
-    background-image: none;
-}
-
-.ui-datepicker-calendar{
-    text-align: center;
-}*/
-
 .groundhogg-calendar .ui-datepicker {
     padding: 0;
     font-family: inherit !important;
@@ -64,6 +40,8 @@ body.groundhogg-calendar-body {
     font-size: 18px;
     margin-top: 1.5em;
     margin-bottom: 1em;
+    box-sizing: border-box;
+    position: relative;
 }
 
 .ui-datepicker-prev span,
@@ -74,79 +52,26 @@ body.groundhogg-calendar-body {
 .ui-datepicker-prev:before,
 .ui-datepicker-next:before {
     font-size: 24px;
-    position: absolute;
+    /*position: absolute;*/
     /*top: 10px;*/
-    /*right: 20px;*/
-    /*bottom: 10px;*/
-    /*left: 20px;*/
+    vertical-align: middle;
     display: flex;
     font-weight: bold;
-    align-items: center;
-    justify-content: center;
+    /*align-items: center;*/
+    /*justify-content: center;*/
     margin-top: 1em;
-     margin-bottom: 1em;
+    margin-bottom: 1em;
 }
 
 .ui-datepicker-prev:before {
-    content: "\27A4";
-    transform: rotate( 180deg );
+    content: "\203A";
+    transform: scaleX(-1) scale(2);
 }
 
 .ui-datepicker-next:before {
-    content: "\27A4";
+    content: "\203A";
+    transform: scale(2);
 }
-
-/*.groundhogg-calendar .ui-datepicker .ui-datepicker-prev-hover,*/
-/*.groundhogg-calendar .ui-datepicker .ui-datepicker-next-hover{*/
-    /*width: 6px;*/
-    /*height: 16px;*/
-    /*display: block;*/
-    /*text-indent: 0;*/
-    /*overflow: hidden;*/
-    /*background-repeat: no-repeat;*/
-/*}*/
-
-/*.ui-datepicker-prev span:after {*/
-    /*content: "\8250";*/
-    /*position: relative;*/
-/*}*/
-
-/*.groundhogg-calendar .ui-datepicker .ui-datepicker-prev-hover,*/
-/*.groundhogg-calendar .ui-datepicker .ui-datepicker-next-hover,*/
-/*.groundhogg-calendar .ui-datepicker .ui-datepicker-next,*/
-/*.groundhogg-calendar .ui-datepicker .ui-datepicker-prev {*/
-    /*top: 1.7em;*/
-    /*border:none;*/
-/*}*/
-
-/*.groundhogg-calendar .ui-datepicker .ui-datepicker-prev-hover {*/
-    /*left: 2px;*/
-/*}*/
-
-/*.groundhogg-calendar .ui-datepicker .ui-datepicker-next-hover {*/
-    /*right: 2px;*/
-/*}*/
-
-/*.groundhogg-calendar .ui-datepicker .ui-datepicker-next span,*/
-/*.groundhogg-calendar .ui-datepicker .ui-datepicker-prev span {*/
-    /*!*background-image: url(images/ui-icons_454545_256x240.png);*!*/
-    /*background-position: -32px -32px;*/
-    /*margin-top: 0;*/
-    /*top: 0;*/
-    /*font-weight: normal;*/
-/*}*/
-
-/*.groundhogg-calendar .ui-datepicker .ui-datepicker-prev span {*/
-    /*background-position: -96px -32px;*/
-/*}*/
-
-/*.groundhogg-calendar .ui-datepicker .ui-datepicker-prev-hover span {*/
-    /*background-position: -96px -48px;*/
-/*}*/
-
-/*.groundhogg-calendar .ui-datepicker .ui-datepicker-next-hover span {*/
-    /*background-position: -32px -48px;*/
-/*}*/
 
 .groundhogg-calendar .ui-datepicker table {
     margin: 0;

@@ -59,7 +59,7 @@
             // inner
             this.slots = $('#time-slots-inner');
             this.detailsForm = $('#details-form');
-            // this.errors = $('#appointment-errors');
+            this.calendarWrap = $('#gh-booking-wrap');
 
             this.initCalendar();
 
@@ -84,13 +84,6 @@
             var self = this;
 
             this.hideErrors();
-
-            // //check for appointment
-            // if (!self.bookingData.start_date || !self.bookingData.end_date) {
-            //     self.setErrors(self.invalidDateMsg);
-            //     self.showErrors();
-            //     return false;
-            // }
 
             var data = $form.serializeFormJSON();
             data._ghnonce = gh._ghnonce;
@@ -191,7 +184,9 @@
             /* Remove selected class from all buttons */
             $('.appointment-time').removeClass('selected');
             $e.addClass('selected');
+            this.hideCalendar();
             this.showForm();
+
         },
 
         setTimeSlots: function (slots) {
@@ -241,7 +236,7 @@
                         self.showTimeSlots();
                         self.hideErrors();
                         self.hideSpinner();
-                        self.displayDate(date);
+                        self.displayDate(response.data.date_formatted);
                     } else {
                         self.setErrors(response.data.html);
                         self.hideTimeSlots();
@@ -254,12 +249,7 @@
         },
 
         displayDate: function (date) {
-            var d = new Date(date);
-            const monthNames = ["January", "February", "March", "April", "May", "June",
-                "July", "August", "September", "October", "November", "December"
-            ];
-            $('.time-slot-select-text').text(monthNames[d.getMonth()] + ' ' + (d.getDate() + 1) + ' ' + d.getFullYear());
-
+            $('.time-slot-select-text').text( date );
         },
 
         removeTimeSlots: function (slots) {
@@ -302,6 +292,15 @@
             this.detailsForm.removeClass('hidden');
             postSizing();
         },
+
+        hideCalendar: function()
+        {
+            this.calendarWrap.hide();
+        },
+
+        showCalendar: function () {
+            this.calendarWrap.show()
+        }
 
     });
 

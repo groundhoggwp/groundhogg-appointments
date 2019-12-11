@@ -15,18 +15,14 @@
 
             });
 
-            if (self.tab == 'view') {
+            if (self.tab === 'view') {
                 self.initCalendar( $('#date-picker'));
             }
 
-            if (self.action == 'edit_appointment') {
+            if (self.action === 'edit_appointment') {
                 self.initCalendar( $('#start_date'));
-            }
-            if (self.action == 'edit_appointment') {
                 self.initCalendar( $('#end_date'));
             }
-
-
 
             /* Submit button */
             $(document).on('click', '#book_appointment', function (e) {
@@ -44,50 +40,8 @@
                 self.addAppointment();
             });
 
-            // $('#verify_code').on('click', function (e) {
-            //     e.preventDefault();
-            //     self.verifyCode();
-            // });
-
             $('#spinner').hide();
         },
-        //
-        // verifyCode: function () {
-        //
-        //     if ( !$('#auth_code').val() ) {
-        //         alert('Please enter Validation code.');
-        //         return;
-        //     }
-        //
-        //     $('#spinner').show();
-        //     $('#auth_code').hide();
-        //     $('#verify_code').hide();
-        //     $('#generate_access_code').hide();
-        //
-        //     // ajax request to generate access code
-        //     adminAjaxRequest(
-        //         {
-        //             action: 'groundhogg_verify_google_calendar',
-        //             auth_code: $('#auth_code').val(),
-        //             calendar: $('#calendar').val()
-        //         },
-        //         function callback(response) {
-        //             // Handler
-        //             if (response.success) {
-        //                 alert(response.data.msg);
-        //                 calendar.clearData();
-        //             } else {
-        //                 alert(response.data);
-        //             }
-        //
-        //             $('#auth_code').val('');
-        //             $('#spinner').hide();
-        //             $('#auth_code').show();
-        //             $('#verify_code').show();
-        //             $('#generate_access_code').show();
-        //         }
-        //     );
-        // },
 
         addAppointment: function () {
 
@@ -168,6 +122,7 @@
             });
 
         },
+
         formatDate: function (date) {
             var d = date,
                 month = '' + (d.getMonth() + 1),
@@ -254,11 +209,11 @@
 
         showTimeSlots: function () {
             $('#appointment-errors').addClass('hidden');
-            $('#time-slots').removeClass('hidden');
+            $('.time-slots').removeClass('hidden');
         },
 
         hideTimeSlots: function () {
-            $('#time-slots').addClass('hidden');
+            $('.time-slots').addClass('hidden');
         },
 
         /**

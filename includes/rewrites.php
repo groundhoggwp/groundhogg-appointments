@@ -2,6 +2,7 @@
 
 namespace GroundhoggBookingCalendar;
 
+use function Groundhogg\add_managed_rewrite_rule;
 use function Groundhogg\is_managed_page;
 use function Groundhogg\managed_rewrite_rule;
 use Groundhogg\Utils\Abstract_Rewrites;
@@ -19,25 +20,9 @@ class Rewrites extends Abstract_Rewrites
      */
     public function add_rewrite_rules()
     {
-        add_rewrite_rule(
-            '^gh/calendar/([^/]*)/?$',
-            managed_rewrite_rule( 'subpage=calendar&calendar_id=$matches[1]' ),
-            'top'
-        );
-
-        // Forms Iframe Template
-        add_rewrite_rule(
-            '^gh/calendar/([^/]*)/hosted/?$',
-            managed_rewrite_rule('subpage=calendar_hosted&calendar_id=$matches[1]' ),
-            'top'
-        );
-
-        add_rewrite_rule(
-            '^gh/appointment/([^/]*)/([^/]*)/?$',
-            managed_rewrite_rule('subpage=appointment&appointment_id=$matches[1]&action=$matches[2]' ),
-            'top'
-        );
-
+        add_managed_rewrite_rule( 'calendar/([^/?]*)/?$', 'subpage=calendar&calendar_id=$matches[1]', 'top' );
+        add_managed_rewrite_rule( 'calendar/([^/?]*)/hosted/?$', 'subpage=calendar_hosted&calendar_id=$matches[1]', 'top' );
+        add_managed_rewrite_rule( 'appointment/([^/]*)/([^/]*)/?$', 'subpage=appointment&appointment_id=$matches[1]&action=$matches[2]', 'top' );
     }
 
     /**

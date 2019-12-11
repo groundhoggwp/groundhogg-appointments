@@ -9,6 +9,7 @@ use function Groundhogg\html;
 use GroundhoggBookingCalendar\Classes\Calendar;
 use Groundhogg\Plugin;
 use \WP_List_Table;
+use function Groundhogg\managed_page_url;
 
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) exit;
@@ -47,8 +48,9 @@ class Calendars_Table extends WP_List_Table {
 	public function get_columns() {
 		$columns = array(
 			'calendar_id'     => _x( 'Calendar Name', 'Column label', 'groundhogg-calendar' ),
-            'short_code'       => _x( 'Calendar Short Code', 'Column label', 'groundhogg-calendar' ),
-			'user_id'         => _x( 'Calendar Owner', 'Column label', 'groundhogg-calendar' ),
+            'short_code'      => _x( 'Shortcode', 'Column label', 'groundhogg-calendar' ),
+            'link'            => _x( 'Hosted Url', 'Column label', 'groundhogg-calendar' ),
+			'user_id'         => _x( 'Owner', 'Column label', 'groundhogg-calendar' ),
 			'description'     => _x( 'Description', 'Column label', 'groundhogg-calendar' ),
 		);
 		return apply_filters( 'wpgh_calendar_columns', $columns );
@@ -127,7 +129,7 @@ class Calendars_Table extends WP_List_Table {
     protected function column_user_id( $calendar )
     {
         $user_data     = get_userdata( $calendar->get_user_id() );
-        return esc_html( $user_data->user_login . ' (' . $user_data->user_email .')');
+        return esc_html( sprintf( '%s (%s)', $user_data->user_login, $user_data->user_email ) );
 
     }
 
@@ -154,12 +156,32 @@ class Calendars_Table extends WP_List_Table {
 		    'type'  => 'text',
 		    'name'  => '',
 		    'id'    => '',
+		    'style' => [ 'max-width' => '100%' ],
 		    'class' => 'regular-text code',
 		    'value' => sprintf( '[gh_calendar id="%d" appointment_name="%s"]', $calendar->get_id(), $calendar->get_name() ) ,
-		    'attributes' => ' onfocus="this.select()"',
             'readonly' => true,
             'onfocus' => 'this.select()'
 	    ) );
+    }
+
+    /**
+     * Populate short code column
+     *
+     * @param $calendar Calendar
+     * @return string
+     */
+    protected function column_link( $calendar )
+    {
+        return html()->input( array(
+            'type'  => 'text',
+            'name'  => '',
+            'id'    => '',
+            'style' => [ 'max-width' => '100%' ],
+            'class' => 'regular-text code',
+            'value' => managed_page_url( sprintf( 'calendar/%d/', $calendar->get_id() ) ),
+            'readonly' => true,
+            'onfocus' => 'this.select()'
+        ) );
     }
 
 

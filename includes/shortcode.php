@@ -7,12 +7,14 @@ use Groundhogg\Contact;
 use Groundhogg\Form\Submission_Handler;
 use function Groundhogg\get_array_var;
 use function Groundhogg\get_contactdata;
+use function Groundhogg\get_date_time_format;
 use function Groundhogg\get_request_var;
 use Groundhogg\Submission;
 use Groundhogg\Supports_Errors;
 use GroundhoggBookingCalendar\Classes\Appointment;
 use GroundhoggBookingCalendar\Classes\Calendar;
 use function Groundhogg\html;
+use function Groundhogg\managed_page_url;
 
 
 class Shortcode extends Supports_Errors
@@ -144,15 +146,18 @@ class Shortcode extends Supports_Errors
             wp_send_json_error();
         }
 
-        $date = get_request_var( 'date' );
+        $date = sanitize_text_field( get_request_var( 'date' ) );
+        $zone = sanitize_text_field( get_request_var( 'timeZone' ) );
 
-        $slots = $calendar->get_appointment_slots( $date, get_request_var( 'timeZone' ) );
+        $slots = $calendar->get_appointment_slots( $date, $zone );
 
         if ( empty( $slots ) ) {
             wp_send_json_error( __( 'No slots available.', 'groundhogg-calendar' ) );
         }
 
-        wp_send_json_success( [ 'slots' => $slots ] );
+        $formatted_date = date_i18n( get_option( 'date_format' ), strtotime( $date ) );
+
+        wp_send_json_success( [ 'slots' => $slots, 'date_formatted' => $formatted_date ] );
     }
 
 
@@ -175,7 +180,7 @@ class Shortcode extends Supports_Errors
 
         wp_enqueue_script( 'fullframe' );
 
-        $url = site_url( sprintf( 'gh/calendar/%d/', $id ) );
+        $url = managed_page_url( sprintf( 'calendar/%d/', $id ) );
 
         if ( get_array_var( $atts, 'reschedule' ) ) {
             $url = wp_nonce_url( add_query_arg( 'reschedule', $atts[ 'reschedule' ], $url ), 'appointment_reschedule' );

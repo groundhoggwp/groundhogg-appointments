@@ -8,19 +8,19 @@ use GroundhoggBookingCalendar\Classes\Appointment;
 use GroundhoggBookingCalendar\Classes\Calendar;
 use Groundhogg\Plugin;
 
-if ( !defined( 'ABSPATH' ) ) exit;
+if (!defined('ABSPATH')) exit;
 
-$calendar_id = $_GET[ 'calendar' ];
-$calendar = new Calendar( $calendar_id );
+$calendar_id = $_GET['calendar'];
+$calendar = new Calendar($calendar_id);
 
-$appointments = get_db( 'appointments' )->query( [ 'calendar_id' => $calendar_id ] );
+$appointments = get_db('appointments')->query(['calendar_id' => $calendar_id]);
 $display_data = [];
-foreach ( $appointments as $appo ) {
+foreach ($appointments as $appo) {
 
-    $appointment = new Appointment( $appo->ID );
+    $appointment = new Appointment($appo->ID);
     $display_data[] = $appointment->get_full_calendar_event();
 }
-$json = json_encode( $display_data );
+$json = json_encode($display_data);
 $start_time = '00:00';
 $end_time = '23:59';
 $access_token = $calendar->get_access_token();
@@ -31,121 +31,77 @@ $google_calendar_id = $calendar->get_google_calendar_id();
     <div id="col-left">
         <div class="col-wrap">
             <div class="form-wrap">
-                <table class="form-table">
-                    <tbody>
-                    <tr class="form-field term-contact-wrap">
-                        <th scope="row">
-                            <label><?php _e( 'Select Contact' ) ?></label>
-                        </th>
-                        <td>
-                            <?php
-                            $contact_details = [
-                                'name' => 'contact_id',
-                                'id' => 'contact-id',
-                            ] ;
-                            $contact_id =  absint(get_request_var('contact') ) ;
-                            if ($contact_id) {
-                                $contact_details [ 'selected' ] = [ $contact_id ];
-                                $contact_details [ 'disabled' ] = true;
-                               echo "<input type='hidden' name='redirect' value='true' />";
-                            }
-                            echo html()->dropdown_contacts($contact_details); ?>
-                            <p class="description"><?php _e( 'Please select client contact from contact list.', 'groundhogg-calendar' ) ?></p>
-                        </td>
-                    </tr>
-                    <tr class="form-field term-calendar-name-wrap">
-                        <th scope="row">
-                            <label><?php _e( 'Appointment Name' ) ?></label>
-                        </th>
-                        <td>
-                            <?php echo html()->input( [
-                                'name' => 'name',
-                                'id' => 'appointmentname',
-                                'type' => 'text',
-                                'placeholder' => 'Appointment Name'
-                            ] ); ?>
-
-                            <!--                                    <input name="name" id="appointmentname"type="text"  size="40" aria-required="true" placeholder="Appointment Name">-->
-                            <p class="description"><?php _e( 'Give nice name for your appointment.', 'groundhogg-calendar' ) ?></p>
-                        </td>
-                    </tr>
-                    <tr class="form-field term-calendar-description-wrap">
-                        <th scope="row">
-                            <label><?php _e( 'Note', 'groundhogg-calendar' ); ?></label>
-                        </th>
-                        <td>
-                            <?php echo html()->textarea( [
-                                'name' => 'notes',
-                                'id' => 'notes',
-                                'placeholder' => 'Any information that might be important.'
-                            ] ); ?>
-                            <p class="description"><?php _e( 'Additional information about appointment.', 'groundhogg-calendar' ) ?></p>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th scope="row"><label><?php _e( 'Date', 'groundhogg-calendar' ); ?></label></th>
-                        <td>
-
-                            <?php echo html()->date_picker( [
-                                'type' => 'text',
-                                'id' => 'date-picker',
-                                'placeholder' => 'Y-m-d'
-                            ] );
-                            ?>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th scope="row"><label><?php _e( 'Time', 'groundhogg-calendar' ); ?></label></th>
-                        <td>
-                            <div style="text-align: center;" id="spinner">
-                                <span class="spinner" style="float: none; visibility: visible"></span>
-                            </div>
-                            <div id="time-slots" class="select-time hidden">
-                                <div id="select_time"></div>
-                            </div>
-                            <div id="appointment-errors" class="appointment-errors hidden"></div>
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
-                <input type="button" name="btndisplay" id="btnalert" value="Book appointment"
-                       class="button button-primary"/>
-                <div class="alert alert-dark" style="margin-top: 10px">
-                    <table>
-                        <tr>
-                            <td class="fc-button-group"
-                                style="background-color:#0073aa; color: #ffffff ;padding: 5px; border-radius: .25rem"></td>
-                            <td><b> <?php _e( 'Pending', 'groundhogg-calendar' ); ?></b></td>
-                            <td class="fc-button-group"
-                                style="background-color:#28a745; color: #ffffff ;padding: 5px; border-radius: .25rem"></td>
-                            <td><b> <?php _e( 'Booked', 'groundhogg-calendar' ); ?></b></td>
-                            <td class="fc-button-group"
-                                style="background-color:#dc3545; color: #ffffff ;padding: 5px; border-radius: .25rem"></td>
-                            <td><b> <?php _e( 'canceled', 'groundhogg-calendar' ); ?></b></td>
-                        </tr>
-                    </table>
+                <div class="form-field term-contact-wrap">
+                    <label><?php _e('Select Contact') ?></label>
+                    <?php
+                    $contact_details = [
+                        'name' => 'contact_id',
+                        'id' => 'contact-id',
+                    ];
+                    $contact_id = absint(get_request_var('contact'));
+                    if ($contact_id) {
+                        $contact_details ['selected'] = [$contact_id];
+                        $contact_details ['disabled'] = true;
+                        echo "<input type='hidden' name='redirect' value='true' />";
+                    }
+                    echo html()->dropdown_contacts($contact_details); ?>
+                    <p class="description"><?php _e('Please select client contact from contact list.', 'groundhogg-calendar') ?></p>
                 </div>
-                <?php if ( $access_token && $google_calendar_id ) : ?>
+                <div class="form-field term-calendar-name-wrap">
+                    <label><?php _e('Appointment Name') ?></label>
+                    <?php echo html()->input([
+                        'name' => 'name',
+                        'id' => 'appointmentname',
+                        'type' => 'text',
+                        'placeholder' => 'Appointment Name'
+                    ]); ?>
+
+                    <!--                                    <input name="name" id="appointmentname"type="text"  size="40" aria-required="true" placeholder="Appointment Name">-->
+                    <p class="description"><?php _e('Give nice name for your appointment.', 'groundhogg-calendar') ?></p>
+                </div>
+                <div class="form-field term-calendar-description-wrap">
+                    <label><?php _e('Note', 'groundhogg-calendar'); ?></label>
+                    <?php echo html()->textarea([
+                        'name' => 'notes',
+                        'id' => 'notes',
+                        'placeholder' => 'Any information that might be important.'
+                    ]); ?>
+                    <p class="description"><?php _e('Additional information about appointment.', 'groundhogg-calendar') ?></p>
+                </div>
+                <div class="form-field">
+                    <label><?php _e('Date', 'groundhogg-calendar'); ?></label>
+                    <?php echo html()->date_picker([
+                        'type' => 'text',
+                        'id' => 'date-picker',
+                        'placeholder' => 'Y-m-d'
+                    ]);
+                    ?>
+                </div>
+                <div class="time-slots form-field hidden">
+                    <label><?php _e('Time', 'groundhogg-calendar'); ?></label>
+                    <div style="text-align: center;" id="spinner">
+                        <span class="spinner" style="float: none; visibility: visible"></span>
+                    </div>
+                    <div id="time-slots" class="select-time">
+                        <div id="select_time"></div>
+                    </div>
+                    <div id="appointment-errors" class="appointment-errors hidden"></div>
+                </div>
+                <div class="submit-wrap">
+                    <input type="button" name="btndisplay" id="btnalert" value="Book appointment" class="button button-primary"/>
+                </div>
+                <?php if ($access_token && $google_calendar_id) : ?>
                     <div class="alert alert-success">
-                        <b><?php _e( 'Google sync is on.', 'groundhogg-calendar' ); ?></b>
-                        <a class="button"
-                           href="<?php echo wp_nonce_url( admin_url( 'admin.php?page=gh_calendar&action=google_sync&calendar=' . $_GET[ 'calendar' ] ) ); ?>"><?php _e( 'Sync Now' ); ?></a>
+                        <p><b><?php _e('Google sync is enabled.', 'groundhogg-calendar'); ?></b>
+                            <a class="button"
+                               href="<?php echo wp_nonce_url(admin_url('admin.php?page=gh_calendar&action=google_sync&calendar=' . $_GET['calendar'])); ?>"><?php _e('Sync Now'); ?></a>
+                        </p>
                     </div>
                 <?php endif; ?>
-
-                <?php if ( $calendar->is_zoom_enabled() && ( !is_wp_error( $calendar->get_access_token_zoom() ) ) ) : ?>
+                <?php if ($calendar->is_zoom_enabled() && (!is_wp_error($calendar->get_access_token_zoom()))) : ?>
                     <div class="alert alert-success">
-                        <b><?php _e( 'Zoom sync is on.', 'groundhogg-calendar' ); ?></b>
+                        <p><b><?php _e('Zoom sync is enabled.', 'groundhogg-calendar'); ?></b></p>
                     </div>
-<!--                    --><?php
-//                    $response = wp_remote_get( GROUNDHOGG_BOOKING_CALENDAR_ZOOM_BASE_URL . '/users/me/meetings', [
-//                        'headers' => [
-//                            'Authorization' => 'Bearer ' . $calendar->get_access_token_zoom(),
-//                        ],
-//
-//                    ] );
-//                    var_dump( $response );
-//                    ?>
                 <?php endif; ?>
             </div>
         </div>
@@ -155,7 +111,14 @@ $google_calendar_id = $calendar->get_google_calendar_id();
             <div class="postbox" style="margin-top: 10px;">
                 <div class="inside">
                     <div id='calendar' class=""></div>
-                    <input type="hidden" id="calendar_id" value="<?php echo $_GET[ 'calendar' ]; ?>">
+                    <table class="status-colors">
+                        <tr>
+                            <td class="pending"><b><?php _e('Pending', 'groundhogg-calendar'); ?></b></td>
+                            <td class="approved"><b><?php _e('Approved', 'groundhogg-calendar'); ?></b></td>
+                            <td class="canceled"><b><?php _e('Canceled', 'groundhogg-calendar'); ?></b></td>
+                        </tr>
+                    </table>
+                    <input type="hidden" id="calendar_id" value="<?php echo $_GET['calendar']; ?>">
                 </div>
             </div>
         </div>
@@ -175,14 +138,14 @@ $google_calendar_id = $calendar->get_google_calendar_id();
 
         var display = [];
         <?php
-        $availability = $calendar->get_meta( 'rules', true );
-        if (!empty( $availability )) :
+        $availability = $calendar->get_meta('rules', true);
+        if (!empty($availability)) :
         foreach ( $availability as $avail ) :
         ?>
         display.push({
-            dow: [<?php echo $calendar->get_day_number( $avail[ 'day' ] ); ?>],
-            start: '<?php echo $avail[ 'start' ]; ?>',
-            end: '<?php echo $avail[ 'end' ]; ?>'
+            dow: [<?php echo $calendar->get_day_number($avail['day']); ?>],
+            start: '<?php echo $avail['start']; ?>',
+            end: '<?php echo $avail['end']; ?>'
         });
         <?php
         endforeach;
@@ -208,7 +171,7 @@ $google_calendar_id = $calendar->get_google_calendar_id();
             editable: true,
             eventLimit: true, // allow "more" link when too many events
             selectable: false,
-            firstDay: <?php echo get_option( 'start_of_week' ); ?>,
+            firstDay: <?php echo get_option('start_of_week'); ?>,
             minTime: '<?php echo $start_time;  ?>',
             maxTime: '<?php echo $end_time; ?>',
             navLinks: true,
@@ -223,7 +186,7 @@ $google_calendar_id = $calendar->get_google_calendar_id();
             eventOverlap: false,
             eventDrop: function (event, delta, revertFunc) {
                 // disable booking previous date
-                if ((event.start / 1000) < <?php echo current_time( 'timestamp' );?>   ) {
+                if ((event.start / 1000) < <?php echo current_time('timestamp');?>   ) {
                     revertFunc();
                     alert('You can not book past Date.');
                 } else {

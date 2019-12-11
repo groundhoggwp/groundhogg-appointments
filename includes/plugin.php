@@ -152,7 +152,7 @@ class Plugin extends Extension
     /**
      * Add email templates...
      *
-     * @param $templates array
+     * @param $email_templates array
      * @return mixed
      */
     public function register_email_templates( $email_templates )

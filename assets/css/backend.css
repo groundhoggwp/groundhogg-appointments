@@ -146,3 +146,38 @@
     padding-left: 4px;
     margin: 5px 0 2px 0;
 }
+
+table.status-colors{
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+table.status-colors td {
+    /*width: 100px;*/
+    padding: 8px;
+    border: 1px solid #e5e5e5;
+    text-align: center;
+}
+
+table.status-colors td.pending{
+    border-color: #0073aa;
+    color: #0c5460;
+    background-color: #cce5ff;
+}
+
+table.status-colors td.approved{
+    color: #155724;
+    background-color: #d4edda;
+    border-color: #28a745;
+}
+
+table.status-colors td.canceled{
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #dc3545;
+}
+
+.submit-wrap{
+    margin: 20px 0;
+}

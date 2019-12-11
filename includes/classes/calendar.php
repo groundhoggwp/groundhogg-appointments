@@ -11,6 +11,7 @@ use function Groundhogg\get_array_var;
 use function Groundhogg\get_db;
 use function Groundhogg\isset_not_empty;
 use Groundhogg\Plugin;
+use function GroundhoggBookingCalendar\better_human_readable_duration;
 use function GroundhoggBookingCalendar\convert_to_client_timezone;
 use function GroundhoggBookingCalendar\in_between;
 use function GroundhoggBookingCalendar\in_between_inclusive;
@@ -343,6 +344,18 @@ class Calendar extends Base_Object_With_Meta
         }
 
         return $parts;
+    }
+
+    /**
+     * Ge the formatted appointment length
+     *
+     * @return false|string
+     */
+    public function get_appointment_length_formatted()
+    {
+        $length = $this->get_appointment_length( true );
+        $string = date( 'H:i:s', $length );
+        return better_human_readable_duration( $string );
     }
 
     /**

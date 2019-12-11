@@ -114,6 +114,29 @@ hr.time-slot-divider{
     transform: translate(-50%, -50%);
 }
 
+#calendar-description{
+    float: left;
+    width: 300px;
+    margin-right: -300px;
+}
+
+#calendar-form-wrapper{
+    float: right;
+    width: calc( 100% - 320px );
+    padding-left: 20px;
+    border-left: 1px solid #e5e5e5;
+}
+
+.details{
+    font-size: 18px;
+    color: #999999;
+    margin: 20px 0;
+}
+
+.clock-icon:before{
+    content: "\23F1";
+}
+
 @media only screen and (max-width: 520px) {
     .gh-calendar-form .gh-form-row {white-space: normal;}
     .gh-calendar-form .gh-form-column.col-1-of-1{width: 100%;}
