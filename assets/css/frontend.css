@@ -1,4 +1,4 @@
-html {overflow-y: hidden;}
+html {overflow-y: hidden;margin-top: 0 !important;}
 
 body.groundhogg-calendar-body {
     background-color: #FFF !important;
@@ -8,7 +8,7 @@ body.groundhogg-calendar-body {
     display: none;
 }
 
-.select-time .appointment-time{
+#time-slots-inner .appointment-time{
     padding: 7px;
     font-size: 14px;
     font-weight: 600;
@@ -25,13 +25,13 @@ body.groundhogg-calendar-body {
     /*box-shadow: 0 1px 1px #15435a;*/
 }
 
-.select-time .appointment-time:hover{
+#time-slots-inner .appointment-time:hover{
     transition: 0.4s;
     background-color: #80d771;
     /*border-color: #3bca65;*/
 }
 
-.select-time .appointment-time.selected{
+#time-slots-inner .appointment-time.selected{
     background-color: #76c567;
     /*border-color: #32aa55;*/
     padding: 10px;
@@ -114,13 +114,14 @@ hr.time-slot-divider{
     transform: translate(-50%, -50%);
 }
 
-#calendar-description{
+#calendar-details{
     float: left;
     width: 300px;
     margin-right: -300px;
 }
 
-#calendar-form-wrapper{
+#calendar-date-picker,
+#calendar-form{
     float: right;
     width: calc( 100% - 320px );
     padding-left: 20px;
@@ -134,10 +135,135 @@ hr.time-slot-divider{
 }
 
 .clock-icon:before{
-    content: "\23F1";
+    content: "\1F551";
 }
 
-@media only screen and (max-width: 520px) {
+.date-icon:before{
+    content: "\1F4C6";
+}
+
+.world-icon:before{
+    content: "\1F310";
+}
+
+.time-slot-select-text{
+    font-size: 16px;
+    font-weight: 500;
+}
+
+#calendar-form,
+#calendar-time-slots{
+    display: none;
+}
+
+/* SLOTS VIEW */
+
+.view-slots #calendar-time-slots{
+    display: block;
+}
+
+.view-slots .date-picker-wrap{
+    display: none
+}
+
+/* FORM VIEW */
+
+.view-form #calendar-date-picker{
+    display: none;
+}
+
+.view-form #calendar-form{
+    display: block;
+}
+
+.back-button{
+    display: block;
+    height: 50px;
+    width: 50px;
+    border: 2px solid #e5e5e5;
+    border-radius: 100%;
+    position: relative;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+
+.back-button:hover{
+    transition: 0.4s;
+    border-color: #29A2D9;
+}
+
+.back-button:hover .back-arrow-icon:before{
+    transition: 0.4s;
+    color: #2592c4;
+}
+
+.back-button .back-arrow-icon{
+    /*transform: scaleX( -1 );*/
+    position: absolute;
+    left: 18px;
+    top: 6px;
+}
+
+.back-arrow-icon:before{
+    font-size: 24px;
+    vertical-align: middle;
+    display: flex;
+    font-weight: bold;
+    z-index: 999;
+    color: #cccccc;
+    content: "\203A";
+    line-height: 1;
+    transform: scaleX(-1) scale(2);
+}
+
+@media only screen and (max-width: 800px) {
+
+    #calendar-details{
+        float: none;
+        width: 100%;
+        margin: 0;
+        text-align: center;
+        padding: 30px 30px 5px 30px;
+    }
+
+    #calendar-details p{
+        text-align: left;
+    }
+
+    #calendar-view{
+        border: 1px solid rgba(77, 80, 85, 0.1);
+        border-radius: 8px;
+        box-shadow: 0 1px 8px 0 rgba(0, 0, 0, 0.08);
+    }
+
+    #calendar-time-slots,
+    #calendar-date-picker .date-picker-wrap{
+        max-width: 450px;
+        margin: auto;
+        min-height: 300px;
+    }
+
+    .back-button{
+        position: absolute;
+        left: 30px;
+        top: 120px;
+    }
+
+    #calendar-date-picker,
+    #calendar-form{
+        position: relative;
+        float: none;
+        width: 100%;
+        border-top: 1px solid #e5e5e5;
+        border-left: none;
+        padding: 30px 30px 30px 30px;
+    }
+
+    .view-form #calendar-form,
+    .view-slots #calendar-date-picker {
+        padding-left: 100px;
+    }
+
     .gh-calendar-form .gh-form-row {white-space: normal;}
     .gh-calendar-form .gh-form-column.col-1-of-1{width: 100%;}
     .gh-calendar-form .gh-form-column.col-1-of-2{width: 100%;}

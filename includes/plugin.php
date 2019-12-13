@@ -45,6 +45,7 @@ class Plugin extends Extension
     public function includes()
     {
         include dirname( __FILE__ ) . '/functions.php';
+        include dirname( __FILE__ ) . '/template.php';
     }
 
     /**
@@ -79,7 +80,7 @@ class Plugin extends Extension
     {
         $this->google_calendar = new Google_Calendar();
         $this->roles = new Roles();
-        $this->shortcode = new Shortcode();
+        $this->shortcode = new Shortcode_V2();
         $this->replacements = new Replacements();
         $this->rewrites = new Rewrites();
         $this->installer = new Installer();
@@ -132,7 +133,7 @@ class Plugin extends Extension
     public function register_frontend_scripts( $is_minified, $IS_MINIFIED )
     {
         wp_register_script( 'jstz', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'js/jstz.min.js', [], GROUNDHOGG_BOOKING_CALENDAR_VERSION );
-        wp_register_script( 'groundhogg-appointments-frontend', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'js/frontend.new.js', [ 'jstz', 'jquery', 'jquery-ui-datepicker', 'groundhogg-frontend' ], GROUNDHOGG_BOOKING_CALENDAR_VERSION );
+        wp_register_script( 'groundhogg-appointments-frontend', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'js/frontend.v2.js', [ 'jstz', 'jquery', 'jquery-ui-datepicker', 'groundhogg-frontend' ], GROUNDHOGG_BOOKING_CALENDAR_VERSION );
     }
 
     public function register_admin_styles()

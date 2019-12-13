@@ -299,7 +299,7 @@
         },
 
         showCalendar: function () {
-            this.calendarWrap.show()
+            this.calendarWrap.fadeIn()
         }
 
     });

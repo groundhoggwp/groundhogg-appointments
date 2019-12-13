@@ -8,6 +8,7 @@ use Groundhogg\Form\Submission_Handler;
 use function Groundhogg\get_array_var;
 use function Groundhogg\get_contactdata;
 use function Groundhogg\get_date_time_format;
+use function Groundhogg\get_post_var;
 use function Groundhogg\get_request_var;
 use Groundhogg\Submission;
 use Groundhogg\Supports_Errors;
@@ -17,7 +18,7 @@ use function Groundhogg\html;
 use function Groundhogg\managed_page_url;
 
 
-class Shortcode extends Supports_Errors
+class Shortcode_V2 extends Supports_Errors
 {
 
     /**
@@ -44,14 +45,60 @@ class Shortcode extends Supports_Errors
     {
         add_shortcode( 'gh_calendar', [ $this, 'gh_calendar_shortcode' ] );
 
-        add_action( 'wp_ajax_groundhogg_get_slots', [ $this, 'get_slots' ] );
-        add_action( 'wp_ajax_nopriv_groundhogg_get_slots', [ $this, 'get_slots' ] );
+        add_action( 'wp_ajax_groundhogg_calendar_get_views', [ $this, 'get_views' ] );
+        add_action( 'wp_ajax_nopriv_groundhogg_calendar_get_views', [ $this, 'get_views' ] );
 
 
         add_action( 'wp_ajax_groundhogg_add_appointment', [ $this, 'add_appointment_ajax' ] );
         add_action( 'wp_ajax_groundhogg_add_appointment', [ $this, 'ajax_error_handler' ] );
         add_action( 'wp_ajax_nopriv_groundhogg_add_appointment', [ $this, 'add_appointment_ajax' ] );
         add_action( 'wp_ajax_nopriv_groundhogg_add_appointment', [ $this, 'ajax_error_handler' ] );
+    }
+
+    /**
+     * Get the time slots HTML
+     */
+    public function get_views()
+    {
+        $ID = absint( get_request_var( 'calendar' ) );
+
+        $calendar = new Calendar( $ID );
+
+        $sections = [
+            'details',
+            'time_slots',
+            'form'
+        ];
+
+        $views = [];
+
+        /**
+         * Get the relevant HTML for each section.
+         */
+        foreach ( $sections as $section ){
+            ob_start();
+            do_action( "groundhogg/calendar/template/$section", $calendar );
+            $views[ $section ] = ob_get_clean();
+        }
+
+        $step = get_post_var( 'step', 'date' );
+
+        $classes = [];
+
+        switch ( $step ){
+            default:
+            case 'date':
+                $classes[] = 'view-date';
+                break;
+            case 'slots':
+                $classes[] = 'view-slots';
+                break;
+            case 'form':
+                $classes[] = 'view-form';
+                break;
+        }
+
+        wp_send_json_success( [ 'views' => $views, 'classes' => $classes ] );
     }
 
     /**
@@ -73,11 +120,16 @@ class Shortcode extends Supports_Errors
 
         $redirect_link_status = $this->calendar->get_meta( 'redirect_link_status', true );
         $redirect_link = $this->calendar->get_meta( 'redirect_link', true );
+
+        $success_message = $this->calendar->get_meta( 'message', true );
+        $success_message = html()->e( 'div', [ 'class' => 'gh-message-wrapper gh-form-success-wrapper' ], $success_message );
+
         if ( $redirect_link_status ) {
-            wp_send_json_success( [ 'message' => __( $this->calendar->get_meta( 'message', true ), 'groundhogg-calendar' ), 'redirect_link' => $redirect_link ] );
-        } else {
-            wp_send_json_success( [ 'message' => __( $this->calendar->get_meta( 'message', true ), 'groundhogg-calendar' ) ] );
+            wp_send_json_success( [ 'message' => $success_message, 'redirect_link' => $redirect_link ] );
         }
+
+        wp_send_json_success( [ 'message' => $success_message ] );
+
     }
 
     /**
@@ -135,24 +187,6 @@ class Shortcode extends Supports_Errors
 
     }
 
-    /**
-     * Get the time slots HTML
-     */
-    public function get_slots()
-    {
-        $ID = absint( get_request_var( 'calendar' ) );
-
-        $calendar = new Calendar( $ID );
-
-        ob_start();
-
-        do_action( 'groundhogg/calendar/template/time_slots', $calendar );
-
-        $html = ob_get_clean();
-
-        wp_send_json_success( [ 'html' => $html ] );
-    }
-
 
     /**
      * Main shortcode function
@@ -181,7 +215,6 @@ class Shortcode extends Supports_Errors
 
         return html()->wrap( '', 'iframe', [ 'src' => $url, 'width' => '100%' ] );
     }
-
 
     protected function print_errors( $return = true )
     {
@@ -263,7 +296,6 @@ class Shortcode extends Supports_Errors
             $this->create_appointment( $contact );
         }
     }
-
 
     protected function reschedule_appointment()
     {

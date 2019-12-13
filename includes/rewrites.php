@@ -72,7 +72,7 @@ class Rewrites extends Abstract_Rewrites
 
         switch ( $page ){
             case 'calendar':
-                $template = $template_loader->get_template_part( 'calendar', '', false );
+                $template = $template_loader->get_template_part( 'calendar', 'new', false );
                 break;
 
             case 'calendar_hosted':

@@ -9,10 +9,12 @@ use Groundhogg\Plugin;
 use GroundhoggBookingCalendar\Classes\Calendar;
 use GroundhoggBookingCalendar\Classes\SMS_Reminder;
 use GroundhoggSMS\Classes\SMS;
+use mysql_xdevapi\Exception;
 use function Groundhogg\admin_page_url;
 use function Groundhogg\get_array_var;
 use GroundhoggBookingCalendar\Classes\Appointment;
 use GroundhoggBookingCalendar\Classes\Reminder;
+use function Groundhogg\get_date_time_format;
 use function Groundhogg\get_form_list;
 use function Groundhogg\get_request_var;
 use function Groundhogg\groundhogg_url;
@@ -379,3 +381,40 @@ function better_human_readable_duration( $duration = '' ) {
 
     return implode( ', ', $human_readable_duration );
 }
+
+
+/**
+ * Wrapper function to get the date format.
+ *
+ * @return mixed|void
+ */
+function get_date_format()
+{
+    return get_option( 'date_format' );
+}
+
+/**
+ * Wrapper function to get the time format.
+ *
+ * @return mixed|void
+ */
+function get_time_format(){
+    return get_option( 'time_format' );
+}
+
+/**
+ * Get the unix stamp to show in the given timezone
+ *
+ * @param $time
+ * @param $time_zone
+ *
+ * @return int
+ */
+function get_in_time_zone( $time, $time_zone){
+    try{
+        return Plugin::$instance->utils->date_time->convert_to_foreign_time( $time, $time_zone );
+    } catch (\Exception $exception){
+        return $time;
+    }
+}
+
