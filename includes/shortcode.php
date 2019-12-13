@@ -126,6 +126,8 @@ class Shortcode extends Supports_Errors
         $success_message = $this->calendar->get_meta( 'message', true );
         $success_message = html()->e( 'div', [ 'class' => 'gh-message-wrapper gh-form-success-wrapper' ], $success_message );
 
+        after_form_submit_handler( $appointment->get_contact() );
+
         if ( $redirect_link_status ) {
             wp_send_json_success( [ 'message' => $success_message, 'redirect_link' => $redirect_link ] );
         }
