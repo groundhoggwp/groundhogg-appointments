@@ -79,92 +79,21 @@ nocache_headers();
 </head>
 <body class="groundhogg-calendar-body">
 <div id="main" style="padding: 20px">
-    <?php
-
-    $title = $calendar->get_meta('slot_title', true);
-
-    if ($title === null) {
-        $title = __('Time Slot', 'groundhogg-calendar');
-    }
-
-    ?>
     <div class="loader-overlay" style="display: none"></div>
     <div class="loader-wrap" style="display: none">
         <p><span class="gh-loader"></span></p>
     </div>
-    <div id="calendar-description">
-        <h4><?php esc_html_e( get_bloginfo( 'name' ) ); ?></h4>
-        <h1><?php esc_html_e( $calendar->get_name() ); ?></h1>
-        <div class="details">
-            <div class="details-length"><span class="clock-icon"></span> <?php esc_html_e( $calendar->get_appointment_length_formatted() ); ?></div>
-        </div>
-        <p><?php esc_html_e( $calendar->get_description() );?></p>
-    </div>
-    <div id="calendar-form-wrapper" class="calendar-form-wrapper">
-        <form class="gh-calendar-form" method="post" action="">
-            <div id="gh-booking-wrap">
-                <div class="gh-form">
-                    <div class="gh-form-row clearfix">
-                        <div class="booking-calendar-column gh-form-column col-1-of-1">
-                            <div class="groundhogg-calendar" style="padding: 10px;">
-                                <div id="booking-calendar" style="width: 100%"></div>
-                            </div>
-                        </div>
-                        <div class="gh-form-column col-1-of-3">
-                            <div id="time-slots" class="select-time hidden">
-                                <p class="time-slot-select-text"><b><?php _e($title, 'groundhogg-calendar'); ?></b></p>
-                                <hr class="time-slot-divider"/>
-                                <div id="time-slots-inner"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    <div id="calendar-view">
+        <div class="groundhogg-calendar">
+            <div id="calendar-details" class="clearfix">
+                <?php do_action( 'groundhogg/calendar/template/details', $calendar ); ?>
             </div>
-        </form>
-        <div id="details-form" class="gh-form-wrapper hidden">
-            <?php
-            // Rescheduling...
-            if (get_request_var('reschedule')) {
-
-                $appointment_id = absint(get_request_var('reschedule'));
-
-                echo "<form class='gh-form details-form' method='post' target='_parent'> ";
-
-                echo html()->input([
-                    'type' => 'hidden',
-                    'name' => 'appointment',
-                    'value' => $appointment_id
-                ]);
-
-                echo html()->input([
-                    'type' => 'hidden',
-                    'name' => 'event',
-                    'value' => 'reschedule'
-                ]);
-
-                echo html()->button([
-                    'type' => 'submit',
-                    'text' => __( 'Reschedule Appointment', 'groundhogg-calendar' ),
-                    'name' => 'reschedule',
-                    'id' => 'reschedule',
-                    'class' => 'button',
-                    'value' => 'reschedule',
-                ]);
-
-                echo '</form>';
-
-            } else if ( $calendar->has_linked_form() ) {
-
-                ?><h3><?php _e( 'Enter Details', 'groundhogg-calendar' ); ?></h3><?php
-
-                echo do_shortcode(sprintf('[gh_form id="%d" class="details-form"]', $calendar->get_linked_form()));
-            } else {
-
-                ?><h3><?php _e( 'Enter Details', 'groundhogg-calendar' ); ?></h3><?php
-
-                default_form();
-            }
-            ?>
+            <div id="calendar-date-picker" class="clearfix">
+                <?php do_action( 'groundhogg/calendar/template/date_picker', $calendar ); ?>
+            </div>
+            <div id="calendar-form" class="clearfix">
+                <?php do_action( 'groundhogg/calendar/template/form', $calendar ); ?>
+            </div>
         </div>
     </div>
 </div>
