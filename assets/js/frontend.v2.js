@@ -81,6 +81,7 @@
 
             this.booking_data.time_zone = jstz.determine().name();
             this.booking_data.calendar_id = this.calendar_id;
+            this.booking_data.reschedule = this.reschedule;
 
             this.init_calendar();
 

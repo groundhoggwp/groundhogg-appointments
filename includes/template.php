@@ -9,6 +9,7 @@ use function Groundhogg\get_post_var;
 use function Groundhogg\get_request_var;
 use function Groundhogg\html;
 use function Groundhogg\isset_not_empty;
+use function Groundhogg\key_to_words;
 
 /**
  * Template functions for the booking calendar
@@ -42,7 +43,7 @@ function template_details( $calendar )
             $start_time = absint( get_array_var( $booking_data, 'start_time' ) );
             $end_time   = absint( get_array_var( $booking_data, 'end_time' ) );
 
-            $time_zone  = sanitize_text_field( get_array_var( $booking_data, 'time_zone' ) );
+            $time_zone  = key_to_words( sanitize_text_field( get_array_var( $booking_data, 'time_zone' ) ) );
 
             // Convert to the visitors time zone.
             $start_time = get_in_time_zone( $start_time, $time_zone );
@@ -162,8 +163,12 @@ function template_form($calendar)
     <div class="back-button">
         <span class="back-arrow-icon"></span>
     </div>
+
+    <?php if ( ! isset_not_empty( $booking_data, 'reschedule' ) ): ?>
     <h3><?php _e( 'Enter Details', 'groundhogg-calendar' ); ?></h3>
-    <?php
+    <?php else: ?>
+    <h3><?php _e( 'Confirm Change', 'groundhogg-calendar' ); ?></h3>
+    <?php endif;
 
     if ( isset_not_empty( $booking_data, 'reschedule' ) ){
 
@@ -183,10 +188,10 @@ function template_form($calendar)
             'name' => 'event',
             'value' => 'reschedule'
         ]);
-
+        ?><p></p><?php
         echo html()->button([
             'type' => 'submit',
-            'text' => __( 'Reschedule Appointment', 'groundhogg-calendar' ),
+            'text' => __( 'Reschedule', 'groundhogg-calendar' ),
             'name' => 'reschedule',
             'id' => 'reschedule',
             'class' => 'button',

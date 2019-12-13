@@ -178,7 +178,7 @@ class Calendars_Table extends WP_List_Table {
             'id'    => '',
             'style' => [ 'max-width' => '100%' ],
             'class' => 'regular-text code',
-            'value' => managed_page_url( sprintf( 'calendar/%d/', $calendar->get_id() ) ),
+            'value' => managed_page_url( sprintf( 'calendar/%d/hosted/', $calendar->get_id() ) ),
             'readonly' => true,
             'onfocus' => 'this.select()'
         ) );

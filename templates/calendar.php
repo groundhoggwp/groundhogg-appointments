@@ -26,7 +26,7 @@ function enqueue_calendar_scripts()
 
     wp_enqueue_script('groundhogg-appointments-frontend');
 
-    wp_localize_script('groundhogg-appointments-frontend', 'BookingCalendar', [
+    $localize = [
         'calendar_id' => $calendar_id,
         'start_of_week' => get_option('start_of_week'),
         'min_date' => $calendar->get_min_booking_period(true),
@@ -35,7 +35,13 @@ function enqueue_calendar_scripts()
         'day_names' => ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"],
         'ajaxurl' => admin_url('admin-ajax.php'),
         'invalidDateMsg' => __('Please select a valid time slot.', 'groundhogg-calendar')
-    ]);
+    ];
+
+    if ( get_request_var( 'reschedule' ) ){
+        $localize[ 'reschedule' ] = absint( get_request_var( 'reschedule' ) );
+    }
+
+    wp_localize_script('groundhogg-appointments-frontend', 'BookingCalendar', $localize );
 
     do_action('enqueue_groundhogg_calendar_scripts');
 }

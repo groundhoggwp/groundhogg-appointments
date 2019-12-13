@@ -8,12 +8,14 @@ use Groundhogg\Form\Submission_Handler;
 use function Groundhogg\get_array_var;
 use function Groundhogg\get_contactdata;
 use function Groundhogg\get_date_time_format;
+use function Groundhogg\get_post_var;
 use function Groundhogg\get_request_var;
 use Groundhogg\Submission;
 use Groundhogg\Supports_Errors;
 use GroundhoggBookingCalendar\Classes\Appointment;
 use GroundhoggBookingCalendar\Classes\Calendar;
 use function Groundhogg\html;
+use function Groundhogg\isset_not_empty;
 use function Groundhogg\managed_page_url;
 
 
@@ -42,10 +44,10 @@ class Shortcode extends Supports_Errors
 
     public function __construct()
     {
-        add_shortcode( 'gh_calendar', [ $this, 'gh_calendar_shortcode' ] );
+        add_shortcode( 'gh_calendar', [ $this, 'shortcode' ] );
 
-        add_action( 'wp_ajax_groundhogg_get_slots', [ $this, 'get_slots' ] );
-        add_action( 'wp_ajax_nopriv_groundhogg_get_slots', [ $this, 'get_slots' ] );
+        add_action( 'wp_ajax_groundhogg_calendar_get_views', [ $this, 'get_views' ] );
+        add_action( 'wp_ajax_nopriv_groundhogg_calendar_get_views', [ $this, 'get_views' ] );
 
 
         add_action( 'wp_ajax_groundhogg_add_appointment', [ $this, 'add_appointment_ajax' ] );
@@ -55,11 +57,58 @@ class Shortcode extends Supports_Errors
     }
 
     /**
+     * Get the time slots HTML
+     */
+    public function get_views()
+    {
+        $ID = absint( get_request_var( 'calendar' ) );
+
+        $calendar = new Calendar( $ID );
+
+        $sections = [
+            'details',
+            'time_slots',
+            'form'
+        ];
+
+        $views = [];
+
+        /**
+         * Get the relevant HTML for each section.
+         */
+        foreach ( $sections as $section ){
+            ob_start();
+            do_action( "groundhogg/calendar/template/$section", $calendar );
+            $views[ $section ] = ob_get_clean();
+        }
+
+        $step = get_post_var( 'step', 'date' );
+
+        $classes = [];
+
+        switch ( $step ){
+            default:
+            case 'date':
+                $classes[] = 'view-date';
+                break;
+            case 'slots':
+                $classes[] = 'view-slots';
+                break;
+            case 'form':
+                $classes[] = 'view-form';
+                break;
+        }
+
+        wp_send_json_success( [ 'views' => $views, 'classes' => $classes ] );
+    }
+
+    /**
+     * Create an appointment
+     *
      * @param $contact Contact
      */
     public function create_appointment( $contact )
     {
-        // NEW
         $appointment = $this->calendar->schedule_appointment( [
             'contact_id' => $contact->get_id(),
             'start_time' => absint( get_array_var( $this->booking_data, 'start_time' ) ),
@@ -73,14 +122,21 @@ class Shortcode extends Supports_Errors
 
         $redirect_link_status = $this->calendar->get_meta( 'redirect_link_status', true );
         $redirect_link = $this->calendar->get_meta( 'redirect_link', true );
+
+        $success_message = $this->calendar->get_meta( 'message', true );
+        $success_message = html()->e( 'div', [ 'class' => 'gh-message-wrapper gh-form-success-wrapper' ], $success_message );
+
         if ( $redirect_link_status ) {
-            wp_send_json_success( [ 'message' => __( $this->calendar->get_meta( 'message', true ), 'groundhogg-calendar' ), 'redirect_link' => $redirect_link ] );
-        } else {
-            wp_send_json_success( [ 'message' => __( $this->calendar->get_meta( 'message', true ), 'groundhogg-calendar' ) ] );
+            wp_send_json_success( [ 'message' => $success_message, 'redirect_link' => $redirect_link ] );
         }
+
+        wp_send_json_success( [ 'message' => $success_message ] );
+
     }
 
     /**
+     * Hook into the form submission process if using a linked form
+     *
      * @param $submission Submission
      * @param $contact Contact
      * @param $handler Submission_Handler
@@ -92,14 +148,26 @@ class Shortcode extends Supports_Errors
 
     }
 
+    /**
+     * Validate the submission
+     *
+     * @return bool|\WP_Error
+     */
     protected function pre_validate()
     {
-        if ( ( !get_array_var( $this->booking_data, 'start_time' ) ) || ( !get_array_var( $this->booking_data, 'end_time' ) ) ) {
+        $start_time = absint( get_array_var( $this->booking_data, 'start_time' ) );
+        $end_time = absint( get_array_var( $this->booking_data, 'end_time' ) );
+
+        if ( ! $start_time || $start_time < time() || ! $end_time || $end_time < time() ){
             return new \WP_Error( 'invalid_time', 'Please select valid date and time.' );
         }
+
         return true;
     }
 
+    /**
+     * Add the appointment via ajax
+     */
     public function add_appointment_ajax()
     {
 
@@ -117,105 +185,26 @@ class Shortcode extends Supports_Errors
 
         $validated = $this->pre_validate();
 
-        if ( !$validated || is_wp_error( $validated ) ) {
+        if ( ! $validated || is_wp_error( $validated ) ) {
             $this->add_error( $validated );
             return;
         };
 
-        if ( get_request_var( 'event' ) === 'reschedule' ) {
+        //reschedule appointment
 
-            //reschedule appointment
+        if ( isset_not_empty( $this->booking_data, 'reschedule' ) ) {
             $this->reschedule_appointment();
 
+        // Manage form submission for adding appointment
         } else {
-
-            // Manage form submission for adding appointment
             $this->add_appointment();
         }
 
     }
 
     /**
-     * Get the time slots HTML
+     * Add a new appoinment
      */
-    public function get_slots()
-    {
-        $ID = absint( get_request_var( 'calendar' ) );
-
-        $calendar = new Calendar( $ID );
-
-        ob_start();
-
-        do_action( 'groundhogg/calendar/template/time_slots', $calendar );
-
-        $html = ob_get_clean();
-
-        wp_send_json_success( [ 'html' => $html ] );
-    }
-
-
-    /**
-     * Main shortcode function
-     * Accepts shortcode attributes and returns a string of HTML
-     *
-     * @param $atts array shortcode attributes
-     * @return string
-     */
-    public function gh_calendar_shortcode( $atts )
-    {
-        $atts = shortcode_atts( [
-            'id'            => 0,
-            'calendar_id'   => 0,
-            'reschedule'    => 0
-        ], $atts );
-
-        $id = get_array_var( $atts, 'id', get_array_var( $atts, 'calendar_id' ) );
-
-        wp_enqueue_script( 'fullframe' );
-
-        $url = managed_page_url( sprintf( 'calendar/%d/', $id ) );
-
-        if ( get_array_var( $atts, 'reschedule' ) ) {
-            $url = wp_nonce_url( add_query_arg( 'reschedule', $atts[ 'reschedule' ], $url ), 'appointment_reschedule' );
-        }
-
-        return html()->wrap( '', 'iframe', [ 'src' => $url, 'width' => '100%' ] );
-    }
-
-
-    protected function print_errors( $return = true )
-    {
-        if ( $this->has_errors() ) {
-
-            $errors = $this->get_errors();
-            $err_html = "";
-
-            foreach ( $errors as $error ) {
-                $err_html .= sprintf( '<li id="%s">%s</li>', $error->get_error_code(), $error->get_error_message() );
-            }
-
-            $err_html = sprintf( "<ul class='gh-form-errors'>%s</ul>", $err_html );
-            $err_html = sprintf( "<div class='gh-message-wrapper gh-form-errors-wrapper'>%s</div>", $err_html );
-
-            if ( $return ) {
-                return $err_html;
-            }
-
-            echo $return;
-
-            return true;
-        }
-
-        return false;
-    }
-
-    public function ajax_error_handler()
-    {
-        if ( $this->has_errors() ) {
-            wp_send_json_error( [ 'errors' => $this->get_errors(), 'html' => $this->print_errors() ] );
-        }
-    }
-
     protected function add_appointment()
     {
         // IF HAS A LINKED FORM
@@ -264,12 +253,16 @@ class Shortcode extends Supports_Errors
         }
     }
 
-
+    /**
+     * Reschedule an appointment if click a reschedule link
+     */
     protected function reschedule_appointment()
     {
-        $appointment = new Appointment( get_request_var( 'appointment' ) );
+        $appointment_id = absint( get_array_var( $this->booking_data, 'reschedule' ) );
 
-        if ( !$appointment->exists() ) {
+        $appointment = new Appointment( $appointment_id );
+
+        if ( ! $appointment->exists() ) {
             $this->add_error( new \WP_Error( 'no_appointment', 'Appointment not found!' ) );
             return;
         }
@@ -279,12 +272,85 @@ class Shortcode extends Supports_Errors
             'end_time' => absint( get_array_var( $this->booking_data, 'end_time' ) ),
         ] );
 
-        if ( !$status ) {
-            $this->add_error( new \WP_Error( 'failed', 'appointment id ' . get_request_var( 'appointment' ) ) );
+        if ( ! $status ) {
+            $this->add_error( new \WP_Error( 'error', 'could not reschedule' ) );
             return;
         }
 
-        wp_send_json_success( [ 'message' => __( 'Your appointment rescheduled successfully!', 'groundhogg-calendar' ) ] );
+        $pretty_date = $appointment->get_pretty_start_time( true );
+
+        $success_message = sprintf( __( 'Your appointment has been rescheduled to %s!', 'groundhogg-calendar' ), $pretty_date );
+        $success_message = html()->e( 'div', [ 'class' => 'gh-message-wrapper gh-form-success-wrapper' ], $success_message );
+        wp_send_json_success( [ 'message' => $success_message ] );
+    }
+
+    /**
+     * Main shortcode function
+     * Accepts shortcode attributes and returns a string of HTML
+     *
+     * @param $atts array shortcode attributes
+     * @return string
+     */
+    public function shortcode( $atts )
+    {
+        $atts = shortcode_atts( [
+            'id'            => 0,
+            'calendar_id'   => 0,
+        ], $atts );
+
+        $id = get_array_var( $atts, 'id', get_array_var( $atts, 'calendar_id' ) );
+
+        wp_enqueue_script( 'fullframe' );
+
+        $url = managed_page_url( sprintf( 'calendar/%d/', $id ) );
+
+        if ( get_request_var( 'reschedule' ) ) {
+            $url = wp_nonce_url( add_query_arg( 'reschedule', absint( get_request_var( 'reschedule' ) ), $url ), 'appointment_reschedule' );
+        }
+
+        return html()->wrap( '', 'iframe', [ 'src' => $url, 'width' => '100%' ] );
+    }
+
+    /**
+     * Handle any errors during the ajax submission process
+     */
+    public function ajax_error_handler()
+    {
+        if ( $this->has_errors() ) {
+            wp_send_json_error( [ 'errors' => $this->get_errors(), 'html' => $this->print_errors() ] );
+        }
+    }
+
+    /**
+     * Outputs errors from the ajax process
+     *
+     * @param bool $return
+     * @return bool|string
+     */
+    protected function print_errors( $return = true )
+    {
+        if ( $this->has_errors() ) {
+
+            $errors = $this->get_errors();
+            $err_html = "";
+
+            foreach ( $errors as $error ) {
+                $err_html .= sprintf( '<li id="%s">%s</li>', $error->get_error_code(), $error->get_error_message() );
+            }
+
+            $err_html = sprintf( "<ul class='gh-form-errors'>%s</ul>", $err_html );
+            $err_html = sprintf( "<div class='gh-message-wrapper gh-form-errors-wrapper'>%s</div>", $err_html );
+
+            if ( $return ) {
+                return $err_html;
+            }
+
+            echo $return;
+
+            return true;
+        }
+
+        return false;
     }
 
 }

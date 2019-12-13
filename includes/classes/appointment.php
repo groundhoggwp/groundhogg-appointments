@@ -8,6 +8,7 @@ use function Groundhogg\encrypt;
 use Groundhogg\Event;
 use function Groundhogg\get_array_var;
 use function Groundhogg\get_contactdata;
+use function Groundhogg\get_date_time_format;
 use function Groundhogg\get_db;
 use Groundhogg\Plugin;
 use GroundhoggBookingCalendar\DB\Calendar_Meta;
@@ -15,6 +16,7 @@ use \Google_Service_Calendar_Event;
 use \Google_Service_Calendar;
 use \Exception;
 use function Groundhogg\get_request_var;
+use function GroundhoggBookingCalendar\get_in_time_zone;
 use function GroundhoggBookingCalendar\is_sms_plugin_active;
 use function GroundhoggBookingCalendar\send_reminder_notification;
 use function GroundhoggBookingCalendar\send_sms_reminder_notification;
@@ -42,12 +44,43 @@ class Appointment extends Base_Object_With_Meta
     }
 
     /**
+     * Get the start time in pretty format.
+     *
+     * @param bool $zone whether to return as the timezone of the contact
+     * @return string
+     */
+    public function get_pretty_start_time( $zone=false ){
+
+        $time = $this->get_start_time();
+
+        if ( $zone ){
+
+            $time_zone = $this->get_contact()->get_time_zone();
+
+            if ( $time_zone ){
+                $time = get_in_time_zone( $time, $time_zone );
+            }
+
+        }
+
+        return date_i18n( get_date_time_format(), $time );
+    }
+
+    /**
      * Returns appointment id
      * @return int
      */
     public function get_id()
     {
         return absint( $this->ID );
+    }
+
+    /**
+     * @return false|\Groundhogg\Contact
+     */
+    public function get_contact()
+    {
+        return get_contactdata( $this->get_contact_id() );
     }
 
     /**

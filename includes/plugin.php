@@ -80,7 +80,7 @@ class Plugin extends Extension
     {
         $this->google_calendar = new Google_Calendar();
         $this->roles = new Roles();
-        $this->shortcode = new Shortcode_V2();
+        $this->shortcode = new Shortcode();
         $this->replacements = new Replacements();
         $this->rewrites = new Rewrites();
         $this->installer = new Installer();

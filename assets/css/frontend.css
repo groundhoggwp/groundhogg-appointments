@@ -243,6 +243,10 @@ hr.time-slot-divider{
         min-height: 300px;
     }
 
+    #calendar-form{
+        min-height: 300px;
+    }
+
     .back-button{
         position: absolute;
         left: 30px;
