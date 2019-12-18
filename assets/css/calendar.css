@@ -134,3 +134,12 @@
     color: #5c9d4f;
     background: rgba(118, 197, 103, 0.18);
 }
+
+@media only screen and (max-width: 400px) {
+    .groundhogg-calendar td .ui-state-default{
+        height: 40px;
+        width: 40px;
+        padding: 8px;
+        cursor: pointer;
+    }
+}

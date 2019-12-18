@@ -263,6 +263,14 @@ hr.time-slot-divider{
         padding: 30px 30px 30px 30px;
     }
 
+    #calendar-date-picker{
+        padding: 10px 10px 30px 10px;
+    }
+
+    #date-picker{
+        max-width: 100%;
+    }
+
     .view-form #calendar-form,
     .view-slots #calendar-date-picker {
         padding-left: 100px;

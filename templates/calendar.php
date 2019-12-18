@@ -78,7 +78,7 @@ nocache_headers();
     <?php wp_head(); ?>
 </head>
 <body class="groundhogg-calendar-body">
-<div id="main" style="padding: 20px">
+<div id="main">
     <div class="loader-overlay" style="display: none"></div>
     <div class="loader-wrap" style="display: none">
         <p><span class="gh-loader"></span></p>
