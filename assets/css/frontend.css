@@ -28,12 +28,10 @@ body.groundhogg-calendar-body {
 #time-slots-inner .appointment-time:hover{
     transition: 0.4s;
     background-color: #80d771;
-    /*border-color: #3bca65;*/
 }
 
 #time-slots-inner .appointment-time.selected{
     background-color: #76c567;
-    /*border-color: #32aa55;*/
     padding: 10px;
 }
 

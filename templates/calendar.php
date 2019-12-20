@@ -32,7 +32,15 @@ function enqueue_calendar_scripts()
         'min_date' => $calendar->get_min_booking_period(true),
         'max_date' => $calendar->get_max_booking_period(true),
         'disabled_days' => $calendar->get_dates_no_slots(),
-        'day_names' => ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"],
+        'day_names' => [
+            __( "SUN", 'groundhogg-calendar' ),
+            __( "MON", 'groundhogg-calendar' ),
+            __( "TUE", 'groundhogg-calendar' ),
+            __( "WED", 'groundhogg-calendar' ),
+            __( "THU", 'groundhogg-calendar' ),
+            __( "FRI", 'groundhogg-calendar' ),
+            __( "SAT", 'groundhogg-calendar' )
+        ],
         'ajaxurl' => admin_url('admin-ajax.php'),
         'invalidDateMsg' => __('Please select a valid time slot.', 'groundhogg-calendar')
     ];
