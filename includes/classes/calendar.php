@@ -6,6 +6,7 @@ use Exception;
 use Google_Service_Calendar;
 use Google_Service_Calendar_Calendar;
 use Groundhogg\Base_Object_With_Meta;
+use function GroundhoggBookingCalendar\get_tz_db_name;
 use WP_Error;
 use function Groundhogg\get_array_var;
 use function Groundhogg\get_db;
@@ -95,14 +96,13 @@ class Calendar extends Base_Object_With_Meta
 
             $google_calendar->setSummary( $this->get_name() );
 
-            if ( get_option( 'timezone_string' ) ) {
-                $google_calendar->setTimeZone( get_option( 'timezone_string' ) );
+            if ( get_tz_db_name() ) {
+                $google_calendar->setTimeZone( get_tz_db_name() );
             }
 
             $service = new Google_Service_Calendar( $client );
             $createdCalendar = $service->calendars->insert( $google_calendar );
             $this->update_meta( 'google_calendar_id', sanitize_text_field( $createdCalendar->getId() ) );
-
 
             $appointments = get_db( 'appointments' )->query( [ 'calendar_id' => $this->get_id() ] );
 

@@ -418,3 +418,18 @@ function get_in_time_zone( $time, $time_zone){
     }
 }
 
+/**
+ * Get the tz db name
+ *
+ * @return string
+ */
+function get_tz_db_name()
+{
+    $offset = Plugin::$instance->utils->date_time->get_wp_offset( true );
+
+	$tz = timezone_name_from_abbr('', $offset, 1);
+    // Workaround for bug #44780
+	if($tz === false) $tz = timezone_name_from_abbr('', $offset, 0);
+
+	return $tz;
+}

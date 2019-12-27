@@ -543,20 +543,21 @@ class Calendar_Page extends Admin_Page
 
         //check appointment is in working hours.....
         $availability = $appointment->get_calendar()->get_todays_available_periods(get_request_var('start_date'));
+
         if (empty($availability)) {
             return new \WP_Error('not_available', __('This date is not available.', 'groundhogg-calendar'));
         }
 
-        $flag = false;
-        foreach ($availability as $appoi) {
-            if (in_between_inclusive(strtotime(get_request_var('start_time')), strtotime($appoi[0]), strtotime($appoi[1])) && in_between_inclusive(strtotime(get_request_var('end_time')), strtotime($appoi[0]), strtotime($appoi[1]))) {
-                $flag = true;
-            }
-        }
-
-        if (!$flag) {
-            return new \WP_Error('not_available', __('Appointment is out of availability.', 'groundhogg-calendar'));
-        }
+//        $flag = false;
+//        foreach ($availability as $appoi) {
+//            if (in_between_inclusive(strtotime(get_request_var('start_time')), strtotime($appoi[0]), strtotime($appoi[1])) && in_between_inclusive(strtotime(get_request_var('end_time')), strtotime($appoi[0]), strtotime($appoi[1]))) {
+//                $flag = true;
+//            }
+//        }
+//
+//        if (!$flag) {
+//            return new \WP_Error('not_available', __('Appointment is out of availability.', 'groundhogg-calendar'));
+//        }
 
         $start_time = Plugin::$instance->utils->date_time->convert_to_utc_0(strtotime(get_request_var('start_date') . ' ' . get_request_var('start_time')));
         $end_time = Plugin::$instance->utils->date_time->convert_to_utc_0(strtotime(get_request_var('end_date') . ' ' . get_request_var('end_time')));

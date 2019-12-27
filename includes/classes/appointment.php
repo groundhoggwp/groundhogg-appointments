@@ -148,7 +148,6 @@ class Appointment extends Base_Object_With_Meta
         return absint( $this->start_time );
     }
 
-
     /**
      * Return end time of appointment
      * @return int
@@ -184,75 +183,7 @@ class Appointment extends Base_Object_With_Meta
         return true;
     }
 
-
-    protected function update_in_google()
-    {
-
-        $access_token = $this->get_calendar()->get_access_token();
-        $google_calendar_id = $this->get_calendar()->get_google_calendar_id();
-        if ( $access_token && $google_calendar_id ) {
-
-//             create google client
-            $client = \GroundhoggBookingCalendar\Plugin::$instance->google_calendar->get_google_client_from_access_token( $this->get_calendar_id() );
-
-            $service = new Google_Service_Calendar( $client );
-            if ( \GroundhoggBookingCalendar\Plugin::$instance->google_calendar->is_valid_calendar( $this->get_calendar_id(), $google_calendar_id, $service ) ) {
-
-                $contact = get_contactdata( $this->get_contact_id() );
-                $google_appointment_id = $this->get_google_appointment_id();
-                $event = new Google_Service_Calendar_Event( array(
-                    'id' => $google_appointment_id,
-                    'summary' => $this->get_name(),
-                    'description' => $this->get_meta( 'note', true ),
-                    'start' => [ 'dateTime' => date( 'Y-m-d\TH:i:s', $this->get_start_time() ) . 'Z' ], //Date and time in UTC+0 and convert google required format.
-                    'end' => [ 'dateTime' => date( 'Y-m-d\TH:i:s', $this->get_end_time() ) . 'Z' ],
-                    'attendees' => array(
-                        array( 'email' => $contact->get_email() ),
-                    ),
-                ) );
-
-                try {
-                    $sendNotifications = array('sendNotifications' => true);
-                    $updatedEvent = $service->events->update( $google_calendar_id, $google_appointment_id, $event, $sendNotifications );
-                } catch ( \Exception $exception ) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
-
-    public function add_in_google()
-    {
-
-        $access_token = $this->get_calendar()->get_access_token();
-        $google_calendar_id = $this->get_calendar()->get_google_calendar_id();
-        if ( $access_token && $google_calendar_id ) {
-
-            $client = \GroundhoggBookingCalendar\Plugin::$instance->google_calendar->get_google_client_from_access_token( $this->get_calendar_id() );
-            $service = new Google_Service_Calendar( $client );
-            if ( \GroundhoggBookingCalendar\Plugin::$instance->google_calendar->is_valid_calendar( $this->get_calendar_id(), $google_calendar_id, $service ) ) {
-
-                $contact = get_contactdata( $this->get_contact_id() );
-                $event = new Google_Service_Calendar_Event( array(
-                    'id' => $this->get_google_appointment_id(),
-                    'summary' => $this->get_name(),
-                    'description' => $this->get_meta( 'note' ),
-                    'start' => [ 'dateTime' => date( 'Y-m-d\TH:i:s', $this->get_start_time() ) . 'Z' ],
-                    'end' => [ 'dateTime' => date( 'Y-m-d\TH:i:s', $this->get_end_time() ) . 'Z' ],
-                    'attendees' => [
-                        [ 'email' => $contact->get_email() ],
-                    ],
-                ) );
-                $sendNotifications = array('sendNotifications' => true);
-                $event = $service->events->insert( $google_calendar_id, $event ,$sendNotifications );
-            }
-
-        }
-    }
-
-    /**
+	/**
      * create appointment id for google events.
      *
      * @return string
@@ -262,8 +193,7 @@ class Appointment extends Base_Object_With_Meta
         return 'ghcalendarcid' . $this->get_calendar_id() . 'aid' . $this->get_id();
     }
 
-
-    /**
+	/**
      * Delete appointment.
      *  Sends cancel email
      *  Deletes appointment from the google calendar
@@ -293,8 +223,7 @@ class Appointment extends Base_Object_With_Meta
         return true;
     }
 
-
-    /**
+	/**
      * Delete Appointment from google calendar if it exist.
      *
      */
@@ -318,7 +247,7 @@ class Appointment extends Base_Object_With_Meta
     }
 
 
-    public function get_full_calendar_event()
+	public function get_full_calendar_event()
     {
 
         if ( $this->get_status() === 'cancelled' ) {
@@ -343,7 +272,8 @@ class Appointment extends Base_Object_With_Meta
 
     }
 
-    /**
+
+	/**
      *
      * Book the appointment
      * Schedules all the reminder emails....
@@ -356,7 +286,8 @@ class Appointment extends Base_Object_With_Meta
         do_action( 'groundhogg/calendar/appointment/book/after' );
     }
 
-    /**
+
+	/**
      * Reschedule Appointment
      *
      * @param $args
@@ -381,7 +312,9 @@ class Appointment extends Base_Object_With_Meta
         if ( $note ) {
             $this->update_meta( 'notes', $note );
         }
+
         $status = $this->update( $args );
+
         if ( !$status ) {
             return false;
         }
@@ -391,13 +324,17 @@ class Appointment extends Base_Object_With_Meta
 
         // Schedule Appointment Booked Email...
         do_action( 'groundhogg/calendar/appointment/reschedule/before' );
+
         $this->schedule_reminders( Reminder::RESCHEDULED );
+
         do_action( 'groundhogg/calendar/appointment/reschedule/after' );
+
         do_action( 'groundhogg/calendar/appointment/reschedule', $this->get_id(), Reminder::RESCHEDULED );
+
         return true;
     }
 
-    /**
+	/**
      * Cancel appointment and send reminder of canceling event..
      *
      * @return bool
@@ -424,7 +361,7 @@ class Appointment extends Base_Object_With_Meta
 
     }
 
-    public function approve()
+	public function approve()
     {
         $status = $this->update( [
             'status' => 'approved'
@@ -444,8 +381,7 @@ class Appointment extends Base_Object_With_Meta
         return true;
     }
 
-
-    protected function schedule_reminders( $which )
+	protected function schedule_reminders( $which )
     {
 
         if (is_sms_plugin_active()) {
@@ -491,7 +427,11 @@ class Appointment extends Base_Object_With_Meta
         }
     }
 
-
+	/**
+	 * Schedule any SMS reminders if applicable
+	 *
+	 * @param $which
+	 */
     protected function schedule_sms_reminders( $which )
     {
 
@@ -532,7 +472,8 @@ class Appointment extends Base_Object_With_Meta
         }
     }
 
-    protected function cancel_reminders()
+
+	protected function cancel_reminders()
     {
         // delete all the waiting events for the appointment
         $events = get_db( 'events' )->query( [
@@ -552,7 +493,8 @@ class Appointment extends Base_Object_With_Meta
         $this->cancel_sms_reminders();
     }
 
-    protected function cancel_sms_reminders()
+
+	protected function cancel_sms_reminders()
     {
         // delete all the waiting events for the appointment
         $events = get_db( 'events' )->query( [
@@ -570,7 +512,7 @@ class Appointment extends Base_Object_With_Meta
         }
     }
 
-    /**
+	/**
      * Return a manage link to the appoitment.
      *
      * @param string $action
@@ -581,7 +523,7 @@ class Appointment extends Base_Object_With_Meta
         return site_url( sprintf( 'gh/appointment/%s/%s', urlencode( encrypt( $this->get_id() ) ), $action ) );
     }
 
-    /**
+	/**
      * Return zoom meeting id
      *
      * @return int
@@ -591,7 +533,7 @@ class Appointment extends Base_Object_With_Meta
         return absint( $this->get_meta( 'zoom_id', true ) );
     }
 
-    public function create_zoom_meeting()
+	public function create_zoom_meeting()
     {
         if ( !$this->get_calendar()->is_zoom_enabled() ) {
             return;
@@ -636,8 +578,7 @@ class Appointment extends Base_Object_With_Meta
         }
     }
 
-
-    public function update_zoom_meeting()
+	public function update_zoom_meeting()
     {
         if ( !$this->get_calendar()->is_zoom_enabled() ) {
             return;
@@ -685,7 +626,7 @@ class Appointment extends Base_Object_With_Meta
 
     }
 
-    public function delete_zoom_meeting()
+	public function delete_zoom_meeting()
     {
         if ( !$this->get_calendar()->is_zoom_enabled() ) {
             return;
@@ -715,7 +656,8 @@ class Appointment extends Base_Object_With_Meta
         }
     }
 
-    public function get_zoom_meeting_detail()
+
+	public function get_zoom_meeting_detail()
     {
         if ( !$this->get_calendar()->is_zoom_enabled() ) {
             return __( 'Zoom is not enabled.', 'groundhogg-calendar' );
@@ -753,5 +695,92 @@ class Appointment extends Base_Object_With_Meta
         return __( 'Zoom meeting details not found!', 'groundhogg-calendar' );
 
     }
+
+	/**
+	 * Add the appt in the Google
+	 */
+	public function add_in_google()
+	{
+		$access_token = $this->get_calendar()->get_access_token();
+		$google_calendar_id = $this->get_calendar()->get_google_calendar_id();
+		if ( $access_token && $google_calendar_id ) {
+
+			$client = \GroundhoggBookingCalendar\Plugin::$instance->google_calendar->get_google_client_from_access_token( $this->get_calendar_id() );
+			$service = new Google_Service_Calendar( $client );
+			if ( \GroundhoggBookingCalendar\Plugin::$instance->google_calendar->is_valid_calendar( $this->get_calendar_id(), $google_calendar_id, $service ) ) {
+
+				$contact = get_contactdata( $this->get_contact_id() );
+				$event = new Google_Service_Calendar_Event( array(
+					'id' => $this->get_google_appointment_id(),
+					'summary' => $this->get_name(),
+					'description' => $this->get_meta( 'note' ),
+					'start' => [
+						'dateTime' => date( DATE_RFC3339, $this->get_start_time() ),
+						'timeZone' => 'UTC'
+					],
+					'end' => [
+						'dateTime' => date( DATE_RFC3339, $this->get_end_time() ),
+						'timeZone' => 'UTC'
+					],
+					'attendees' => [
+						[ 'email' => $contact->get_email() ],
+					],
+				) );
+				$sendNotifications = array('sendNotifications' => true);
+				$event = $service->events->insert( $google_calendar_id, $event ,$sendNotifications );
+			}
+
+		}
+	}
+
+	/**
+	 * Update in google
+	 *
+	 * @return bool
+	 */
+	protected function update_in_google()
+	{
+
+		$access_token = $this->get_calendar()->get_access_token();
+		$google_calendar_id = $this->get_calendar()->get_google_calendar_id();
+
+		if ( $access_token && $google_calendar_id ) {
+
+			// create google client
+			$client = \GroundhoggBookingCalendar\Plugin::$instance->google_calendar->get_google_client_from_access_token( $this->get_calendar_id() );
+
+			$service = new Google_Service_Calendar( $client );
+			if ( \GroundhoggBookingCalendar\Plugin::$instance->google_calendar->is_valid_calendar( $this->get_calendar_id(), $google_calendar_id, $service ) ) {
+
+				$contact = get_contactdata( $this->get_contact_id() );
+				$google_appointment_id = $this->get_google_appointment_id();
+				$event = new Google_Service_Calendar_Event( array(
+					'id' => $google_appointment_id,
+					'summary' => $this->get_name(),
+					'description' => $this->get_meta( 'note', true ),
+					'start' => [
+						'dateTime' => date( DATE_RFC3339, $this->get_start_time() ),
+						'timeZone' => 'UTC'
+					],
+					'end' => [
+						'dateTime' => date( DATE_RFC3339, $this->get_end_time() ),
+						'timeZone' => 'UTC'
+					],
+					'attendees' => array(
+						array( 'email' => $contact->get_email() ),
+					),
+				) );
+
+				try {
+					$sendNotifications = array('sendNotifications' => true);
+					$updatedEvent = $service->events->update( $google_calendar_id, $google_appointment_id, $event, $sendNotifications );
+				} catch ( \Exception $exception ) {
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
 
 }

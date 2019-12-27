@@ -22,7 +22,6 @@ use \WP_Error;
  * Creates client object to access google services.
  *
  */
-
 if ( !defined( 'ABSPATH' ) ) exit;
 
 /**
@@ -97,8 +96,6 @@ class Google_Calendar
         return $client;
     }
 
-
-
     /**
      * set basic details of google clients and return basic client.
      *
@@ -144,7 +141,7 @@ class Google_Calendar
     /**
      * Imports and update appointments from google calendar to Groundhogg - APPOINTMENT calendar.
      *
-     * @param $calendar_id
+     * @param $id int the calendar ID
      * @return bool|WP_Error
      */
     public function sync( $id )
@@ -153,6 +150,7 @@ class Google_Calendar
 
         $access_token = $calendar->get_access_token();
         $google_calendar_id = $calendar->get_google_calendar_id();
+
         if ( !$access_token || !$google_calendar_id ) {
             return new WP_Error( 'no_access_code', __( 'Please generate access code to sync appointments. ', 'groundhogg-calendar' ) );
         }
@@ -162,24 +160,26 @@ class Google_Calendar
         if( is_wp_error($client) ) {
             return new WP_Error( $client->get_error_code(), $client->get_error_message() );
         }
+
         $service = new Google_Service_Calendar( $client );
 
         if ( !$this->is_valid_calendar( $calendar->get_id(), $google_calendar_id, $service ) ) {
             return new WP_Error( 'no_calendar', __( 'Google calendar not found.', 'groundhogg-calendar' ) );
         }
 
-
         //check for the calendar
         $optParams = array(
             'orderBy' => 'startTime',
             'singleEvents' => true,
-            'timeMin' => date( 'c' ),
+            'timeMin' => date( DATE_RFC3339 ),
+	        'timeZone' => 'UTC'
         );
+
         $results = $service->events->listEvents( $google_calendar_id, $optParams );
         $events = $results->getItems();
 
         if ( empty( $events ) ) {
-            return new WP_Error( 'no_events', __( 'No future appointment found in Google calendar for sync.', 'groundhogg' ) );
+            return new WP_Error( 'no_events', __( 'No future appointments found.', 'groundhogg' ) );
         }
 
         // update values in data base
@@ -187,11 +187,8 @@ class Google_Calendar
             // get event id and check for update
             if ( !( $event->start->dateTime === null || $event->end->dateTime === null || empty( $event->getAttendees() ) ) ) {
 
-                $fetched_start = str_ireplace( 'Z', '', $event->start->dateTime );
-                $fetched_end = str_ireplace( 'Z', '', $event->end->dateTime );
-
-                $start = strtotime( date( $fetched_start ) );
-                $end = strtotime( date( $fetched_end ) );
+                $start = strtotime( $event->start->dateTime  );
+                $end = strtotime( $event->end->dateTime );
 
                 $find = strpos( $event->getId(), 'ghcalendar' );
                 $email = sanitize_email( stripslashes( $event->getAttendees()[ 0 ][ 'email' ] ) );
@@ -214,8 +211,8 @@ class Google_Calendar
                         'calendar_id' => $calendar->get_id(),
                         'name' => sanitize_text_field( stripslashes( $event->getSummary() ) ),
                         'status' => 'pending',
-                        'start_time' => Plugin::$instance->utils->date_time->convert_to_utc_0( $start ),    //strtotime()
-                        'end_time' => Plugin::$instance->utils->date_time->convert_to_utc_0( $end ),      //strtotime()
+                        'start_time' => $start,
+                        'end_time' => $end,
                         'notes' => sanitize_text_field( stripslashes( $event->getDescription() ) )
                     ] );
 
@@ -240,13 +237,15 @@ class Google_Calendar
                         $is_update = true;
                     }
 
-                    if ( !( (int) $appointment->get_start_time() === (int) Plugin::$instance->utils->date_time->convert_to_utc_0( $start ) ) ) {
+                    if ( (int) $appointment->get_start_time() !== $start ) {
                         $is_update = true;
                     }
-                    if ( !( (int) $appointment->get_end_time() === (int) Plugin::$instance->utils->date_time->convert_to_utc_0( $end ) ) ) {
+
+                    if ( (int) $appointment->get_end_time() !== $end ) {
                         $is_update = true;
                     }
-                    if ( !( $appointment->get_meta( 'notes' ) === sanitize_text_field( stripslashes( $event->getDescription() ) ) ) ) {
+
+                    if ( $appointment->get_meta( 'notes' ) !== sanitize_text_field( stripslashes( $event->getDescription() ) ) ) {
                         $appointment->update_meta( 'notes', sanitize_text_field( stripslashes( $event->getDescription() ) ) );
                     }
 
@@ -254,8 +253,8 @@ class Google_Calendar
                         $status = $appointment->reschedule( [
                             'contact_id' => $contact->get_id(),
                             'name' => sanitize_text_field( stripslashes( $event->getSummary() ) ),
-                            'start_time' => Plugin::$instance->utils->date_time->convert_to_utc_0( $start ),    //strtotime()
-                            'end_time' => Plugin::$instance->utils->date_time->convert_to_utc_0( $end ),      //strtotime()
+                            'start_time' => $start,
+                            'end_time' => $end,
                         ] );
                     }
                 }
@@ -264,8 +263,6 @@ class Google_Calendar
 
         return true;
     }
-
-
 
     /**
      * Checks for calendar on linked google account.
@@ -288,65 +285,4 @@ class Google_Calendar
             return false;
         }
     }
-
-
-//    /**
-//     * set basic details of google clients and return basic client.
-//     *
-//     * @return Google_Client|WP_Error
-//     */
-//    public function get_basic_client()
-//    {
-//        $client_id = Plugin::$instance->settings->get_option( 'google_calendar_client_id' );
-//        if ( !$client_id ) {
-//            return new WP_Error( 'GOOGLE_CLIENT_ID', __( "Google client id not found.", 'groundhogg-calendar' ) );
-//        }
-//
-//        $client_secret = Plugin::$instance->settings->get_option( 'google_calendar_secret_key' );
-//        if ( !$client_secret ) {
-//            return new WP_Error( 'GOOGLE_CLIENT_SECRET', __( "Google client secret not found.", 'groundhogg-calendar' ) );
-//        }
-//
-//        $client = new Google_Client();
-//        $client->setApplicationName( 'Groundhogg Google calendar' );
-//        $client->setScopes( Google_Service_Calendar::CALENDAR );
-////        $client->setClientId( $client_id );
-////        $client->setClientSecret( $client_secret );
-//        $client->setRedirectUri( "urn:ietf:wg:oauth:2.0:oob" );
-//        $client->setAccessType( 'offline' );
-//        $client->setPrompt( 'select_account consent' );
-//        $guzzleClient = new \GuzzleHttp\Client( array( 'curl' => array( CURLOPT_SSL_VERIFYPEER => false ) ) );
-//        $client->setHttpClient( $guzzleClient );
-//        return $client;
-//    }
-//
-//    /**
-//     * Generate access token form authentication code generated by google.
-//     *
-//     * @param $calendar_id
-//     * @param $code -  authentication code generated by google
-//     * @return Google_Client|WP_Error
-//     * @deprecated
-//     */
-//    public function generate_access_token( $calendar_id, $code )
-//    {
-//        $calendar = new Calendar( $calendar_id );
-//
-//        $client = $this->get_basic_client();
-//        if ( is_wp_error( $client ) ) {
-//            return $client;
-//        }
-//
-//        $access_token = $client->fetchAccessTokenWithAuthCode( $code );
-//        $client->setAccessToken( $access_token );
-//
-//        // Check to see if there was an error.
-//        if ( array_key_exists( 'error', $access_token ) ) {
-//            return new WP_Error( 'ACCESS_TOKEN_ERROR', __( 'error', 'groundhogg-calendar' ) );
-//        }
-//
-//        $calendar->update_meta( 'access_token', $client->getAccessToken() );
-//
-//        return $client;
-//    }
 }

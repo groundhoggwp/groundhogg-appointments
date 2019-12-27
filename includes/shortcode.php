@@ -193,7 +193,6 @@ class Shortcode extends Supports_Errors
         };
 
         //reschedule appointment
-
         if ( isset_not_empty( $this->booking_data, 'reschedule' ) ) {
             $this->reschedule_appointment();
 
@@ -228,7 +227,7 @@ class Shortcode extends Supports_Errors
             $email = sanitize_email( get_request_var( 'email' ) );
 
             if ( ! is_email( $email ) ) {
-                $this->add_error( new \WP_Error( 'invalid_email', 'Please enter valid email.' ) );
+                $this->add_error( new \WP_Error( 'invalid_email', __( 'Please enter valid email.', 'groundhogg-calendar' ) ) );
                 return;
             }
 
@@ -265,7 +264,7 @@ class Shortcode extends Supports_Errors
         $appointment = new Appointment( $appointment_id );
 
         if ( ! $appointment->exists() ) {
-            $this->add_error( new \WP_Error( 'no_appointment', 'Appointment not found!' ) );
+            $this->add_error( new \WP_Error( 'no_appointment', __( 'Appointment not found!', 'groundhogg-calendar' ) ) );
             return;
         }
 
@@ -275,7 +274,7 @@ class Shortcode extends Supports_Errors
         ] );
 
         if ( ! $status ) {
-            $this->add_error( new \WP_Error( 'error', 'could not reschedule' ) );
+            $this->add_error( new \WP_Error( 'error', __( 'could not reschedule', 'groundhogg-calendar' ) ) );
             return;
         }
 
