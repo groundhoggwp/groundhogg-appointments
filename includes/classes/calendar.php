@@ -681,16 +681,33 @@ class Calendar extends Base_Object_With_Meta
                         $results = $service->events->listEvents( $google_calendar->getId(), $optParams );
                         $events = $results->getItems();
 
+
+
                         if ( !empty( $events ) ) {
                             foreach ( $events as $event ) {
                                 $google_start = $event->start->dateTime;
                                 $google_end = $event->end->dateTime;
                                 if ( !empty( $google_start ) && !empty( $google_end ) ) {
-                                    $google_appointments[] = array(
-                                        'display' => $event->getSummary(),
-                                        'start' => strtotime( '+1 seconds', Plugin::$instance->utils->date_time->convert_to_utc_0( strtotime( date( $event->start->dateTime ) ) ) ),
-                                        'end' => Plugin::$instance->utils->date_time->convert_to_utc_0( strtotime( date( $event->end->dateTime ) ) )
-                                    );
+
+                                    if( strpos($google_start , 'Z')) {
+                                        $google_start = str_replace('Z', '' , $google_start);
+                                        $google_end = str_replace('Z', '' , $google_end);
+
+                                        $google_appointments[] = array(
+                                            'display' => $event->getSummary(),
+                                            'start' => Plugin::$instance->utils->date_time->convert_to_utc_0(strtotime( '+1 seconds',  strtotime( date( $google_start ) ) ) ) ,
+                                            'end' => Plugin::$instance->utils->date_time->convert_to_utc_0( strtotime( date( $google_end ) ) )
+                                        );
+
+                                    } else {
+
+                                        $google_appointments[] = array(
+                                            'display' => $event->getSummary(),
+                                            'start' => strtotime( '+1 seconds', Plugin::$instance->utils->date_time->convert_to_utc_0( strtotime( date( $google_start ) ) ) ),
+                                            'end' => Plugin::$instance->utils->date_time->convert_to_utc_0( strtotime( date( $google_end ) ) )
+                                        );
+                                    }
+
                                 }
                             }
                         }
