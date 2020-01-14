@@ -4,6 +4,7 @@ namespace GroundhoggBookingCalendar\Classes;
 
 
 use Groundhogg\Base_Object_With_Meta;
+use function Groundhogg\do_replacements;
 use function Groundhogg\encrypt;
 use Groundhogg\Event;
 use function Groundhogg\get_array_var;
@@ -709,11 +710,22 @@ class Appointment extends Base_Object_With_Meta
 			$service = new Google_Service_Calendar( $client );
 			if ( \GroundhoggBookingCalendar\Plugin::$instance->google_calendar->is_valid_calendar( $this->get_calendar_id(), $google_calendar_id, $service ) ) {
 
-				$contact = get_contactdata( $this->get_contact_id() );
+			    $summary = $this->get_name();
+			    if ( $this->get_calendar()->get_meta('google_appointment_name') ){
+			        $summary = do_replacements( $this->get_calendar()->get_meta('google_appointment_name') , $this->get_contact_id() );
+                }
+
+
+                $description = $this->get_meta( 'note' );
+                if ( $this->get_calendar()->get_meta('google_appointment_description') ){
+                    $description = do_replacements( $this->get_calendar()->get_meta('google_appointment_description') , $this->get_contact_id() );
+                }
+
+                $contact = get_contactdata( $this->get_contact_id() );
 				$event = new Google_Service_Calendar_Event( array(
 					'id' => $this->get_google_appointment_id(),
-					'summary' => $this->get_name(),
-					'description' => $this->get_meta( 'note' ),
+					'summary' => $summary,
+					'description' => $description ,
 					'start' => [
 						'dateTime' => date( DATE_RFC3339, $this->get_start_time() ),
 						'timeZone' => 'UTC'

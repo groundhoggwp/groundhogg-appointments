@@ -6,6 +6,7 @@ use Groundhogg\Event;
 use GroundhoggBookingCalendar\Classes\Calendar;
 use GroundhoggBookingCalendar\Classes\SMS_Reminder;
 use function Groundhogg\get_contactdata;
+use function Groundhogg\get_date_time_format;
 use function Groundhogg\get_db;
 use function Groundhogg\html;
 use GroundhoggBookingCalendar\Classes\Appointment;
@@ -58,9 +59,19 @@ class Replacements
                 'description' => __( 'Returns the start date & time of a contact\'s appointment.', 'groundhogg-calendar' ),
             ],
             [
+                'code' => 'appointment_start_time_admin',
+                'callback' => array( $this, 'start_time_admin' ),
+                'description' => __( 'Returns the start date & time of a contact\'s appointment in the admin\'s timezone.', 'groundhogg-calendar' ),
+            ],
+            [
                 'code' => 'appointment_end_time',
                 'callback' => array( $this, 'end_time' ),
                 'description' => __( 'Returns the end date & time of a contact\'s appointment.', 'groundhogg-calendar' ),
+            ],
+            [
+                'code' => 'appointment_end_time_admin',
+                'callback' => array( $this, 'end_time_admin' ),
+                'description' => __( 'Returns the end date & time of a contact\'s appointment in the admin\'s timezone.', 'groundhogg-calendar' ),
             ],
             [
                 'code' => 'appointment_actions',
@@ -157,15 +168,30 @@ class Replacements
         }
 
         $contact = get_contactdata( $contact_id );
-        $local_time = $contact->get_local_time( $this->get_appointment()->get_start_time() );
-        $format = sprintf( "%s %s", get_option( 'date_format' ), get_option( 'time_format' ) );
 
-        if ( $contact->get_ip_address() ) {
-            return date_i18n( $format, $local_time );
+        $local_time = $contact->get_local_time( $this->get_appointment()->get_start_time() );
+
+        $format = get_date_time_format();
+
+        return date_i18n( $format, $local_time );
+    }
+
+    /**
+     * Get the appointment start time.
+     *
+     * @param int $contact_id
+     * @return bool|string
+     */
+    public function start_time_admin( $contact_id = 0 )
+    {
+        if ( !$this->get_appointment() ) {
+            return false;
         }
 
-        return sprintf( '%s ( %s )', date_i18n( $format, $local_time )  , get_option('timezone_string') );
+        $local_time = \Groundhogg\Plugin::$instance->utils->date_time->convert_to_local_time( $this->get_appointment()->get_start_time() );
+        $format = get_date_time_format();
 
+        return date_i18n( $format, $local_time );
     }
 
     /**
@@ -182,17 +208,29 @@ class Replacements
         }
 
         $contact = get_contactdata( $contact_id );
-
         $local_time = $contact->get_local_time( $this->get_appointment()->get_end_time() );
-        $format = sprintf( "%s %s", get_option( 'date_format' ), get_option( 'time_format' ) );
+        $format = get_date_time_format();
 
 
-        if ( $contact->get_ip_address() ) {
-            return date_i18n( $format, $local_time );
+        return date_i18n( $format, $local_time );
+    }
+
+    /**
+     * Get the appointment end time.
+     *
+     * @param int $contact_id
+     * @return bool|string
+     */
+    public function end_time_admin( $contact_id = 0 )
+    {
+        if ( !$this->get_appointment() ) {
+            return false;
         }
 
-        return sprintf( '%s ( %s )', date_i18n( $format, $local_time )  , get_option('timezone_string') );
+        $local_time = \Groundhogg\Plugin::$instance->utils->date_time->convert_to_local_time( $this->get_appointment()->get_end_time() );
+        $format = get_date_time_format();
 
+        return date_i18n( $format, $local_time );
     }
 
     /**

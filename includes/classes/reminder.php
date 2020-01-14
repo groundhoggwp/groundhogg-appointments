@@ -23,10 +23,10 @@ class Reminder implements Event_Process
      */
     public $appointment;
 
-    const BOOKED = 'appointment_booked';
-    const APPROVED = 'appointment_approved';
-    const RESCHEDULED = 'appointment_rescheduled';
-    const CANCELLED = 'appointment_cancelled';
+    const BOOKED        = 'appointment_booked';
+    const APPROVED      = 'appointment_approved';
+    const RESCHEDULED   = 'appointment_rescheduled';
+    const CANCELLED     = 'appointment_cancelled';
 
     const NOTIFICATION_TYPE = 5;
 

@@ -11,13 +11,18 @@ use GroundhoggBookingCalendar\Classes\SMS_Reminder;
 use GroundhoggSMS\Classes\SMS;
 use mysql_xdevapi\Exception;
 use function Groundhogg\admin_page_url;
+use function Groundhogg\do_replacements;
 use function Groundhogg\get_array_var;
 use GroundhoggBookingCalendar\Classes\Appointment;
 use GroundhoggBookingCalendar\Classes\Reminder;
 use function Groundhogg\get_date_time_format;
+use function Groundhogg\get_default_from_email;
+use function Groundhogg\get_default_from_name;
 use function Groundhogg\get_form_list;
 use function Groundhogg\get_request_var;
 use function Groundhogg\groundhogg_url;
+use function Groundhogg\key_to_words;
+use function Groundhogg\words_to_key;
 
 function convert_to_client_timezone( $time, $timezone = '' )
 {
@@ -242,37 +247,35 @@ function is_sms_plugin_active()
 
 function add_booking_appointment()
 {
-?>
-<table  class="form-table">
-    <tr>
-        <th><?php _ex( 'Book Appointment', 'contact_record', 'groundhogg-calendar' ); ?></th>
-        <td>
-            <div style="max-width: 400px;">
-                <?php
-                $calendars = get_calendar_list();
-                echo Plugin::$instance->utils->html->select2( [
-                    'name' => 'appointment_booking_from_contact',
-                    'id' => 'appointment_booking_from_contact',
-                    'class' => 'appointment_booking_from_contact gh-select2',
-                    'data' => $calendars,
-                    'multiple' => false,
-                    'placeholder' => __( 'Please select a calendar', 'groundhogg-calendar' ),
-                ] );
-                ?>
-                <div class="row-actions">
-                    <button type="submit" name="appointment_book" value="appointment_book"
-                            class="button"><?php _e( 'Book Appointment', 'groundhogg-calendar' ); ?></button>
+    ?>
+    <table class="form-table">
+        <tr>
+            <th><?php _ex( 'Book Appointment', 'contact_record', 'groundhogg-calendar' ); ?></th>
+            <td>
+                <div style="max-width: 400px;">
+                    <?php
+                    $calendars = get_calendar_list();
+                    echo Plugin::$instance->utils->html->select2( [
+                        'name' => 'appointment_booking_from_contact',
+                        'id' => 'appointment_booking_from_contact',
+                        'class' => 'appointment_booking_from_contact gh-select2',
+                        'data' => $calendars,
+                        'multiple' => false,
+                        'placeholder' => __( 'Please select a calendar', 'groundhogg-calendar' ),
+                    ] );
+                    ?>
+                    <div class="row-actions">
+                        <button type="submit" name="appointment_book" value="appointment_book"
+                                class="button"><?php _e( 'Book Appointment', 'groundhogg-calendar' ); ?></button>
+                    </div>
                 </div>
-            </div>
-        </td>
-    </tr>
-</table>
-<?php
+            </td>
+        </tr>
+    </table>
+    <?php
 }
 
-add_action( 'groundhogg/admin/contact/record/tab/actions' , __NAMESPACE__ . '\add_booking_appointment' , 12);
-
-
+add_action( 'groundhogg/admin/contact/record/tab/actions', __NAMESPACE__ . '\add_booking_appointment', 12 );
 
 
 function get_calendar_list()
@@ -298,31 +301,32 @@ function get_calendar_list()
  * @param $contact_id
  * @param $contact
  */
-function display_calendar_contact($contact_id , $contact )
+function display_calendar_contact( $contact_id, $contact )
 {
     if ( get_request_var( 'appointment_book' ) ) {
-        wp_safe_redirect( admin_page_url('gh_calendar' ,  [
+        wp_safe_redirect( admin_page_url( 'gh_calendar', [
             'action' => 'edit',
             'contact' => $contact_id,
             'calendar' => absint( get_request_var( 'appointment_booking_from_contact' ) ),
-        ]));
+        ] ) );
     }
 }
 
-add_action('groundhogg/admin/contact/save' , __NAMESPACE__. '\display_calendar_contact', 10 , 2 );
+add_action( 'groundhogg/admin/contact/save', __NAMESPACE__ . '\display_calendar_contact', 10, 2 );
 
 
 /**
  * Convert a duration to human readable format.
  *
- * @since 5.1.0
- *
  * @param string $duration Duration will be in string format (HH:ii:ss) OR (ii:ss),
  *                         with a possible prepended negative sign (-).
  * @return string|false A human readable duration string, false on failure.
+ * @since 5.1.0
+ *
  */
-function better_human_readable_duration( $duration = '' ) {
-    if ( ( empty( $duration ) || ! is_string( $duration ) ) ) {
+function better_human_readable_duration( $duration = '' )
+{
+    if ( ( empty( $duration ) || !is_string( $duration ) ) ) {
         return false;
     }
 
@@ -337,20 +341,20 @@ function better_human_readable_duration( $duration = '' ) {
     $duration_parts = array_reverse( explode( ':', $duration ) );
     $duration_count = count( $duration_parts );
 
-    $hour   = null;
+    $hour = null;
     $minute = null;
     $second = null;
 
     if ( 3 === $duration_count ) {
         // Validate HH:ii:ss duration format.
-        if ( ! ( (bool) preg_match( '/^([0-9]+):([0-5]?[0-9]):([0-5]?[0-9])$/', $duration ) ) ) {
+        if ( !( (bool) preg_match( '/^([0-9]+):([0-5]?[0-9]):([0-5]?[0-9])$/', $duration ) ) ) {
             return false;
         }
         // Three parts: hours, minutes & seconds.
         list( $second, $minute, $hour ) = $duration_parts;
     } elseif ( 2 === $duration_count ) {
         // Validate ii:ss duration format.
-        if ( ! ( (bool) preg_match( '/^([0-5]?[0-9]):([0-5]?[0-9])$/', $duration ) ) ) {
+        if ( !( (bool) preg_match( '/^([0-5]?[0-9]):([0-5]?[0-9])$/', $duration ) ) ) {
             return false;
         }
         // Two parts: minutes & seconds.
@@ -368,13 +372,13 @@ function better_human_readable_duration( $duration = '' ) {
     }
 
     // Add the minute part to the string.
-    if ( is_numeric( $minute ) && $minute > 0  ) {
+    if ( is_numeric( $minute ) && $minute > 0 ) {
         /* translators: Time duration in minute or minutes. */
         $human_readable_duration[] = sprintf( _n( '%s minute', '%s minutes', $minute ), (int) $minute );
     }
 
     // Add the second part to the string.
-    if ( is_numeric( $second ) && $second > 0  ) {
+    if ( is_numeric( $second ) && $second > 0 ) {
         /* translators: Time duration in second or seconds. */
         $human_readable_duration[] = sprintf( _n( '%s second', '%s seconds', $second ), (int) $second );
     }
@@ -398,7 +402,8 @@ function get_date_format()
  *
  * @return mixed|void
  */
-function get_time_format(){
+function get_time_format()
+{
     return get_option( 'time_format' );
 }
 
@@ -410,10 +415,11 @@ function get_time_format(){
  *
  * @return int
  */
-function get_in_time_zone( $time, $time_zone){
-    try{
+function get_in_time_zone( $time, $time_zone )
+{
+    try {
         return Plugin::$instance->utils->date_time->convert_to_foreign_time( $time, $time_zone );
-    } catch (\Exception $exception){
+    } catch ( \Exception $exception ) {
         return $time;
     }
 }
@@ -427,9 +433,84 @@ function get_tz_db_name()
 {
     $offset = Plugin::$instance->utils->date_time->get_wp_offset( true );
 
-	$tz = timezone_name_from_abbr('', $offset, 1);
+    $tz = timezone_name_from_abbr( '', $offset, 1 );
     // Workaround for bug #44780
-	if($tz === false) $tz = timezone_name_from_abbr('', $offset, 0);
+    if ( $tz === false ) $tz = timezone_name_from_abbr( '', $offset, 0 );
 
-	return $tz;
+    return $tz;
 }
+
+/**
+ * @param $appointment_id
+ * @param $status
+ */
+function booked_admin_notification( $appointment_id, $status )
+{
+    $appointment = new Appointment( $appointment_id );
+
+    switch ( $status ) {
+        case 'appointment_booked' :
+            if ( $appointment->get_calendar()->get_meta( 'booked_admin' ) ) {
+                send_admin_notification( $appointment, $status );
+            }
+            break;
+        case 'appointment_approved' :
+            if ( $appointment->get_calendar()->get_meta( 'approved_admin' ) ) {
+                send_admin_notification( $appointment, $status );
+            }
+
+            break;
+        case 'appointment_rescheduled' :
+            if ( $appointment->get_calendar()->get_meta( 'reschedule_admin' ) ) {
+                send_admin_notification( $appointment, $status );
+            }
+            break;
+        case 'appointment_cancelled' :
+            if ( $appointment->get_calendar()->get_meta( 'cancelled_admin' ) ) {
+                send_admin_notification( $appointment, $status );
+            }
+            break;
+    }
+}
+
+add_action( 'groundhogg/calendar/appointment/book', __NAMESPACE__ . '\booked_admin_notification', 10, 2 );
+add_action( 'groundhogg/calendar/appointment/reschedule', __NAMESPACE__ . '\booked_admin_notification', 10, 2 );
+add_action( 'groundhogg/calendar/appointment/cancelled', __NAMESPACE__ . '\booked_admin_notification', 10, 2 );
+add_action( 'groundhogg/calendar/appointment/approve', __NAMESPACE__ . '\booked_admin_notification', 10, 2 );
+
+/**
+ * @param $appointment Appointment
+ * @param $status
+ * @return bool
+ */
+function send_admin_notification( $appointment, $status )
+{
+
+    \GroundhoggBookingCalendar\Plugin::$instance->replacements->set_appointment( $appointment );
+
+    $note = $appointment->get_calendar()->get_meta( 'notification' );
+
+    $finished_note = sanitize_textarea_field( do_replacements( $note, $appointment->get_contact_id() ) );
+
+    $finished_note .= "\n". sprintf( __("status: %s" ,'groudnhogg-calendar', key_to_words( $status ) ) );
+
+    $subject = $appointment->get_calendar()->get_meta( 'subject' ) ;
+    $subject = sanitize_text_field( do_replacements( $subject, $appointment->get_contact_id() ) );
+    $subject = sprintf( "%s: %s", words_to_key( $status ), $subject );
+
+    $user = get_userdata( $appointment->get_calendar()->get_user_id() );
+    $send_to = $user->user_email;
+
+    if ( ! $send_to ) {
+        return false;
+    }
+
+    $headers = [
+        sprintf( 'From: %s <%s>', get_default_from_name(), get_default_from_email() )
+    ];
+
+    \GroundhoggBookingCalendar\Plugin::$instance->replacements->clear();
+
+    return wp_mail( $send_to, $subject, $finished_note, $headers );
+}
+

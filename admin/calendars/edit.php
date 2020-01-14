@@ -12,6 +12,7 @@ $tab_list = [
     'settings' => __( 'Settings', 'groundhogg-calendar' ), // Show calendar settings
     'availability' => __( 'Availability', 'groundhogg-calendar' ), // Show calendar settings
     'emails' => __( 'Emails', 'groundhogg-calendar' ), // Show calendar reminders
+    'notification' => __( 'Admin Notification', 'groundhogg-calendar' ), // Show calendar reminders
     'sms' => __( 'SMS', 'groundhogg-calendar' ), // Show calendar reminders
     'list' => __( 'Appointments', 'groundhogg-calendar' ), // show appointments in list table.
 ];
@@ -35,6 +36,9 @@ switch ( $tab ):
         break;
     case 'emails':
         include_once dirname( __FILE__ ) . '/emails.php';
+        break;
+    case 'notification':
+        include_once dirname( __FILE__ ) . '/admin-notification.php';
         break;
     case 'sms' :
         if ( is_sms_plugin_active() ) {

@@ -717,6 +717,9 @@ class Calendar_Page extends Admin_Page
             case 'emails':
                 $this->update_emails();
                 break;
+            case 'notification':
+                $this->update_admin_notification();
+                break;
             case 'sms' :
                 $this->update_sms();
                 break;
@@ -775,9 +778,49 @@ class Calendar_Page extends Admin_Page
 
     }
 
-    protected function update_emails()
+    protected function update_admin_notification()
     {
 
+        if (!current_user_can('edit_calendar')) {
+            $this->wp_die_no_access();
+        }
+
+        $calendar = new Calendar(get_request_var('calendar'));
+
+        // booked_admin
+        if (get_request_var('booked_admin')) {
+            $calendar->update_meta('booked_admin', true);
+        } else {
+            $calendar->delete_meta('booked_admin');
+        }
+        // booked_admin
+        if (get_request_var('reschedule_admin')) {
+            $calendar->update_meta('reschedule_admin', true);
+        } else {
+            $calendar->delete_meta('reschedule_admin');
+        }
+
+        // booked_admin
+        if (get_request_var('approved_admin')) {
+            $calendar->update_meta('approved_admin', true);
+        } else {
+            $calendar->delete_meta('approved_admin');
+        }
+
+        // booked_admin
+        if (get_request_var('cancelled_admin')) {
+            $calendar->update_meta('cancelled_admin', true);
+        } else {
+            $calendar->delete_meta('cancelled_admin');
+        }
+
+        $calendar->update_meta('subject', sanitize_text_field( get_request_var( 'subject' )));
+        $calendar->update_meta('notification', sanitize_textarea_field( get_request_var( 'notification' )));
+
+    }
+    
+    protected function update_emails()
+    {
         if (!current_user_can('edit_calendar')) {
             $this->wp_die_no_access();
         }
@@ -789,6 +832,7 @@ class Calendar_Page extends Admin_Page
             'appointment_rescheduled' => absint(get_request_var('appointment_rescheduled')),
             'appointment_cancelled' => absint(get_request_var('appointment_cancelled'))
         ]);
+
 
 
         $reminders = get_request_var('reminders');
@@ -922,6 +966,8 @@ class Calendar_Page extends Admin_Page
         $google_calendar_list = get_request_var('google_calendar_list', []);
         $google_calendar_list = array_map('sanitize_text_field', $google_calendar_list);
         $calendar->update_meta('google_calendar_list', $google_calendar_list);
+        $calendar->update_meta('google_appointment_name', sanitize_text_field(get_request_var('google_appointment_name')));
+        $calendar->update_meta('google_appointment_description', sanitize_text_field(get_request_var('google_appointment_description')));
 
         //save Zoom Meeting settings
 

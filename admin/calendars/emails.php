@@ -108,98 +108,101 @@ endforeach;
 enqueue_groundhogg_modal();
 
 ?>
-    <form name="" id="" method="post" action="">
-        <?php
-        wp_nonce_field();
+<form name="" id="" method="post" action="">
+    <?php
+    wp_nonce_field();
 
-        html()->start_form_table( [
-            'title' => __( 'Notifications', 'groundhogg-calendar' )
-        ] );
+    html()->start_form_table( [
+        'title' => __( 'Notifications', 'groundhogg-calendar' )
+    ] );
 
-        html()->start_row();
+    html()->start_row();
 
-        html()->th( __( 'Appointment Booked', 'groundhogg-calendar' ) );
-        html()->td( [
-            html()->dropdown_emails( [
-                'name' => 'appointment_booked',
-                'id' => 'appointment_booked',
-                'selected' => get_array_var( $emails, 'appointment_booked' ),
-            ] ),
-            '&nbsp;',
-            html()->e( 'a', [ 'href' => '#', 'class' => 'button edit-email' ], __( 'Edit Email' ) ),
-            html()->description( __( 'Email that is sent when an appointment is booked.', 'groundhogg-calendar' ) ),
-        ] );
+    html()->th( __( 'Appointment Booked', 'groundhogg-calendar' ) );
+    html()->td( [
+        html()->dropdown_emails( [
+            'name' => 'appointment_booked',
+            'id' => 'appointment_booked',
+            'selected' => get_array_var( $emails, 'appointment_booked' ),
+        ] ),
+        '&nbsp;',
+        html()->e( 'a', [ 'href' => '#', 'class' => 'button edit-email' ], __( 'Edit Email' ) ),
+        html()->description( __( 'Email that is sent when an appointment is booked.', 'groundhogg-calendar' ) ),
+    ] );
+    html()->end_row();
+    html()->start_row();
 
-        html()->end_row();
+    html()->th( __( 'Appointment Approved', 'groundhogg-calendar' ) );
+    html()->td( [
+        html()->dropdown_emails( [
+            'name' => 'appointment_approved',
+            'id' => 'appointment_approved',
+            'selected' => get_array_var( $emails, 'appointment_approved' ),
+        ] ),
+        '&nbsp;',
+        html()->e( 'a', [ 'href' => '#', 'class' => 'button edit-email' ], __( 'Edit Email' ) ),
+        html()->description( __( 'Email that is sent when an appointment is approved.', 'groundhogg-calendar' ) ),
+    ] );
 
-        html()->start_row();
 
-        html()->th( __( 'Appointment Approved', 'groundhogg-calendar' ) );
-        html()->td( [
-            html()->dropdown_emails( [
-                'name' => 'appointment_approved',
-                'id' => 'appointment_approved',
-                'selected' => get_array_var( $emails, 'appointment_approved' ),
-            ] ),
-            '&nbsp;',
-            html()->e( 'a', [ 'href' => '#', 'class' => 'button edit-email' ], __( 'Edit Email' ) ),
-            html()->description( __( 'Email that is sent when an appointment is approved.', 'groundhogg-calendar' ) ),
-        ] );
+    html()->end_row();
+    html()->start_row();
 
-        html()->end_row();
-        html()->start_row();
+    html()->th( __( 'Appointment Rescheduled', 'groundhogg-calendar' ) );
+    html()->td( [
+        html()->dropdown_emails( [
+            'name' => 'appointment_rescheduled',
+            'id' => 'appointment_rescheduled',
+            'selected' => get_array_var( $emails, 'appointment_rescheduled' ),
+        ] ),
+        '&nbsp;',
+        html()->e( 'a', [ 'href' => '#', 'class' => 'button edit-email' ], __( 'Edit Email' ) ),
+        html()->description( __( 'Email that is sent when an appointment is rescheduled.', 'groundhogg-calendar' ) ),
+    ] );
 
-        html()->th( __( 'Appointment Rescheduled', 'groundhogg-calendar' ) );
-        html()->td( [
-            html()->dropdown_emails( [
-                'name' => 'appointment_rescheduled',
-                'id' => 'appointment_rescheduled',
-                'selected' => get_array_var( $emails, 'appointment_rescheduled' ),
-            ] ),
-            '&nbsp;',
-            html()->e( 'a', [ 'href' => '#', 'class' => 'button edit-email' ], __( 'Edit Email' ) ),
-            html()->description( __( 'Email that is sent when an appointment is rescheduled.', 'groundhogg-calendar' ) ),
-        ] );
+    html()->end_row();
 
-        html()->end_row();
+    html()->start_row();
 
-        html()->start_row();
+    html()->th( __( 'Appointment Cancelled', 'groundhogg-calendar' ) );
+    html()->td( [
+        html()->dropdown_emails( [
+            'name' => 'appointment_cancelled',
+            'id' => 'appointment_cancelled',
+            'selected' => get_array_var( $emails, 'appointment_cancelled' ),
+        ] ),
+        '&nbsp;',
+        html()->e( 'a', [ 'href' => '#', 'class' => 'button edit-email' ], __( 'Edit Email' ) ),
+        html()->description( __( 'Email that is sent when an appointment is Cancelled.', 'groundhogg-calendar' ) ),
+    ] );
 
-        html()->th( __( 'Appointment Cancelled', 'groundhogg-calendar' ) );
-        html()->td( [
-            html()->dropdown_emails( [
-                'name' => 'appointment_cancelled',
-                'id' => 'appointment_cancelled',
-                'selected' => get_array_var( $emails, 'appointment_cancelled' ),
-            ] ),
-            '&nbsp;',
-            html()->e( 'a', [ 'href' => '#', 'class' => 'button edit-email' ], __( 'Edit Email' ) ),
-            html()->description( __( 'Email that is sent when an appointment is Cancelled.', 'groundhogg-calendar' ) ),
-        ] );
+    html()->end_row();
 
-        html()->end_row();
+    html()->end_form_table();
 
-        html()->end_form_table();
 
-        html()->start_form_table( [
-            'title' => __( 'Reminders', 'groundhogg-calendar' )
-        ] );
 
-        html()->start_form_table();
-        html()->end_form_table();
 
-        ?>
-        <style>.reminders tr th:last-child {
-                width: 10%;
-            }
 
-            .wp-admin select {
-                vertical-align: bottom;
-            }</style>
-        <?php
+    html()->start_form_table( [
+        'title' => __( 'Reminders', 'groundhogg-calendar' )
+    ] );
 
-        html()->list_table( [ 'style' => [ 'max-width' => '1000px' ], 'class' => 'reminders ' ], $cols, $rows );
+    html()->start_form_table();
+    html()->end_form_table();
 
-        submit_button();
-        ?>
-    </form>
+    ?>
+    <style>.reminders tr th:last-child {
+            width: 10%;
+        }
+
+        .wp-admin select {
+            vertical-align: bottom;
+        }</style>
+    <?php
+
+    html()->list_table( [ 'style' => [ 'max-width' => '1000px' ], 'class' => 'reminders ' ], $cols, $rows );
+
+    submit_button();
+    ?>
+</form>
