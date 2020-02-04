@@ -178,6 +178,8 @@
 
             this.calendar = $('#date-picker');
 
+            self.disabled_days.push(self.max_date);
+
             this.calendar.datepicker({
                 firstDay: self.start_of_week,
                 minDate: self.min_date,
