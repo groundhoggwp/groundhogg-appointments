@@ -47,7 +47,7 @@ if ( $calendar == null ) {
                     'placeholder' => __( 'Calendar Description', 'groundhogg-calendar' ),
                     'value' => $calendar->get_description()
                 ] ); ?>
-                <p class="description"><?php _e( 'Calendar descriptions are only visible to admins and will never be seen by contacts.', 'groundhogg-calendar' ) ?></p>
+                <p class="description"><?php _e( 'Descried your booking calendar in few words. Visible to all users.', 'groundhogg-calendar' ) ?></p>
             </td>
         </tr>
         <tr>
@@ -148,6 +148,7 @@ if ( $calendar == null ) {
                     'value' => $calendar->get_meta( 'busy_slot', true ) ? $calendar->get_meta( 'busy_slot', true ) : 0,
                 ] ); ?>
                 <p class="description"><?php _e( 'Enter how many time slots client can see! (Enter 0 to display all time slots)', 'groundhogg-calendar' ) ?></p>
+                <p class="description"><b><?php _e("Note: ", 'groundhogg-calendar' ) ?></b><?php _e( 'Only works in a client side when admin is not logged in if you are a admin then please log out or open calendar page in incognito window to see the action.', 'groundhogg-calendar' ) ?></p>
             </td>
         </tr>
         <!--        NOT USED IN 2.0-->

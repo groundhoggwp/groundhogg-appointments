@@ -36,7 +36,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
                         'name' => 'description' ,
                         'placeholder' => 'Calendar Description'
                 ] );?>
-                <p class="description"><?php _e( 'Calendar descriptions are only visible to admins and will never be seen by contacts.', 'groundhogg-calendar' ) ?></p>
+                <p class="description"><?php _e( 'Descried your booking calendar in few words. Visible to all users.', 'groundhogg-calendar' ) ?></p>
                 </td>
             </tr>
         </tbody>
