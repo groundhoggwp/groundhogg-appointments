@@ -492,7 +492,7 @@ function send_admin_notification( $appointment, $status )
 
     $finished_note = sanitize_textarea_field( do_replacements( $note, $appointment->get_contact_id() ) );
 
-    $finished_note .= "\n". sprintf( __("status: %s" ,'groudnhogg-calendar', key_to_words( $status ) ) );
+    $finished_note .= "\n". sprintf( __("status: %s" ,'groudnhogg-calendar'), key_to_words( $status ) );
 
     $subject = $appointment->get_calendar()->get_meta( 'subject' ) ;
     $subject = sanitize_text_field( do_replacements( $subject, $appointment->get_contact_id() ) );
