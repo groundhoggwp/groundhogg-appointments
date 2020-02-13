@@ -431,6 +431,11 @@ function get_in_time_zone( $time, $time_zone )
  */
 function get_tz_db_name()
 {
+
+    if (get_option('timezone_string')) {
+        return  get_option('timezone_string') ;
+    }
+
     $offset = Plugin::$instance->utils->date_time->get_wp_offset( true );
 
     $tz = timezone_name_from_abbr( '', $offset, 1 );
