@@ -165,6 +165,6 @@ html()->list_table( [ 'style' => [ 'max-width' => '700px' ] ], $cols, $rows );
 <?php
 
 
-submit_button( __( 'Update Availabiliy', 'groundhogg-calendar' ) );
+submit_button( __( 'Update Availability', 'groundhogg-calendar' ) );
 ?>
 </form>
