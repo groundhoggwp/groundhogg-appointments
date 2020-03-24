@@ -1,6 +1,7 @@
 <?php
 namespace GroundhoggBookingCalendar\Admin\Appointments;
 
+use function Groundhogg\do_replacements;
 use function Groundhogg\get_request_var;
 use function Groundhogg\html;
 use function Groundhogg\get_db;
@@ -85,8 +86,8 @@ $google_calendar_id = $calendar->get_google_calendar_id();
                     <div id="time-slots" class="select-time">
                         <div id="select_time"></div>
                     </div>
-                    <div id="appointment-errors" class="appointment-errors hidden"></div>
                 </div>
+                <div id="appointment-errors" class="appointment-errors hidden"></div>
                 <div class="submit-wrap">
                     <input type="button" name="btndisplay" id="btnalert" value="Book appointment" class="button button-primary"/>
                 </div>

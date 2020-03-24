@@ -967,7 +967,7 @@ class Calendar_Page extends Admin_Page
         $google_calendar_list = array_map('sanitize_text_field', $google_calendar_list);
         $calendar->update_meta('google_calendar_list', $google_calendar_list);
         $calendar->update_meta('google_appointment_name', sanitize_text_field(get_request_var('google_appointment_name')));
-        $calendar->update_meta('google_appointment_description', sanitize_text_field(get_request_var('google_appointment_description')));
+        $calendar->update_meta('google_appointment_description', sanitize_textarea_field(get_request_var('google_appointment_description')));
 
         //save Zoom Meeting settings
 

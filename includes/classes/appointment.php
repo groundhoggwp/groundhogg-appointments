@@ -172,14 +172,20 @@ class Appointment extends Base_Object_With_Meta
             return false;
         }
 
-        if ( $this->get_calendar()->google_enabled() ) {
+	    /**
+	     * updates the zoom meeting if there is one
+	     */
+	    $this->update_zoom_meeting();
+
+	    /**
+	     * Checks and updates the google appointment
+	     */
+	    if ( $this->get_calendar()->google_enabled() ) {
             $google_status = $this->update_in_google();
             if ( !$google_status ) {
                 return false;
             }
         }
-
-        $this->update_zoom_meeting();
 
         return true;
     }
@@ -212,16 +218,16 @@ class Appointment extends Base_Object_With_Meta
             return $status;
         }
 
-        if ( $this->get_calendar()->google_enabled() ) {
-            $google_status = $this->delete_in_google();
-            if ( !$google_status ) {
-                return false;
+	    $this->delete_zoom_meeting();
+
+	    if ( $this->get_calendar()->google_enabled() ) {
+	        $google_status = $this->delete_in_google();
+	        if ( !$google_status ) {
+	            return false;
             }
         }
 
-        $this->delete_zoom_meeting();
-
-        return true;
+	    return true;
     }
 
 	/**
@@ -698,7 +704,7 @@ class Appointment extends Base_Object_With_Meta
     }
 
 	/**
-	 * Add the appt in the Google
+	 * Add the appointment in the Google
 	 */
 	public function add_in_google()
 	{
@@ -714,7 +720,6 @@ class Appointment extends Base_Object_With_Meta
 			    if ( $this->get_calendar()->get_meta('google_appointment_name') ){
 			        $summary = do_replacements( $this->get_calendar()->get_meta('google_appointment_name') , $this->get_contact_id() );
                 }
-
 
                 $description = $this->get_meta( 'note' );
                 if ( $this->get_calendar()->get_meta('google_appointment_description') ){
@@ -738,8 +743,7 @@ class Appointment extends Base_Object_With_Meta
 						[ 'email' => $contact->get_email() ],
 					],
 				) );
-				$sendNotifications = array('sendNotifications' => true);
-				$event = $service->events->insert( $google_calendar_id, $event ,$sendNotifications );
+				$event = $service->events->insert( $google_calendar_id, $event , [] );
 			}
 
 		}
@@ -784,8 +788,8 @@ class Appointment extends Base_Object_With_Meta
 				) );
 
 				try {
-					$sendNotifications = array('sendNotifications' => true);
-					$updatedEvent = $service->events->update( $google_calendar_id, $google_appointment_id, $event, $sendNotifications );
+
+					$updatedEvent = $service->events->update( $google_calendar_id, $google_appointment_id, $event, [] );
 				} catch ( \Exception $exception ) {
 					return false;
 				}

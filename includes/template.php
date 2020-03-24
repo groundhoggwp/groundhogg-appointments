@@ -120,7 +120,7 @@ function template_time_slots( $calendar ) {
 
 		if ( empty( $slots ) ):
 			?><p
-                class="gh-message-wrapper gh-form-errors-wrapper"><?php _e( 'Sorry, there are no times available.', 'groundhogg-calendar' ); ?></p><?php
+                class="gh-message-wrapper gh-form-errors-wrapper"><?php _e( 'Sorry, No time slots are available on this date.', 'groundhogg-calendar' ); ?></p><?php
 		else:
 			foreach ( $slots as $i => $slot ):
 
