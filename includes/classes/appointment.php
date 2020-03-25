@@ -691,10 +691,6 @@ class Appointment extends Base_Object_With_Meta
 
         $body = json_decode( $response[ 'body' ] );
 
-        if ( $body->id ) {
-            $this->update_meta( 'zoom_id', $body->id );
-        }
-
         if ( $body->invitation ) {
             return $body->invitation;
         }
@@ -708,6 +704,7 @@ class Appointment extends Base_Object_With_Meta
 	 */
 	public function add_in_google()
 	{
+
 		$access_token = $this->get_calendar()->get_access_token();
 		$google_calendar_id = $this->get_calendar()->get_google_calendar_id();
 		if ( $access_token && $google_calendar_id ) {
@@ -716,6 +713,7 @@ class Appointment extends Base_Object_With_Meta
 			$service = new Google_Service_Calendar( $client );
 			if ( \GroundhoggBookingCalendar\Plugin::$instance->google_calendar->is_valid_calendar( $this->get_calendar_id(), $google_calendar_id, $service ) ) {
 
+				\GroundhoggBookingCalendar\Plugin::$instance->replacements->set_appointment($this);
 			    $summary = $this->get_name();
 			    if ( $this->get_calendar()->get_meta('google_appointment_name') ){
 			        $summary = do_replacements( $this->get_calendar()->get_meta('google_appointment_name') , $this->get_contact_id() );
@@ -767,13 +765,20 @@ class Appointment extends Base_Object_With_Meta
 
 			$service = new Google_Service_Calendar( $client );
 			if ( \GroundhoggBookingCalendar\Plugin::$instance->google_calendar->is_valid_calendar( $this->get_calendar_id(), $google_calendar_id, $service ) ) {
-
+			
+				\GroundhoggBookingCalendar\Plugin::$instance->replacements->set_appointment($this);
+			
 				$contact = get_contactdata( $this->get_contact_id() );
+			
 				$google_appointment_id = $this->get_google_appointment_id();
+				$description = $this->get_meta( 'note' ,true);
+				if ( $this->get_calendar()->get_meta('google_appointment_description') ){
+					$description = do_replacements( $this->get_calendar()->get_meta('google_appointment_description') , $this->get_contact_id() );
+				}
 				$event = new Google_Service_Calendar_Event( array(
 					'id' => $google_appointment_id,
 					'summary' => $this->get_name(),
-					'description' => $this->get_meta( 'note', true ),
+					'description' => $description,
 					'start' => [
 						'dateTime' => date( DATE_RFC3339, $this->get_start_time() ),
 						'timeZone' => 'UTC'
