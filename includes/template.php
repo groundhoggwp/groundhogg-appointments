@@ -49,7 +49,8 @@ function template_details( $calendar ) {
 			$start_time = get_in_time_zone( $start_time, $time_zone );
 			$end_time   = get_in_time_zone( $end_time, $time_zone );
 
-			if ( $start_time > 0 && $end_time > 0 ):
+			if ( ($start_time > 0 && $end_time > 0 ) && $start_time !==3600 && $end_time !== 3600 ):
+
 
 				$time_string = sprintf( '%s - %s, %s', date_i18n( get_time_format(), $start_time ), date_i18n( get_time_format(), $end_time ), date_i18n( get_date_format(), $start_time ) );
 				?>
