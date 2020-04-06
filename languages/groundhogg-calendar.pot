@@ -3,14 +3,14 @@ msgid ""
 msgstr ""
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 "Project-Id-Version: Groundhogg - Booking Calendar\n"
-"POT-Creation-Date: 2019-12-20 13:36-0500\n"
-"PO-Revision-Date: 2019-10-22 09:24-0400\n"
+"POT-Creation-Date: 2020-04-06 13:08-0400\n"
+"PO-Revision-Date: 2020-04-06 13:08-0400\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.2.4\n"
+"X-Generator: Poedit 2.3\n"
 "X-Poedit-Basepath: ..\n"
 "X-Poedit-Flags-xgettext: --add-comments=translators:\n"
 "X-Poedit-WPHeader: groundhogg-appointments.php\n"
@@ -22,12 +22,12 @@ msgstr ""
 "X-Poedit-SearchPathExcluded-0: *.min.js\n"
 
 #: admin/appointments/edit.php:20 admin/calendars/calendar-page.php:529
-#: admin/calendars/calendar-page.php:613 admin/calendars/calendar-page.php:644
-#: admin/calendars/calendar-page.php:674
+#: admin/calendars/calendar-page.php:614 admin/calendars/calendar-page.php:645
+#: admin/calendars/calendar-page.php:675 includes/shortcode.php:267
 msgid "Appointment not found!"
 msgstr ""
 
-#: admin/appointments/edit.php:30 admin/calendars/view.php:51
+#: admin/appointments/edit.php:30 admin/calendars/view.php:52
 msgid "Appointment Name"
 msgstr ""
 
@@ -51,7 +51,7 @@ msgstr ""
 msgid "Approve"
 msgstr ""
 
-#: admin/appointments/edit.php:76 includes/replacements.php:232
+#: admin/appointments/edit.php:76 includes/replacements.php:270
 #: templates/appointment.php:92
 msgid "Cancel"
 msgstr ""
@@ -68,7 +68,7 @@ msgstr ""
 msgid "Notes"
 msgstr ""
 
-#: admin/appointments/edit.php:139 admin/calendars/view.php:69
+#: admin/appointments/edit.php:139 admin/calendars/view.php:70
 msgid "Additional information about appointment."
 msgstr ""
 
@@ -120,34 +120,124 @@ msgstr ""
 msgid "no name"
 msgstr ""
 
-#: admin/calendars/add.php:13 admin/calendars/settings.php:23
+#: admin/calendars/add.php:13 admin/calendars/settings.php:25
 msgid "Select Owner"
 msgstr ""
 
-#: admin/calendars/add.php:19 admin/calendars/settings.php:28
+#: admin/calendars/add.php:19 admin/calendars/settings.php:30
 msgid "Select owner for whom you are creating the calendar."
 msgstr ""
 
-#: admin/calendars/add.php:23 admin/calendars/settings.php:32
+#: admin/calendars/add.php:23 admin/calendars/settings.php:34
 msgid "Name"
 msgstr ""
 
-#: admin/calendars/add.php:29 admin/calendars/settings.php:39
+#: admin/calendars/add.php:29 admin/calendars/settings.php:41
 msgid "A name of a calendar."
 msgstr ""
 
-#: admin/calendars/add.php:33 admin/calendars/settings.php:43
+#: admin/calendars/add.php:33 admin/calendars/settings.php:45
 msgid "Description"
 msgstr ""
 
-#: admin/calendars/add.php:39 admin/calendars/settings.php:50
-msgid ""
-"Calendar descriptions are only visible to admins and will never be seen by "
-"contacts."
+#: admin/calendars/add.php:39 admin/calendars/settings.php:52
+msgid "Descried your booking calendar in few words. Visible to all users."
 msgstr ""
 
 #: admin/calendars/add.php:45
 msgid "Add Calendar"
+msgstr ""
+
+#: admin/calendars/admin-notification.php:34 admin/calendars/emails.php:33
+#: admin/calendars/sms.php:32
+msgid "Time period"
+msgstr ""
+
+#: admin/calendars/admin-notification.php:35 admin/calendars/emails.php:34
+msgid "Email"
+msgstr ""
+
+#: admin/calendars/admin-notification.php:36
+#: admin/calendars/availability.php:14 admin/calendars/emails.php:35
+#: admin/calendars/sms.php:34
+msgid "Actions"
+msgstr ""
+
+#: admin/calendars/admin-notification.php:49
+msgid "Notification Event"
+msgstr ""
+
+#: admin/calendars/admin-notification.php:51
+msgid "Select when you want to receive admin notifications."
+msgstr ""
+
+#: admin/calendars/admin-notification.php:56
+msgid "Appointment Booked "
+msgstr ""
+
+#: admin/calendars/admin-notification.php:64 admin/calendars/emails.php:130
+msgid "Email that is sent when an appointment is booked."
+msgstr ""
+
+#: admin/calendars/admin-notification.php:71
+msgid "Appointment Reschedule "
+msgstr ""
+
+#: admin/calendars/admin-notification.php:79
+msgid "Email that is sent when an appointment is reschedule."
+msgstr ""
+
+#: admin/calendars/admin-notification.php:86
+msgid "Appointment Approved "
+msgstr ""
+
+#: admin/calendars/admin-notification.php:94
+msgid "Email that is sent when an appointment is aproved."
+msgstr ""
+
+#: admin/calendars/admin-notification.php:101
+msgid "Appointment Cancelled "
+msgstr ""
+
+#: admin/calendars/admin-notification.php:109
+msgid "Email that is sent when an appointment is cancelled."
+msgstr ""
+
+#: admin/calendars/admin-notification.php:116
+msgid "Notification Text"
+msgstr ""
+
+#: admin/calendars/admin-notification.php:118
+msgid "These notifications will be sent to the calendar owner."
+msgstr ""
+
+#: admin/calendars/admin-notification.php:123
+msgid "Subject"
+msgstr ""
+
+#: admin/calendars/admin-notification.php:129
+msgid "Subject of email"
+msgstr ""
+
+#: admin/calendars/admin-notification.php:136
+msgid "Notification"
+msgstr ""
+
+#: admin/calendars/admin-notification.php:140
+msgid "Replacements"
+msgstr ""
+
+#: admin/calendars/admin-notification.php:141
+msgctxt "replacement"
+msgid "Insert Replacement"
+msgstr ""
+
+#: admin/calendars/admin-notification.php:142
+msgid "Insert"
+msgstr ""
+
+#: admin/calendars/admin-notification.php:154
+msgid "Any details you want to include about the appointment."
 msgstr ""
 
 #: admin/calendars/availability.php:11
@@ -160,11 +250,6 @@ msgstr ""
 
 #: admin/calendars/availability.php:13
 msgid "End"
-msgstr ""
-
-#: admin/calendars/availability.php:14 admin/calendars/emails.php:35
-#: admin/calendars/sms.php:34
-msgid "Actions"
 msgstr ""
 
 #: admin/calendars/availability.php:81 admin/calendars/edit.php:13
@@ -208,7 +293,7 @@ msgid ""
 msgstr ""
 
 #: admin/calendars/availability.php:168
-msgid "Update Availabiliy"
+msgid "Update Availability"
 msgstr ""
 
 #: admin/calendars/calendar-page.php:79
@@ -291,7 +376,7 @@ msgid ""
 "@ the {business_name} team"
 msgstr ""
 
-#: admin/calendars/calendar-page.php:442 admin/calendars/emails.php:137
+#: admin/calendars/calendar-page.php:442 admin/calendars/emails.php:135
 #: admin/calendars/sms.php:153 includes/steps/booking-calendar.php:69
 msgid "Appointment Approved"
 msgstr ""
@@ -310,7 +395,7 @@ msgid ""
 "\n"
 msgstr ""
 
-#: admin/calendars/calendar-page.php:448 admin/calendars/emails.php:168
+#: admin/calendars/calendar-page.php:448 admin/calendars/emails.php:167
 #: admin/calendars/sms.php:184 includes/steps/booking-calendar.php:70
 msgid "Appointment Cancelled"
 msgstr ""
@@ -328,7 +413,7 @@ msgid ""
 "@ the {business_name} team"
 msgstr ""
 
-#: admin/calendars/calendar-page.php:454 admin/calendars/emails.php:152
+#: admin/calendars/calendar-page.php:454 admin/calendars/emails.php:151
 #: admin/calendars/sms.php:168 includes/steps/booking-calendar.php:68
 msgid "Appointment Rescheduled"
 msgstr ""
@@ -377,65 +462,62 @@ msgstr ""
 msgid "Start date and end date needs to be same."
 msgstr ""
 
-#: admin/calendars/calendar-page.php:547
+#: admin/calendars/calendar-page.php:548
 msgid "This date is not available."
 msgstr ""
 
-#: admin/calendars/calendar-page.php:558
-msgid "Appointment is out of availability."
-msgstr ""
-
-#: admin/calendars/calendar-page.php:566
+#: admin/calendars/calendar-page.php:567
 msgid "End time can not be smaller then start time."
 msgstr ""
 
-#: admin/calendars/calendar-page.php:575
+#: admin/calendars/calendar-page.php:576
 msgid "You already have an appointment in this time slot."
 msgstr ""
 
-#: admin/calendars/calendar-page.php:590
+#: admin/calendars/calendar-page.php:591
 msgid "Appointment updated!"
 msgstr ""
 
-#: admin/calendars/calendar-page.php:609 admin/calendars/calendar-page.php:639
-#: admin/calendars/calendar-page.php:669
+#: admin/calendars/calendar-page.php:610 admin/calendars/calendar-page.php:640
+#: admin/calendars/calendar-page.php:670
 msgid "Appointment ID not found"
 msgstr ""
 
-#: admin/calendars/calendar-page.php:618 admin/calendars/calendar-page.php:649
+#: admin/calendars/calendar-page.php:619 admin/calendars/calendar-page.php:650
 msgid "Status not updated."
 msgstr ""
 
-#: admin/calendars/calendar-page.php:620 admin/calendars/calendar-page.php:651
+#: admin/calendars/calendar-page.php:621 admin/calendars/calendar-page.php:652
 msgid "Appointment status changed!"
 msgstr ""
 
-#: admin/calendars/calendar-page.php:681
+#: admin/calendars/calendar-page.php:682
 msgid "Something went wrong while deleting appointment."
 msgstr ""
 
-#: admin/calendars/calendar-page.php:683
+#: admin/calendars/calendar-page.php:684
 msgid "Appointment deleted!"
 msgstr ""
 
-#: admin/calendars/calendar-page.php:867
+#: admin/calendars/calendar-page.php:912
 msgid "Availability updated."
 msgstr ""
 
-#: admin/calendars/calendar-page.php:933
+#: admin/calendars/calendar-page.php:980
 msgctxt "notice"
 msgid "Settings updated."
 msgstr ""
 
-#: admin/calendars/calendar-page.php:985 admin/calendars/calendar-page.php:1026
+#: admin/calendars/calendar-page.php:1032
+#: admin/calendars/calendar-page.php:1073
 msgid "Authentication code not found!"
 msgstr ""
 
-#: admin/calendars/calendar-page.php:1011
+#: admin/calendars/calendar-page.php:1058
 msgid "Connection to Google calendar successfully completed!"
 msgstr ""
 
-#: admin/calendars/calendar-page.php:1050
+#: admin/calendars/calendar-page.php:1097
 msgid "Connection to zoom successfully completed!"
 msgstr ""
 
@@ -484,27 +566,23 @@ msgstr ""
 msgid "Emails"
 msgstr ""
 
-#: admin/calendars/edit.php:15 admin/calendars/sms.php:33
+#: admin/calendars/edit.php:15
+msgid "Admin Notification"
+msgstr ""
+
+#: admin/calendars/edit.php:16 admin/calendars/sms.php:33
 msgid "SMS"
 msgstr ""
 
-#: admin/calendars/edit.php:16
+#: admin/calendars/edit.php:17
 msgid "Appointments"
-msgstr ""
-
-#: admin/calendars/emails.php:33 admin/calendars/sms.php:32
-msgid "Time period"
-msgstr ""
-
-#: admin/calendars/emails.php:34
-msgid "Email"
 msgstr ""
 
 #: admin/calendars/emails.php:67 admin/calendars/sms.php:67
 msgid "Minute(s)"
 msgstr ""
 
-#: admin/calendars/emails.php:68 admin/calendars/settings.php:112
+#: admin/calendars/emails.php:68 admin/calendars/settings.php:114
 #: admin/calendars/sms.php:68
 msgid "Hour(s)"
 msgstr ""
@@ -534,8 +612,8 @@ msgid "Appointment"
 msgstr ""
 
 #: admin/calendars/emails.php:95 admin/calendars/emails.php:129
-#: admin/calendars/emails.php:145 admin/calendars/emails.php:160
-#: admin/calendars/emails.php:176
+#: admin/calendars/emails.php:143 admin/calendars/emails.php:159
+#: admin/calendars/emails.php:175
 msgid "Edit Email"
 msgstr ""
 
@@ -543,170 +621,197 @@ msgstr ""
 msgid "Notifications"
 msgstr ""
 
-#: admin/calendars/emails.php:130
-msgid "Email that is sent when an appointment is booked."
-msgstr ""
-
-#: admin/calendars/emails.php:146
+#: admin/calendars/emails.php:144
 msgid "Email that is sent when an appointment is approved."
 msgstr ""
 
-#: admin/calendars/emails.php:161
+#: admin/calendars/emails.php:160
 msgid "Email that is sent when an appointment is rescheduled."
 msgstr ""
 
-#: admin/calendars/emails.php:177
+#: admin/calendars/emails.php:176
 msgid "Email that is sent when an appointment is Cancelled."
 msgstr ""
 
-#: admin/calendars/emails.php:185 admin/calendars/sms.php:201
+#: admin/calendars/emails.php:188 admin/calendars/sms.php:201
 msgid "Reminders"
 msgstr ""
 
-#: admin/calendars/settings.php:15
+#: admin/calendars/settings.php:17
 msgid "Calendar not found."
 msgstr ""
 
-#: admin/calendars/settings.php:36
+#: admin/calendars/settings.php:38
 msgid "Calendar Name"
 msgstr ""
 
-#: admin/calendars/settings.php:47
+#: admin/calendars/settings.php:49
 msgid "Calendar Description"
 msgstr ""
 
-#: admin/calendars/settings.php:54
+#: admin/calendars/settings.php:56
 msgid "Custom Form"
 msgstr ""
 
-#: admin/calendars/settings.php:63
+#: admin/calendars/settings.php:65
 msgid ""
 "Use a custom form built using the form builder in a funnel instead of the "
 "default form."
 msgstr ""
 
-#: admin/calendars/settings.php:68
+#: admin/calendars/settings.php:70
 msgid "Default Note"
 msgstr ""
 
-#: admin/calendars/settings.php:72
+#: admin/calendars/settings.php:74
 msgid "Default note for all appointment"
 msgstr ""
 
-#: admin/calendars/settings.php:75
+#: admin/calendars/settings.php:77
 msgid ""
 "This default note will be added in note section of appointment when "
 "appointment booked by users."
 msgstr ""
 
-#: admin/calendars/settings.php:81
+#: admin/calendars/settings.php:83
 msgid "Appointment Settings"
 msgstr ""
 
-#: admin/calendars/settings.php:85
+#: admin/calendars/settings.php:87
 msgid "Show in 12 hour format"
 msgstr ""
 
-#: admin/calendars/settings.php:92
+#: admin/calendars/settings.php:94
 msgid "Enabling this setting displays time in 12 hour format. (e.g 5:00 PM)"
 msgstr ""
 
-#: admin/calendars/settings.php:96
+#: admin/calendars/settings.php:98
 msgid "Length of appointment"
 msgstr ""
 
-#: admin/calendars/settings.php:120 admin/calendars/settings.php:138
+#: admin/calendars/settings.php:122 admin/calendars/settings.php:140
 msgid "Minutes"
 msgstr ""
 
-#: admin/calendars/settings.php:122
+#: admin/calendars/settings.php:124
 msgid "Select default length of appointment"
 msgstr ""
 
-#: admin/calendars/settings.php:126
+#: admin/calendars/settings.php:128
 msgid "Buffer Time"
 msgstr ""
 
-#: admin/calendars/settings.php:139
+#: admin/calendars/settings.php:141
 msgid "Add extra time between appointments."
 msgstr ""
 
-#: admin/calendars/settings.php:143
+#: admin/calendars/settings.php:145
 msgid "Make me look busy."
 msgstr ""
 
-#: admin/calendars/settings.php:150
+#: admin/calendars/settings.php:152
 msgid ""
 "Enter how many time slots client can see! (Enter 0 to display all time slots)"
 msgstr ""
 
-#: admin/calendars/settings.php:195
+#: admin/calendars/settings.php:154
+msgid "Note: "
+msgstr ""
+
+#: admin/calendars/settings.php:154
+msgid ""
+"Only works in a client side when admin is not logged in if you are a admin "
+"then please log out or open calendar page in incognito window to see the "
+"action."
+msgstr ""
+
+#: admin/calendars/settings.php:200
 msgid "Thank You Page"
 msgstr ""
 
-#: admin/calendars/settings.php:210
+#: admin/calendars/settings.php:215
 msgid "Enabling this setting redirect user to specified thank you page."
 msgstr ""
 
-#: admin/calendars/settings.php:215
+#: admin/calendars/settings.php:220
 msgid "Success Message"
 msgstr ""
 
-#: admin/calendars/settings.php:217
+#: admin/calendars/settings.php:222
 msgid "Appointment booked Successfully!"
 msgstr ""
 
-#: admin/calendars/settings.php:219
+#: admin/calendars/settings.php:227
 msgid "Google Calendar Integration"
 msgstr ""
 
-#: admin/calendars/settings.php:223
+#: admin/calendars/settings.php:231
 msgid "Google Calendar sync"
 msgstr ""
 
-#: admin/calendars/settings.php:232
+#: admin/calendars/settings.php:240
 msgid "Connected to Google Calendar!"
 msgstr ""
 
-#: admin/calendars/settings.php:235
+#: admin/calendars/settings.php:243
 msgid "Connect to Google"
 msgstr ""
 
-#: admin/calendars/settings.php:241
+#: admin/calendars/settings.php:249
 msgid "Sync with the calendars"
 msgstr ""
 
-#: admin/calendars/settings.php:243
+#: admin/calendars/settings.php:251
 msgid ""
 "These calendars will be checked for your availability when booking new "
 "appointments."
 msgstr ""
 
-#: admin/calendars/settings.php:286
-msgid "Zoom Integration"
+#: admin/calendars/settings.php:294
+msgid "Google Appointment Name"
 msgstr ""
 
-#: admin/calendars/settings.php:290
-msgid "Enable Zoom"
-msgstr ""
-
-#: admin/calendars/settings.php:297
-msgid "Enabling this setting will create zoom meeting."
-msgstr ""
-
-#: admin/calendars/settings.php:302
-msgid "Zoom sync"
+#: admin/calendars/settings.php:304
+msgid ""
+"This name will be displayed in the Google calendar when appointment is "
+"booked. It supports replacement codes."
 msgstr ""
 
 #: admin/calendars/settings.php:309
+msgid "Google Appointment Description"
+msgstr ""
+
+#: admin/calendars/settings.php:319
+msgid ""
+"This description will be displayed in the Google calendar when appointment "
+"is booked. It supports replacement codes."
+msgstr ""
+
+#: admin/calendars/settings.php:327
+msgid "Zoom Integration"
+msgstr ""
+
+#: admin/calendars/settings.php:331
+msgid "Enable Zoom"
+msgstr ""
+
+#: admin/calendars/settings.php:338
+msgid "Enabling this setting will create zoom meeting."
+msgstr ""
+
+#: admin/calendars/settings.php:343
+msgid "Zoom sync"
+msgstr ""
+
+#: admin/calendars/settings.php:350
 msgid "Connected to Zoom"
 msgstr ""
 
-#: admin/calendars/settings.php:314
+#: admin/calendars/settings.php:355
 msgid "Connect to Zoom"
 msgstr ""
 
-#: admin/calendars/settings.php:323
+#: admin/calendars/settings.php:364
 msgid "Update Calendar"
 msgstr ""
 
@@ -740,51 +845,51 @@ msgstr ""
 msgid "SMS that is sent when an appointment is Cancelled."
 msgstr ""
 
-#: admin/calendars/view.php:35
+#: admin/calendars/view.php:36
 msgid "Select Contact"
 msgstr ""
 
-#: admin/calendars/view.php:48
+#: admin/calendars/view.php:49
 msgid "Please select client contact from contact list."
 msgstr ""
 
-#: admin/calendars/view.php:60
+#: admin/calendars/view.php:61
 msgid "Give nice name for your appointment."
 msgstr ""
 
-#: admin/calendars/view.php:63
+#: admin/calendars/view.php:64
 msgid "Note"
 msgstr ""
 
-#: admin/calendars/view.php:72
+#: admin/calendars/view.php:73
 msgid "Date"
 msgstr ""
 
-#: admin/calendars/view.php:81
+#: admin/calendars/view.php:82
 msgid "Time"
 msgstr ""
 
-#: admin/calendars/view.php:95
+#: admin/calendars/view.php:96
 msgid "Google sync is enabled."
 msgstr ""
 
-#: admin/calendars/view.php:97
+#: admin/calendars/view.php:98
 msgid "Sync Now"
 msgstr ""
 
-#: admin/calendars/view.php:103
+#: admin/calendars/view.php:104
 msgid "Zoom sync is enabled."
 msgstr ""
 
-#: admin/calendars/view.php:116
+#: admin/calendars/view.php:117
 msgid "Pending"
 msgstr ""
 
-#: admin/calendars/view.php:117
+#: admin/calendars/view.php:118
 msgid "Approved"
 msgstr ""
 
-#: admin/calendars/view.php:118
+#: admin/calendars/view.php:119
 msgid "Canceled"
 msgstr ""
 
@@ -805,19 +910,19 @@ msgstr ""
 msgid "Groundhoggg is not currently active, it must be active for %s to work."
 msgstr ""
 
-#: includes/classes/appointment.php:721
+#: includes/classes/appointment.php:670
 msgid "Zoom is not enabled."
 msgstr ""
 
-#: includes/classes/appointment.php:732 includes/classes/appointment.php:753
+#: includes/classes/appointment.php:681 includes/classes/appointment.php:698
 msgid "Zoom meeting details not found!"
 msgstr ""
 
-#: includes/classes/calendar.php:1085 includes/google-calendar.php:87
+#: includes/classes/calendar.php:1109 includes/google-calendar.php:86
 msgid "Could not retrieve access token."
 msgstr ""
 
-#: includes/classes/calendar.php:1096
+#: includes/classes/calendar.php:1122
 msgid "Token refresh Failed"
 msgstr ""
 
@@ -831,49 +936,49 @@ msgstr ""
 msgid "SMS Reminder: %s"
 msgstr ""
 
-#: includes/functions.php:74
+#: includes/functions.php:79
 msgid "Monday"
 msgstr ""
 
-#: includes/functions.php:75
+#: includes/functions.php:80
 msgid "Tuesday"
 msgstr ""
 
-#: includes/functions.php:76
+#: includes/functions.php:81
 msgid "Wednesday"
 msgstr ""
 
-#: includes/functions.php:77
+#: includes/functions.php:82
 msgid "Thursday"
 msgstr ""
 
-#: includes/functions.php:78
+#: includes/functions.php:83
 msgid "Friday"
 msgstr ""
 
-#: includes/functions.php:79
+#: includes/functions.php:84
 msgid "Saturday"
 msgstr ""
 
-#: includes/functions.php:80
+#: includes/functions.php:85
 msgid "Sunday"
 msgstr ""
 
-#: includes/functions.php:248
+#: includes/functions.php:253
 msgctxt "contact_record"
 msgid "Book Appointment"
 msgstr ""
 
-#: includes/functions.php:259
+#: includes/functions.php:264
 msgid "Please select a calendar"
 msgstr ""
 
-#: includes/functions.php:264 includes/template.php:324
+#: includes/functions.php:269 includes/template.php:324
 msgid "Book Appointment"
 msgstr ""
 
 #. translators: Time duration in hour or hours.
-#: includes/functions.php:367
+#: includes/functions.php:371
 #, php-format
 msgid "%s hour"
 msgid_plural "%s hours"
@@ -881,7 +986,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: Time duration in minute or minutes.
-#: includes/functions.php:373
+#: includes/functions.php:377
 #, php-format
 msgid "%s minute"
 msgid_plural "%s minutes"
@@ -889,27 +994,32 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: Time duration in second or seconds.
-#: includes/functions.php:379
+#: includes/functions.php:383
 #, php-format
 msgid "%s second"
 msgid_plural "%s seconds"
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/google-calendar.php:67
+#: includes/functions.php:500
+#, php-format
+msgid "status: %s"
+msgstr ""
+
+#: includes/google-calendar.php:66
 msgid "Access token not found!"
 msgstr ""
 
-#: includes/google-calendar.php:157
+#: includes/google-calendar.php:155
 msgid "Please generate access code to sync appointments. "
 msgstr ""
 
-#: includes/google-calendar.php:168
+#: includes/google-calendar.php:167
 msgid "Google calendar not found."
 msgstr ""
 
 #: includes/google-calendar.php:182
-msgid "No future appointment found in Google calendar for sync."
+msgid "No future appointments found."
 msgstr ""
 
 #: includes/plugin.php:166
@@ -962,51 +1072,71 @@ msgctxt "email_template_description"
 msgid "Email sent when appointment is reminder."
 msgstr ""
 
-#: includes/replacements.php:58
+#: includes/replacements.php:59
 msgid "Returns the start date & time of a contact's appointment."
 msgstr ""
 
-#: includes/replacements.php:63
+#: includes/replacements.php:64
+msgid ""
+"Returns the start date & time of a contact's appointment in the admin's "
+"timezone."
+msgstr ""
+
+#: includes/replacements.php:69
 msgid "Returns the end date & time of a contact's appointment."
 msgstr ""
 
-#: includes/replacements.php:68
+#: includes/replacements.php:74
+msgid ""
+"Returns the end date & time of a contact's appointment in the admin's "
+"timezone."
+msgstr ""
+
+#: includes/replacements.php:79
 msgid "Links to allow cancelling or re-scheduling appointments."
 msgstr ""
 
-#: includes/replacements.php:73
+#: includes/replacements.php:84
 msgid "Any notes about the appointment."
 msgstr ""
 
-#: includes/replacements.php:78
+#: includes/replacements.php:89
 msgid "Detail Description about zoom meeting.( needs zoom enabled and synced )"
 msgstr ""
 
-#: includes/replacements.php:83
+#: includes/replacements.php:94
 msgid "First name of calendar owner."
 msgstr ""
 
-#: includes/replacements.php:88
+#: includes/replacements.php:99
 msgid "Last name of calendar owner."
 msgstr ""
 
-#: includes/replacements.php:93
+#: includes/replacements.php:104
 msgid "Email address of calendar owner."
 msgstr ""
 
-#: includes/replacements.php:98
+#: includes/replacements.php:109
 msgid "Phone number of calendar owner."
 msgstr ""
 
-#: includes/replacements.php:212
+#: includes/replacements.php:250
 msgid "There is no additional note with this appointment."
 msgstr ""
 
-#: includes/replacements.php:231 includes/template.php:194
+#: includes/replacements.php:269 includes/template.php:195
 msgid "Reschedule"
 msgstr ""
 
-#: includes/shortcode.php:284
+#: includes/shortcode.php:230
+msgid "Please enter valid email."
+msgstr ""
+
+#: includes/shortcode.php:277
+msgid "could not reschedule"
+msgstr ""
+
+#: includes/shortcode.php:283
 #, php-format
 msgid "Your appointment has been rescheduled to %s!"
 msgstr ""
@@ -1032,8 +1162,8 @@ msgstr ""
 msgid "Please Select a calendar"
 msgstr ""
 
-#: includes/template.php:123
-msgid "Sorry, there are no times available."
+#: includes/template.php:124
+msgid "Sorry, No time slots are available on this date."
 msgstr ""
 
 #: includes/template.php:168

@@ -266,7 +266,7 @@ class Replacements
         }
 
         $actions = [
-            html()->e( 'a', [ 'href' => $this->get_appointment()->manage_link( 'reschedule' ) ], __( 'Reschedule' ) ),
+            html()->e( 'a', [ 'href' => $this->get_appointment()->manage_link( 'reschedule' ) ], __( 'Reschedule' , 'groundhogg-calendar' ) ),
             html()->e( 'a', [ 'href' => $this->get_appointment()->manage_link( 'cancel' ) ], __( 'Cancel' ) ),
         ];
 
