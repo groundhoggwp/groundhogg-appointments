@@ -296,7 +296,7 @@ class Shortcode extends Supports_Errors
     {
         $atts = shortcode_atts( [
             'id'            => 0,
-            'calendar_id'   => 0,
+            'reschedule'    => 0,
         ], $atts );
 
         $id = get_array_var( $atts, 'id', get_array_var( $atts, 'calendar_id' ) );
@@ -305,9 +305,10 @@ class Shortcode extends Supports_Errors
 
         $url = managed_page_url( sprintf( 'calendar/%d/', $id ) );
 
-        if ( get_request_var( 'reschedule' ) ) {
-            $url = wp_nonce_url( add_query_arg( 'reschedule', absint( get_request_var( 'reschedule' ) ), $url ), 'appointment_reschedule' );
-        }
+	    if ( get_array_var( $atts , 'reschedule' ) ) {
+
+		    $url = wp_nonce_url( add_query_arg( 'reschedule', absint( get_array_var( $atts,'reschedule' ) ), $url ), 'appointment_reschedule' );
+	    }
 
         return html()->wrap( '', 'iframe', [ 'src' => $url, 'width' => '100%' ] );
     }

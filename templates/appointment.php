@@ -45,7 +45,7 @@ switch ( $action ):
         <div class="box">
             <!-- BOOKING CALENDAR GOES HERE -->
             <?php
-            echo do_shortcode( sprintf( '[gh_calendar id="%d" reschedule="%s"]', $appointment->get_calendar_id(), $appointment->get_id() ) );
+            echo do_shortcode( sprintf( '[gh_calendar id="%d" reschedule="%d"]', $appointment->get_calendar_id(), $appointment->get_id() ) );
             ?>
         </div>
         <?php

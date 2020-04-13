@@ -17,6 +17,7 @@ use \Google_Service_Calendar_Event;
 use \Google_Service_Calendar;
 use \Exception;
 use function Groundhogg\get_request_var;
+use function Groundhogg\managed_page_url;
 use function GroundhoggBookingCalendar\get_in_time_zone;
 use function GroundhoggBookingCalendar\is_sms_plugin_active;
 use function GroundhoggBookingCalendar\send_reminder_notification;
@@ -527,7 +528,7 @@ class Appointment extends Base_Object_With_Meta
      */
     public function manage_link( $action = 'cancel' )
     {
-        return site_url( sprintf( 'gh/appointment/%s/%s', urlencode( encrypt( $this->get_id() ) ), $action ) );
+        return managed_page_url( sprintf( 'appointment/%s/%s', urlencode( encrypt( $this->get_id() ) ), $action ) );
     }
 
 	/**
