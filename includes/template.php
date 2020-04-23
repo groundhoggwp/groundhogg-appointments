@@ -49,10 +49,10 @@ function template_details( $calendar ) {
 			$start_time = get_in_time_zone( $start_time, $time_zone );
 			$end_time   = get_in_time_zone( $end_time, $time_zone );
 
-			if ( ($start_time > 0 && $end_time > 0 ) && $start_time !==3600 && $end_time !== 3600 ):
+			//compared the length of the start and end time instead of comparing the individual value
+			if ( ($start_time > 0 && $end_time > 0 ) && strlen($start_time)>=10  && strlen( $end_time) >= 10 ):
 
-
-				$time_string = sprintf( '%s - %s, %s', date_i18n( get_time_format(), $start_time ), date_i18n( get_time_format(), $end_time ), date_i18n( get_date_format(), $start_time ) );
+			$time_string = sprintf( '%s - %s, %s', date_i18n( get_time_format(), $start_time ), date_i18n( get_time_format(), $end_time ), date_i18n( get_date_format(), $start_time ) );
 				?>
                 <div class="details-slot"><span class="date-icon"></span> <?php esc_html_e( $time_string ); ?></div>
                 <div class="details-zone"><span class="world-icon"></span> <?php esc_html_e( str_replace( '_', ' ', $time_zone ) ); ?></div><?php
