@@ -484,7 +484,7 @@ class Appointment extends Base_Object_With_Meta
 	protected function cancel_reminders()
     {
         // delete all the waiting events for the appointment
-        $events = get_db( 'events' )->query( [
+        $events = get_db( 'event_queue' )->query( [
             'funnel_id' => $this->get_id(),
             'contact_id' => $this->get_contact_id(),
             'event_type' => Reminder::NOTIFICATION_TYPE,
@@ -493,7 +493,7 @@ class Appointment extends Base_Object_With_Meta
 
         if ( !empty( $events ) ) {
             foreach ( $events as $event ) {
-                $eve = new Event( absint( $event->ID ) );
+                $eve = new Event( absint( $event->ID ) , 'event_queue'  );
                 $eve->update( [ 'status' => 'cancelled', ] );
             }
         }
@@ -505,7 +505,7 @@ class Appointment extends Base_Object_With_Meta
 	protected function cancel_sms_reminders()
     {
         // delete all the waiting events for the appointment
-        $events = get_db( 'events' )->query( [
+        $events = get_db( 'event_queue' )->query( [
             'funnel_id' => $this->get_id(),
             'contact_id' => $this->get_contact_id(),
             'event_type' => SMS_Reminder::NOTIFICATION_TYPE,
@@ -514,7 +514,7 @@ class Appointment extends Base_Object_With_Meta
 
         if ( !empty( $events ) ) {
             foreach ( $events as $event ) {
-                $eve = new Event( absint( $event->ID ) );
+                $eve = new Event( absint( $event->ID ) , 'event_queue' );
                 $eve->update( [ 'status' => 'cancelled', ] );
             }
         }

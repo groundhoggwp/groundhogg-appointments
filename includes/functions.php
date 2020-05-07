@@ -170,7 +170,7 @@ function send_reminder_notification( $email_id = 0, $appointment_id = 0, $time =
         'contact_id' => $appointment->get_contact_id(),
         'event_type' => Reminder::NOTIFICATION_TYPE,
         'status' => 'waiting',
-    ] );
+    ]  , 'event_queue' );
 
     if ( !$event->exists() ) {
         return false;
@@ -228,7 +228,7 @@ function send_sms_reminder_notification( $sms_id = 0, $appointment_id = 0, $time
         'contact_id' => $appointment->get_contact_id(),
         'event_type' => SMS_Reminder::NOTIFICATION_TYPE,
         'status' => 'waiting',
-    ] );
+    ] , 'event_queue'  );
 
     if ( !$event->exists() ) {
         return false;
