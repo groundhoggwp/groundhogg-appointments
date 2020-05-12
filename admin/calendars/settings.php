@@ -301,7 +301,7 @@ if ( $calendar == null ) {
 					] );
 					?>
 
-                    <p class="description"><?php _e( 'This name will be displayed in the Google calendar when appointment is booked. It supports replacement codes.', 'groundhogg-calendar' ); ?></p>
+                    <p class="description"><?php _e( 'This name will be displayed in the Google calendar when appointment is booked. It supports replacement codes. It also updates the name in Groundhogg Calendar after sync.', 'groundhogg-calendar' ); ?></p>
                 </td>
             </tr>
 

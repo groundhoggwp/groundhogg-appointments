@@ -314,6 +314,9 @@ class Appointment extends Base_Object_With_Meta
             'notes' => $this->get_meta( 'notes', true )
         ] );
 
+        $start = $this->get_start_time();
+        $end = $this->get_end_time() ;
+
         $note = $args[ 'notes' ];
         unset( $args[ 'notes' ] );
 
@@ -327,17 +330,24 @@ class Appointment extends Base_Object_With_Meta
             return false;
         }
 
-        //cancel events form the event queue
-        $this->cancel_reminders();
 
-        // Schedule Appointment Booked Email...
-        do_action( 'groundhogg/calendar/appointment/reschedule/before' );
+        // match the dates before performing the operation..
 
-        $this->schedule_reminders( Reminder::RESCHEDULED );
+	    if ($start !== get_array_var($args , 'start_time' ) || $end !== get_array_var( $args , 'end_time' ) ) {
 
-        do_action( 'groundhogg/calendar/appointment/reschedule/after' );
+		    //cancel events form the event queue
+		    $this->cancel_reminders();
 
-        do_action( 'groundhogg/calendar/appointment/reschedule', $this->get_id(), Reminder::RESCHEDULED );
+		    // Schedule Appointment Booked Email...
+		    do_action( 'groundhogg/calendar/appointment/reschedule/before' );
+
+		    $this->schedule_reminders( Reminder::RESCHEDULED );
+
+		    do_action( 'groundhogg/calendar/appointment/reschedule/after' );
+
+		    do_action( 'groundhogg/calendar/appointment/reschedule', $this->get_id(), Reminder::RESCHEDULED );
+
+	    }
 
         return true;
     }
