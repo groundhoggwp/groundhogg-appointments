@@ -814,6 +814,13 @@ class Calendar_Page extends Admin_Page
             $calendar->delete_meta('cancelled_admin');
         }
 
+        //sms admin notification
+	    if (get_request_var('sms_admin_notification')) {
+		    $calendar->update_meta('sms_admin_notification', true);
+	    } else {
+		    $calendar->delete_meta('sms_admin_notification');
+	    }
+
         $calendar->update_meta('subject', sanitize_text_field( get_request_var( 'subject' )));
         $calendar->update_meta('notification', sanitize_textarea_field( get_request_var( 'notification' )));
 

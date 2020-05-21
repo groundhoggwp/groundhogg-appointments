@@ -10,6 +10,7 @@ use function Groundhogg\groundhogg_url;
 use function Groundhogg\html;
 use GroundhoggBookingCalendar\Classes\Calendar;
 use function GroundhoggBookingCalendar\days_of_week;
+use function GroundhoggBookingCalendar\is_sms_plugin_active;
 
 /**
  * @var $calendar Calendar;
@@ -111,6 +112,23 @@ enqueue_groundhogg_modal();
 
     html()->end_row();
 
+    if ( is_sms_plugin_active() ) {
+
+
+	    html()->start_row();
+	    html()->th( __( 'SMS Notification ', 'groundhogg-calendar' ) );
+	    html()->td( [
+		    html()->checkbox( [
+			    'name'    => 'sms_admin_notification',
+			    'label'   => 'Enabled',
+			    'checked' => $calendar->get_meta( 'sms_admin_notification' )
+
+		    ] ),
+		    html()->description( __( 'SMS notification send to Calendar owner along with email.', 'groundhogg-calendar' ) ),
+	    ] );
+
+	    html()->end_row();
+    }
     html()->end_form_table();
 
     echo html()->e( 'h3', [], __( 'Notification Text', 'groundhogg-calendar' ) );
