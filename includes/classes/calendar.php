@@ -288,10 +288,17 @@ class Calendar extends Base_Object_With_Meta {
 
 		while ( $start < $end ) {
 
+			// check with the dates
 			$periods = $this->get_todays_available_periods( $start->getTimestamp() );
 
 			if ( ! $periods ) {
 				$disabled_dates[] = $start->format( 'Y-m-d' );
+			} else {
+				//check by checking the time slots
+				$slots = $this->get_appointment_slots( $start->format( 'Y-m-d' ) );
+				if ( empty( $slots ) ) {
+					$disabled_dates[] = $start->format( 'Y-m-d' );
+				}
 			}
 
 			$start->add( $interval );
@@ -629,8 +636,8 @@ class Calendar extends Base_Object_With_Meta {
 	 *
 	 * Fetch all the appointments between start and end-time from google calendar.
 	 *
-	 * @param $min_time int
-	 * @param $max_time int
+	 * @param $min_time
+	 * @param $max_time
 	 *
 	 * @return array
 	 */
@@ -644,7 +651,7 @@ class Calendar extends Base_Object_With_Meta {
 			$google_appointments  = [];
 			$client               = \GroundhoggBookingCalendar\Plugin::$instance->google_calendar->get_google_client_from_access_token( $this->get_id() );
 			$service              = new Google_Service_Calendar( $client );
-			$google_calendar_list = $this->get_meta( 'google_calendar_list', true );
+			$google_calendar_list = $this->get_meta( 'google_calendar_list', true ) ?: [];
 			if ( count( $google_calendar_list ) > 0 ) {
 				foreach ( $google_calendar_list as $google_cal ) {
 					try {
@@ -652,8 +659,8 @@ class Calendar extends Base_Object_With_Meta {
 						$optParams       = array(
 //							'orderBy'      => 'startTime',
 //							'singleEvents' => true,
-							'timeMin'      => $google_min,
-							'timeMax'      => $google_max
+							'timeMin' => $google_min,
+							'timeMax' => $google_max
 						);
 						$results         = $service->events->listEvents( $google_calendar->getId(), $optParams );
 						$events          = $results->getItems();
@@ -694,11 +701,11 @@ class Calendar extends Base_Object_With_Meta {
 									 * Event does not contain start and end date time thus its all day event
 									 */
 
-									if($event->start->dateTime == null ){
+									if ( $event->start->dateTime == null ) {
 										$google_start = $event->start->date;
 									}
 
-									if($event->end->dateTime == null ){
+									if ( $event->end->dateTime == null ) {
 										$google_end = $event->end->date;
 									}
 
@@ -713,6 +720,7 @@ class Calendar extends Base_Object_With_Meta {
 
 					} catch ( Exception $e ) {
 						// catch if the calendar does not exist in google calendar
+						return [];
 					}
 				}
 			}
@@ -724,6 +732,8 @@ class Calendar extends Base_Object_With_Meta {
 	}
 
 
+	protected $google_appointments;
+
 	/**
 	 * Removes google appointment slots from all the appointment slots.
 	 *
@@ -731,18 +741,23 @@ class Calendar extends Base_Object_With_Meta {
 	 *
 	 * @return array
 	 */
-
 	protected function clean_google_slots( $slots ) {
 
-		$google_slots = $this->get_google_appointment( absint( $slots[0]['start'] ), absint( $slots [ sizeof( $slots ) - 1 ] ['end'] ) );
-
-
-		if ( empty( $google_slots ) ) {
+		if ( empty( $slots ) ) {
 			return $slots;
 		}
 
-		$clean1 = $this->clean_big_appointment( $slots, $google_slots );
-		$clean2 = $this->clean_small_appointment( $clean1, $google_slots );
+		if ( ! $this->google_appointments ) {
+			$this->google_appointments = $this->get_google_appointment( strtotime( $this->get_min_booking_period() ), strtotime( $this->get_max_booking_period() ) );
+		}
+
+
+		if ( empty( $this->google_appointments ) ) {
+			return $slots;
+		}
+
+		$clean1 = $this->clean_big_appointment( $slots, $this->google_appointments );
+		$clean2 = $this->clean_small_appointment( $clean1, $this->google_appointments );
 
 		return $clean2;
 	}
@@ -1125,8 +1140,6 @@ class Calendar extends Base_Object_With_Meta {
 	public function is_access_token_zoom() {
 		return (bool) $this->get_meta( 'access_token_zoom', true );
 	}
-
-
 
 
 }
