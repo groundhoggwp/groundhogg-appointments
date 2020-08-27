@@ -39,7 +39,7 @@ class Google_Calendar
         add_action( 'init', array( $this, 'setup_cron_jobs' ) );
         add_action( 'groundhogg_sync_calendars', array( $this, 'sync_calendars' ) );
 
-        require_once GROUNDHOGG_BOOKING_CALENDAR_ASSETS_PATH . '/lib/google-api/vendor/autoload.php';
+        require_once GROUNDHOGG_BOOKING_CALENDAR_ASSETS_PATH . '/lib/google-api-new/vendor/autoload.php'; // version 2.7.0
     }
 
     /**
