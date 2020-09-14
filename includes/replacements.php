@@ -83,10 +83,15 @@ class Replacements
                 'callback' => array( $this, 'appointment_notes' ),
                 'description' => __( 'Any notes about the appointment.', 'groundhogg-calendar' ),
             ],
+	        [
+		        'code' => 'google_meet_url',
+		        'callback' => array( $this, 'google_meet_url' ),
+		        'description' => __( 'Google Meet meeting URL. (Needs Google Meet Enabled)', 'groundhogg-calendar' ),
+	        ],
             [
                 'code' => 'zoom_meeting_details',
                 'callback' => array( $this, 'zoom_meeting_details' ),
-                'description' => __( 'Detail Description about zoom meeting.( needs zoom enabled and synced )', 'groundhogg-calendar' ),
+                'description' => __( 'Detail Description about zoom meeting. (Needs zoom enabled and synced)', 'groundhogg-calendar' ),
             ],
             [
                 'code' => 'calendar_owner_first_name',
@@ -107,8 +112,7 @@ class Replacements
                 'code' => 'calendar_owner_phone',
                 'callback' => array( $this, 'calendar_owner_phone' ),
                 'description' => __( 'Phone number of calendar owner.', 'groundhogg-calendar' ),
-            ]
-
+            ],
         ];
     }
 
@@ -290,7 +294,25 @@ class Replacements
     }
 
 
-    /**
+
+	/**
+	 * fetch Zoom meting description from zoom
+	 *
+	 * @return bool|string
+	 */
+	public function google_meet_url( )
+	{
+		if ( !$this->get_appointment() ) {
+			return false;
+		}
+
+		return wpautop( $this->get_appointment()->get_meta('google_meet_url' ) );
+
+	}
+
+
+
+	/**
      * Get the appointment end time.
      *
      * @param int $contact_id

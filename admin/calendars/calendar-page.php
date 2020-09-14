@@ -825,7 +825,7 @@ class Calendar_Page extends Admin_Page
         $calendar->update_meta('notification', sanitize_textarea_field( get_request_var( 'notification' )));
 
     }
-    
+
     protected function update_emails()
     {
         if (!current_user_can('edit_calendar')) {
@@ -976,8 +976,14 @@ class Calendar_Page extends Admin_Page
         $calendar->update_meta('google_appointment_name', sanitize_text_field(get_request_var('google_appointment_name')));
         $calendar->update_meta('google_appointment_description', sanitize_textarea_field(get_request_var('google_appointment_description')));
 
-        //save Zoom Meeting settings
+        // Google Meet Setting
+	    if (get_request_var('google_meet_enable')) {
+		    $calendar->update_meta('google_meet_enable', true);
+	    } else {
+		    $calendar->delete_meta('google_meet_enable');
+	    }
 
+        //save Zoom Meeting settings
         if (get_request_var('zoom_enable')) {
             $calendar->update_meta('zoom_enable', true);
         } else {
@@ -1060,6 +1066,7 @@ class Calendar_Page extends Admin_Page
 
         $calendar->update_meta('access_token', json_encode($access_token));
 
+        $calendar->add_in_google();
         $calendar->add_in_google();
 
         $this->add_notice('success', __('Connection to Google calendar successfully completed!', 'groundhogg-calendar'), 'success');

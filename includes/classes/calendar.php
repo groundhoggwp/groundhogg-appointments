@@ -1087,6 +1087,15 @@ class Calendar extends Base_Object_With_Meta {
 		return (bool) $this->get_meta( 'zoom_enable', true );
 	}
 
+	/**
+	 * Returns the evalue of google meet enabled checkbox.
+	 * @return bool
+	 */
+	public function is_google_meet_enabled()
+	{
+		return (bool) $this->get_meta( 'google_meet_enable', true );
+	}
+
 
 	/**
 	 * fetch access_token for the zoom

@@ -245,6 +245,18 @@ if ( $calendar == null ) {
             </td>
         </tr>
 		<?php if ( $access_token && $google_calendar_id ) : ?>
+
+            <tr>
+                <th scope="row"><label><?php _e( 'Enable Google Meet', 'groundhogg-calendar' ) ?></label></th>
+                <td>
+					<?php echo html()->checkbox( [
+						'label'   => "Enable",
+						"name"    => "google_meet_enable",
+						'checked' => $calendar->is_google_meet_enabled() ? $calendar->is_google_meet_enabled() : 0,
+					] ); ?>
+                    <p class="description"><?php _e( 'Enabling this setting will create Google Meet meeting when appointment is booked.', 'groundhogg-calendar' ) ?></p>
+                </td>
+            </tr>
             <tr>
                 <th scope="row"><label><?php _e( 'Sync with the calendars' ) ?></label></th>
                 <td id="appointment-status">
