@@ -658,7 +658,7 @@ class Calendar extends Base_Object_With_Meta {
 						$google_calendar = $service->calendars->get( $google_cal );
 						$optParams       = array(
 //							'orderBy'      => 'startTime',
-//							'singleEvents' => true,
+							'singleEvents' => true,
 							'timeMin' => $google_min,
 							'timeMax' => $google_max
 						);
