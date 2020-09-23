@@ -4,6 +4,7 @@ namespace GroundhoggBookingCalendar;
 
 use Groundhogg\DB\Manager;
 use Groundhogg\Extension;
+use GroundhoggBookingappointment\Api\Appointment_Api;
 use GroundhoggBookingCalendar\Api\Calendar_Api;
 use GroundhoggBookingCalendar\DB\Appointment_Meta;
 use GroundhoggBookingCalendar\DB\Appointments;
@@ -156,6 +157,7 @@ class Plugin extends Extension
 	 */
     public function register_apis( $api_manager ) {
     	$api_manager->calendar = new Calendar_Api() ;
+    	$api_manager->appointment = new Appointment_Api();
     }
 
 	/**

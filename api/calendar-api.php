@@ -21,41 +21,92 @@ class Calendar_Api extends Base
 
         $auth_callback = $this->get_auth_callback();
 
-        register_rest_route(self::NAME_SPACE, '/calendars', [
+        register_rest_route(self::NAME_SPACE, '/calendar', [
             [
 	            'methods' => WP_REST_Server::READABLE,
-	            'callback' => [ $this, 'get_calendars' ],
+	            'callback' => [ $this, 'get_calendar' ],
 	            'permission_callback' => $auth_callback,
 
-            ]
+            ],  [
+		        'methods'             => WP_REST_Server::CREATABLE,
+		        'callback'            => [ $this, 'add_calendar' ],
+		        'permission_callback' => $auth_callback,
+
+	        ],
+	        [
+		        'methods'             => WP_REST_Server::DELETABLE,
+		        'callback'            => [ $this, 'delete_calendar' ],
+		        'permission_callback' => $auth_callback,
+
+	        ],
+	        [
+		        'methods'             => WP_REST_Server::EDITABLE,
+		        'callback'            => [ $this, 'edit_calendar' ],
+		        'permission_callback' => $auth_callback,
+
+	        ]
+
+
         ] );
 
-        register_rest_route(self::NAME_SPACE, '/appointments' ,array(
-            'methods' => WP_REST_Server::CREATABLE,
-            'callback' => [ $this, 'get_appointments' ],
-            'permission_callback' => $auth_callback,
-        ));
+
 
     }
 
-	public function get_calendars( WP_REST_Request $request ) {
+    /**
+     * Get a list of calendar
+     *
+     * @param WP_REST_Request $request
+     * @return WP_Error|WP_REST_Response
+     */
+    public function get_calendar( WP_REST_Request $request )
+    {
 
-		return self::SUCCESS_RESPONSE( ["calendars" => [ [1,2,3,4] ] ]  );
+	    return self::SUCCESS_RESPONSE( [ 'success' ] );
+    }
+
+	/**
+	 * Creates a new calendar
+	 *
+	 *
+	 * @param WP_REST_Request $request
+	 *
+	 * @return WP_REST_Response
+	 */
+	public function add_calendar( WP_REST_Request $request ) {
+
+		return self::SUCCESS_RESPONSE();
 	}
 
 	/**
+	 *  Deletes the calendar and relevant data
+	 *
+	 *
 	 * @param WP_REST_Request $request
+	 *
+	 * @return WP_REST_Response
 	 */
-	public function get_appointments( WP_REST_Request $request ) {
+	public function delete_calendar( WP_REST_Request $request ) {
 
-		// fetch the calendar ID
+		return self::SUCCESS_RESPONSE();
+	}
 
-		return self::SUCCESS_RESPONSE( ["appointments" => [ [1,2,3,4] ] ]  );
+	/**
+	 * update the calendar
+	 *
+	 *
+	 * @param WP_REST_Request $request
+	 *
+	 * @return WP_REST_Response
+	 */
+	public function edit_calendar( WP_REST_Request $request ) {
 
-
+		return self::SUCCESS_RESPONSE();
 	}
 
 
 
 
-	}
+
+
+}
