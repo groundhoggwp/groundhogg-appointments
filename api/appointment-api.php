@@ -1,6 +1,6 @@
 <?php
 
-namespace GroundhoggBookingappointment\Api;
+namespace GroundhoggBookingCalendar\Api;
 
 use Groundhogg\Api\V3;
 

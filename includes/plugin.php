@@ -4,7 +4,7 @@ namespace GroundhoggBookingCalendar;
 
 use Groundhogg\DB\Manager;
 use Groundhogg\Extension;
-use GroundhoggBookingappointment\Api\Appointment_Api;
+use GroundhoggBookingCalendar\Api\Appointment_Api;
 use GroundhoggBookingCalendar\Api\Calendar_Api;
 use GroundhoggBookingCalendar\DB\Appointment_Meta;
 use GroundhoggBookingCalendar\DB\Appointments;
