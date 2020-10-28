@@ -778,8 +778,7 @@ class Appointment extends Base_Object_With_Meta {
 				$google_appointment_id = $this->get_google_appointment_id();
 				$description           = $this->get_meta( 'notes', true );
 				if ( $this->get_calendar()->get_meta( 'google_appointment_description' ) ) {
-					//concate data insted of replacing that
-					$description =  $description . '' .  do_replacements( $this->get_calendar()->get_meta( 'google_appointment_description' ), $this->get_contact_id() );
+					$description =  do_replacements( $this->get_calendar()->get_meta( 'google_appointment_description' ), $this->get_contact_id() );
 				}
 				$event = new Google_Service_Calendar_Event( array(
 					'id'          => $google_appointment_id,
