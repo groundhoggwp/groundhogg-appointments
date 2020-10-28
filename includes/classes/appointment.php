@@ -702,7 +702,7 @@ class Appointment extends Base_Object_With_Meta {
 					$summary = do_replacements( $this->get_calendar()->get_meta( 'google_appointment_name' ), $this->get_contact_id() );
 				}
 
-				$description = $this->get_meta( 'note' );
+				$description = $this->get_meta( 'notes' );
 				if ( $this->get_calendar()->get_meta( 'google_appointment_description' ) ) {
 					$description = do_replacements( $this->get_calendar()->get_meta( 'google_appointment_description' ), $this->get_contact_id() );
 				}
