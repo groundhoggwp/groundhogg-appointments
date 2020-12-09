@@ -554,14 +554,14 @@ class Appointment extends Base_Object_With_Meta {
 				"type"       => 2,
 				"start_time" => date( 'Y-m-d\TH:i:s', $this->get_start_time() ) . 'Z',
 				"duration"   => $this->get_calendar()->get_appointment_length( true ) / 60,
-				"settings"   => [
-					"host_video"        => true,
-					"participant_video" => true,
-					"cn_meeting"        => true,
-					"in_meeting"        => true,
-					"join_before_host"  => true,
-					"mute_upon_entry"   => false
-				]
+//				"settings"   => [
+//					"host_video"        => true,
+//					"participant_video" => true,
+//					"cn_meeting"        => true,
+//					"in_meeting"        => true,
+//					"join_before_host"  => true,
+//					"mute_upon_entry"   => false
+//				]
 			] )
 		] );
 
@@ -606,14 +606,14 @@ class Appointment extends Base_Object_With_Meta {
 				"type"       => 2,
 				"start_time" => date( 'Y-m-d\TH:i:s', $this->get_start_time() ) . 'Z',
 				"duration"   => $this->get_calendar()->get_appointment_length( true ) / 60,
-				"settings"   => [
-					"host_video"        => true,
-					"participant_video" => true,
-					"cn_meeting"        => true,
-					"in_meeting"        => true,
-					"join_before_host"  => true,
-					"mute_upon_entry"   => false
-				]
+//				"settings"   => [
+//					"host_video"        => true,
+//					"participant_video" => true,
+//					"cn_meeting"        => true,
+//					"in_meeting"        => true,
+//					"join_before_host"  => true,
+//					"mute_upon_entry"   => false
+//				]
 			] )
 		] );
 
