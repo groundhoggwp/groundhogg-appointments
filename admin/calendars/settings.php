@@ -49,7 +49,7 @@ if ( $calendar == null ) {
 					'placeholder' => __( 'Calendar Description', 'groundhogg-calendar' ),
 					'value'       => $calendar->get_description()
 				] ); ?>
-                <p class="description"><?php _e( 'Descried your booking calendar in few words. Visible to all users.', 'groundhogg-calendar' ) ?></p>
+                <p class="description"><?php _e( 'Describe your booking calendar in few words. Visible to all users.', 'groundhogg-calendar' ) ?></p>
             </td>
         </tr>
         <tr>
