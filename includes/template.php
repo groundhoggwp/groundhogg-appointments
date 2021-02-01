@@ -55,10 +55,10 @@ function template_details( $calendar ) {
 			$time_string = sprintf( '%s - %s, %s', date_i18n( get_time_format(), $start_time ), date_i18n( get_time_format(), $end_time ), date_i18n( get_date_format(), $start_time ) );
 				?>
                 <div class="details-slot"><span class="date-icon"></span> <?php esc_html_e( $time_string ); ?></div>
-                <div class="details-zone"><span class="world-icon"></span> <?php esc_html_e( str_replace( '_', ' ', $time_zone ) ); ?></div><?php
+              <?php
 
-			endif;
-
+			endif; ?>
+            <div class="details-zone"><span class="world-icon"></span> <?php esc_html_e( str_replace( '_', ' ', $time_zone ) ); ?></div><?php
 		endif;
 
 		?>
