@@ -15,6 +15,7 @@ use Groundhogg\Supports_Errors;
 use GroundhoggBookingCalendar\Classes\Appointment;
 use GroundhoggBookingCalendar\Classes\Calendar;
 use function Groundhogg\html;
+use function Groundhogg\is_option_enabled;
 use function Groundhogg\isset_not_empty;
 use function Groundhogg\managed_page_url;
 
@@ -247,6 +248,22 @@ class Shortcode extends Supports_Errors
             }
 
             $contact->update_meta( 'primary_phone', sanitize_text_field( get_request_var( 'phone' ) ) );
+
+            //handle the GDPR STUFF
+	        if (is_option_enabled( 'gh_enable_gdpr' ) ){
+
+		        $processing_consent = get_request_var( 'gdpr_consent' );
+		        if ($processing_consent === 'yes') {
+			        $contact->update_meta( 'gdpr_consent', 'yes' );
+			        $contact->update_meta( 'gdpr_consent_date', $contact->get_meta( 'gdpr_consent_date' ) ?: date_i18n( get_option( 'date_format' ) ) );
+		        }
+
+		        $marketing_consent  = get_request_var( 'marketing_consent' );
+		        if ($marketing_consent === 'yes') {
+			        $contact->update_meta( 'marketing_consent', 'yes' );
+			        $contact->update_meta( 'marketing_consent_date', $contact->get_meta( 'marketing_consent_date' ) ?: date_i18n( get_option( 'date_format' ) ) );
+		        }
+	        }
 
             after_form_submit_handler( $contact );
 

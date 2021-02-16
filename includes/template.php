@@ -8,6 +8,7 @@ use function Groundhogg\get_current_contact;
 use function Groundhogg\get_post_var;
 use function Groundhogg\get_request_var;
 use function Groundhogg\html;
+use function Groundhogg\is_option_enabled;
 use function Groundhogg\isset_not_empty;
 use function Groundhogg\key_to_words;
 
@@ -32,7 +33,6 @@ function template_details( $calendar ) {
     <h1><?php esc_html_e( $calendar->get_name() ); ?></h1>
     <div class="details">
 		<?php
-
 		$appt_length_formatted = $calendar->get_appointment_length_formatted();
 
 		?>
@@ -317,6 +317,36 @@ function default_form() {
                         </div>
                     </div>
                 </div>
+	            <?php if (is_option_enabled( 'gh_enable_gdpr' ) ) :  ?>
+                    <div class="gh-form-row clearfix">
+                        <div class="gh-form-column col-1-of-1">
+                            <div class="gh-form-field">
+                                <p>
+                                    <?php echo html()->checkbox( [
+                                        'label'   => sprintf( _x( "I agree to %s's storage and processing of my personal data.", 'form_default', 'groundhogg' ), get_bloginfo() ),
+                                        'name'    => 'gdpr_consent',
+                                        'id'      => 'gdpr_consent',
+                                        'class'   => 'gh-gdpr',
+                                        'value'   => 'yes',
+                                        'title'   => _x( 'I Consent', 'form_default', 'groundhogg' ),
+                                        'checked' => $contact->get_meta( 'gdpr_consent' ) === 'yes',
+                                    ] ) ?>
+                                </p>
+                                <p>
+                                    <?php echo html()->checkbox( [
+                                        'label'   => sprintf( _x( "I agree to receive marketing offers and updates from %s.", 'form_default', 'groundhogg' ), get_bloginfo() ),
+                                        'name'    => 'marketing_consent',
+                                        'id'      => 'marketing_consent',
+                                        'class'   => 'gh-gdpr',
+                                        'value'   => 'yes',
+                                        'title'   => _x( 'I Consent', 'form_default', 'groundhogg' ),
+                                        'checked' => $contact->get_meta( 'marketing_consent' ) === 'yes',
+                                    ] ) ?>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                <?php endif; ?>
                 <div class="gh-form-row clearfix">
                     <div class="gh-form-column col-1-of-1">
                         <div class="gh-form-field">
