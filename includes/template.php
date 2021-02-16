@@ -329,7 +329,6 @@ function default_form() {
                                         'class'   => 'gh-gdpr',
                                         'value'   => 'yes',
                                         'title'   => _x( 'I Consent', 'form_default', 'groundhogg' ),
-                                        'checked' => $contact->get_meta( 'gdpr_consent' ) === 'yes',
                                     ] ) ?>
                                 </p>
                                 <p>
@@ -340,7 +339,6 @@ function default_form() {
                                         'class'   => 'gh-gdpr',
                                         'value'   => 'yes',
                                         'title'   => _x( 'I Consent', 'form_default', 'groundhogg' ),
-                                        'checked' => $contact->get_meta( 'marketing_consent' ) === 'yes',
                                     ] ) ?>
                                 </p>
                             </div>
