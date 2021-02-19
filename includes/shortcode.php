@@ -327,7 +327,7 @@ class Shortcode extends Supports_Errors
 		    $url = wp_nonce_url( add_query_arg( 'reschedule', absint( get_array_var( $atts,'reschedule' ) ), $url ), 'appointment_reschedule' );
 	    }
 
-        return html()->wrap( '', 'iframe', [ 'src' => $url, 'width' => '100%' ] );
+        return html()->wrap( '', 'iframe', [ 'src' => $url, 'width' => '100%',  'class' => 'groundhogg-calendar-iframe' , 'frameBorder'=>'0' , 'style' => ['height' => '700px']  ] );
     }
 
     /**
