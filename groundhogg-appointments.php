@@ -24,7 +24,7 @@ namespace GroundhoggBookingCalendar;
 if ( ! defined( 'ABSPATH' ) ) exit;
 
 define( 'GROUNDHOGG_BOOKING_CALENDAR_VERSION', '2.4.5.2' );
-define( 'GROUNDHOGG_BOOKING_CALENDAR_PREVIOUS_STABLE_VERSION', '2.4.5.2' );
+define( 'GROUNDHOGG_BOOKING_CALENDAR_PREVIOUS_STABLE_VERSION', '2.4.5.1' );
 define( 'GROUNDHOGG_BOOKING_CALENDAR_NAME', 'Booking Calendar' );
 
 define( 'GROUNDHOGG_BOOKING_CALENDAR__FILE__', __FILE__ );
