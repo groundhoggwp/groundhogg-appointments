@@ -246,6 +246,22 @@ class Plugin extends Extension
         require GROUNDHOGG_BOOKING_CALENDAR_PATH . 'includes/autoloader.php';
         Autoloader::run();
     }
+
+    /**
+	 * Register any info cards example
+	 *
+	 * @param \Groundhogg\Admin\Contacts\Info_Cards $cards
+	 */
+	public function register_contact_info_cards( $cards ) {
+
+		wp_register_style( 'groundhogg-appointment-info-cards-css', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'css/admin/appointment-info-card.css', [], GROUNDHOGG_RSP_VERSION );
+		wp_enqueue_style( 'groundhogg-appointment-info-cards-css' );
+		$cards::register( 'appointment-info-card', 'Appointments', function ( $contact ) {
+			include( GROUNDHOGG_BOOKING_CALENDAR_PATH . 'admin/cards/appointmentlist.php' );
+		} );
+
+
+	}
 }
 
 Plugin::instance();

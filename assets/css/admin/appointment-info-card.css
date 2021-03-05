@@ -1,0 +1,27 @@
+.appointment-section .ic-section-content div > span.label {
+    font-weight: 500;
+}
+.appointment-section .ic-section-content div > span.subdata {
+    float: right;
+}
+.appointment-section .ic-section-header {
+    width: 100%;
+}
+.appointment-section .ic-section .ic-section .ic-section-header {
+    width: 25%;
+    float: left;
+    margin-right: 1%;
+}
+.appointment-section .ic-section .ic-section {
+    padding-bottom: 5px;
+}
+.appointment-section .ic-section .ic-section:last-child {
+    border: 0px none;
+}
+.appointment-section .ic-section .ic-section .ic-section-content span {
+    font-weight: 500;
+    color: #808080;
+    font-size: 12px;
+    display: block;
+    padding: 1% 0;
+}
