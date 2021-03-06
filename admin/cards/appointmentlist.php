@@ -11,37 +11,38 @@ use function GroundhoggPipeline\format_price;
 use function Groundhogg\get_date_time_format;
 use GroundhoggBookingCalendar\Classes\Appointment;
 use GroundhoggBookingCalendar\Classes\Calendar;
+
 /**
  * Display formatting examples for the new css design system for the sidebar info cards
  *
  * @var $contact \Groundhogg\Contact
  */
-    $where1[] = [
-        'relationship' => 'AND',
-        [ 'col' => 'start_date', 'val' => absint( time() ), 'compare' => '<' ],
-    ];
-    $where[] =[
-        'relationship' => 'AND',
-        ['contact_id' => $contact->get_id()],
-    ];
-
-    $args = array(
-        'where'   => $where
-     );
-    $appointments = get_db('appointments')->query( $args );
-
+    // fetch upcoming appointments
     $where= [
         'relationship' => 'AND',
-        [ 'col' => 'start_date', 'val' => absint( time() ), 'compare' => '<' ],
+        ['col' => 'start_time', 'val' => absint( time() ), 'compare' => '>' ],
+        ['col' => 'contact_id' , 'val' => $contact->get_id() , 'compare' => '='  ],
+    ];
+    $order = 'start_time';
+    $args = array(
+        'where' => $where,
+        'order' => $order
+     );
+    $appointments = get_db('appointments')->query( $args );
+    // fetch past appointments
+    $where= [
+        'relationship' => 'AND',
+        [ 'col' => 'start_time', 'val' => absint( time() ), 'compare' => '<' ],
         ['col' => 'contact_id' , 'val' => $contact->get_id() , 'compare' => '='  ],
      ];
+     $order = 'start_time';
      $args = array(
-        'where'   => $where
+        'where' => $where,
+        'order' => $order,
+        'order' => 'desc', 
+        'orderby'=>'end_time'  
      );
-     $past_appointments = get_db('appointments')->query( $args );
-
-   // print_r($appointments);
-    
+     $past_appointments = get_db('appointments')->query( $args );    
     ?>
     <div class="appointment-section">
         
@@ -49,7 +50,7 @@ use GroundhoggBookingCalendar\Classes\Calendar;
             <div class="ic-section-header">
                 <div class="ic-section-header-content">
                     <span class="dashicons dashicons-list-view"></span>
-                    <?php _e( 'Upcoming Appointment', 'groundhogg-calendar' ); echo '('.count($appointments).')'; ?>
+                    <?php echo sprintf( "Upcoming Appointments (%s)", count($appointments) ); ?>
                 </div>
             </div>
             <div class="ic-section-content">
@@ -66,27 +67,23 @@ use GroundhoggBookingCalendar\Classes\Calendar;
                                     </div>
                                     
                                 </div>
-                                <span class="subdata">March 19 2021<?php //echo ucfirst($appointment->column_stat_time()); ?> </span>
+                                <span class="subdata"><?php echo date( get_date_time_format(), Plugin::$instance->utils->date_time->convert_to_local_time( $appointment->get_start_time() ) ); ?> </span>
                         <div class="ic-section-content">
-                            <span>111<?php echo $appointment->get_name();?></span>
-                            <span>222<?php //echo $appointment->column_stat_time();//date( get_date_time_format(),  ); ?></span>
-                            <span>333<?php // echo format_price($payment->get_total())?>  </span>
-                            
+                            <span><?php echo strtoupper($appointment->get_name());?></span>
+                            <span><?php $diff = $appointment->get_end_time() - $appointment->get_start_time();
+                                 echo  $hour =  minutes(date( 'H:i:s', $diff )); ?></span>
                         </div>
                     </div>
                     <?php endforeach; ?>
                 <?php
                 else:  _e( 'There is no any upcoming appointment yet!!', 'groundhogg-calendar' ); endif; ?>
             </div>
-
-            
         </div>
-
         <div class="ic-section">
             <div class="ic-section-header">
                 <div class="ic-section-header-content">
                     <span class="dashicons dashicons-list-view"></span>
-                    <?php _e( 'Past Appointment', 'groundhogg-calendar' ); echo '('.count($appointments).')'; ?>
+                    <?php echo sprintf( "Past Appointments (%s)", count($past_appointments) ); ?>
                 </div>
             </div>
             <div class="ic-section-content">
@@ -103,20 +100,26 @@ use GroundhoggBookingCalendar\Classes\Calendar;
                                     </div>
                                     
                                 </div>
-                                <span class="subdata">March 19 2021<?php //echo ucfirst($appointment->column_stat_time()); ?> </span>
+                                <span class="subdata"><?php echo date( get_date_time_format(), Plugin::$instance->utils->date_time->convert_to_local_time( $appointment->get_start_time() ) ) ?> </span>
                         <div class="ic-section-content">
-                            <span>111<?php echo $appointment->get_name();?></span>
-                            <span>222<?php //echo $appointment->column_stat_time();//date( get_date_time_format(),  ); ?></span>
-                            <span>333<?php // echo format_price($payment->get_total())?>  </span>
+                            <span><?php echo strtoupper($appointment->get_name());?></span>
+                            <span><?php $diff = $appointment->get_end_time() - $appointment->get_start_time();
+                                 echo  $hour =  minutes(date( 'H:i:s', $diff )); ?> </span>
                             
                         </div>
                     </div>
                     <?php endforeach; ?>
                 <?php
-                else:  _e( 'There is no any upcoming appointment yet!!', 'groundhogg-calendar' ); endif; ?>
+                else:  _e( 'There is no any past appointment yet!!', 'groundhogg-calendar' ); endif; ?>
             </div>
 
             
         </div>
         
 </div>
+<?php
+function minutes($time){
+    $time = explode(':', $time);
+    return ($time[0]*60) + ($time[1]) + ($time[2]/60) .' Minutes';
+    }
+    ?>
