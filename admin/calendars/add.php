@@ -34,7 +34,8 @@ if ( ! defined( 'ABSPATH' ) ) exit;
                 <td>
                 <?php echo html()->textarea( [
                         'name' => 'description' ,
-                        'placeholder' => 'Calendar Description'
+                        'placeholder' => 'Calendar Description',
+                        'style' => [ 'width' => '600px']
                 ] );?>
                 <p class="description"><?php _e( 'Descried your booking calendar in few words. Visible to all users.', 'groundhogg-calendar' ) ?></p>
                 </td>

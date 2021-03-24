@@ -75,7 +75,8 @@ switch ( $action ):
 
         } else {
 
-            if ( $appointment->get_status() !== 'cancelled' && wp_verify_nonce( get_request_var( 'key' ) ) ) {
+//            if ( $appointment->get_status() !== 'cancelled' && wp_verify_nonce( get_request_var( 'key' ) ) ) {
+            if ( $appointment->get_status() !== 'cancelled' ) {
 
                 echo html()->e( 'form', [ 'method' => 'post' ], [
                     wp_nonce_field( 'cancel_appointment', '_wpnonce', null, false ),

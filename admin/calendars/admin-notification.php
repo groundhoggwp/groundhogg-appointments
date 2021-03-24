@@ -167,6 +167,7 @@ enqueue_groundhogg_modal();
         html()->textarea( [
             'name' => 'notification',
             'value' => $calendar->get_meta('notification') ? $calendar->get_meta('notification') :  "Name: {full_name} \nEmail: {email} \n\nStart: {appointment_start_time_admin} \nEnd: {appointment_end_time_admin}",
+            'style' => [ 'width' => '600px']
 
         ] ),
         html()->description( __( 'Any details you want to include about the appointment.', 'groundhogg-calendar' ) ),
