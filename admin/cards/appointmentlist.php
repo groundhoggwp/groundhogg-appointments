@@ -43,9 +43,54 @@ use GroundhoggBookingCalendar\Classes\Calendar;
         'orderby'=>'end_time'  
      );
      $past_appointments = get_db('appointments')->query( $args );    
-    ?>
-    <div class="appointment-section">
-        
+
+/**
+ * @param $status
+ *
+ * @return string
+*/
+function get_status($status)
+{
+    switch ( $status ):
+            case 'approved':
+                $color = 'green';
+                break;
+            case 'canceled':
+                $color = 'red';
+                break;
+            case 'pending':
+            default:
+                $color = 'orange';
+                break;
+        endswitch;
+        ?>
+        <span class="<?php echo $color ?>"><?php echo ucfirst($status); ?></span>
+        <?php
+}
+/**
+ * @param $appointment
+ *
+ * @return string
+*/
+function appointment_start_end($appointment){
+    $start_time = date( get_date_time_format(), Plugin::$instance->utils->date_time->convert_to_local_time( $appointment->get_start_time() ) );
+    $end_time = date( get_date_time_format(), Plugin::$instance->utils->date_time->convert_to_local_time( $appointment->get_end_time() ) );
+    echo sprintf( "<b>%s</b> To <b>%s</b>", $start_time, $end_time );
+} 
+/**
+ * @param $time
+ *
+ * @return string
+*/
+function minutes($time){
+    $time = explode(':', $time);
+    return ($time[0]*60) + ($time[1]) + ($time[2]/60) .' Minutes';
+}
+
+if ( empty( $appointments ) ):?>
+    <p><?php _e( 'No appointment yet.', 'groundhogg-calendar' ); ?></p>
+<?php else: ?>
+      <div class="appointment-section">
         <div class="ic-section">
             <div class="ic-section-header">
                 <div class="ic-section-header-content">
@@ -57,21 +102,24 @@ use GroundhoggBookingCalendar\Classes\Calendar;
                 <?php if ( ! empty( $appointments ) ): ?>
                     <?php foreach ( $appointments as $appointment ):
                         $appointment = new Appointment($appointment->ID);
+                        $calendar = new Calendar( $appointment->data['calendar_id'] );
                     ?>
                     <div class="ic-section"> 
                          <div class="ic-section-header">
                                     <div class="ic-section-header-content">
                                         <div class="basic-details">
-                                            <a href="<?php echo esc_url( admin_page_url( 'gh_calendar', [ 'action' => 'edit_appointment', 'appointment' => $appointment->get_id() ] ) ); ?> ">#<?php echo $appointment->get_id(); ?> </a> 
+                                            <a href="<?php echo esc_url( admin_page_url( 'gh_calendar', [ 'action' => 'edit_appointment', 'appointment' => $appointment->get_id() ] ) ); ?> ">#<?php echo $appointment->get_id(); ?> </a>   
+                                            <?php get_status($appointment->get_status()); ?>
+
                                         </div>
                                     </div>
                                     
                                 </div>
-                                <span class="subdata"><?php echo date( get_date_time_format(), Plugin::$instance->utils->date_time->convert_to_local_time( $appointment->get_start_time() ) ); ?> </span>
+                                
                         <div class="ic-section-content">
-                            <span><?php echo strtoupper($appointment->get_name());?></span>
-                            <span><?php $diff = $appointment->get_end_time() - $appointment->get_start_time();
-                                 echo  $hour =  minutes(date( 'H:i:s', $diff )); ?></span>
+                            <span><?php appointment_start_end($appointment); ?> </span>
+                            <span><?php echo ucfirst($appointment->get_name());?></span>
+                            <span><?php echo ucfirst($calendar->data['name']); ?></span>
                         </div>
                     </div>
                     <?php endforeach; ?>
@@ -90,21 +138,24 @@ use GroundhoggBookingCalendar\Classes\Calendar;
                 <?php if ( ! empty( $past_appointments ) ): ?>
                     <?php foreach ( $past_appointments as $appointment ):
                         $appointment = new Appointment($appointment->ID);
+                        $calendar = new Calendar( $appointment->data['calendar_id'] );
+
                     ?>
                     <div class="ic-section"> 
                          <div class="ic-section-header">
                                     <div class="ic-section-header-content">
                                         <div class="basic-details">
-                                            <a href="<?php echo esc_url( admin_page_url( 'gh_calendar', [ 'action' => 'edit_appointment', 'appointment' => $appointment->get_id() ] ) ); ?> ">#<?php echo $appointment->get_id(); ?> </a> 
+                                            <a href="<?php echo esc_url( admin_page_url( 'gh_calendar', [ 'action' => 'edit_appointment', 'appointment' => $appointment->get_id() ] ) ); ?> ">#<?php echo $appointment->get_id(); ?> </a>   
+                                            <?php get_status($appointment->get_status()); ?>
+
                                         </div>
                                     </div>
                                     
                                 </div>
-                                <span class="subdata"><?php echo date( get_date_time_format(), Plugin::$instance->utils->date_time->convert_to_local_time( $appointment->get_start_time() ) ) ?> </span>
                         <div class="ic-section-content">
-                            <span><?php echo strtoupper($appointment->get_name());?></span>
-                            <span><?php $diff = $appointment->get_end_time() - $appointment->get_start_time();
-                                 echo  $hour =  minutes(date( 'H:i:s', $diff )); ?> </span>
+                            <span><?php appointment_start_end($appointment); ?> </span>
+                            <span><?php echo ucfirst($appointment->get_name());?></span>
+                            <span><?php echo ucfirst($calendar->data['name']); ?></span>
                             
                         </div>
                     </div>
@@ -117,9 +168,4 @@ use GroundhoggBookingCalendar\Classes\Calendar;
         </div>
         
 </div>
-<?php
-function minutes($time){
-    $time = explode(':', $time);
-    return ($time[0]*60) + ($time[1]) + ($time[2]/60) .' Minutes';
-    }
-    ?>
+<?php endif;

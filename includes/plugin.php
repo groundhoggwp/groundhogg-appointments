@@ -4,6 +4,7 @@ namespace GroundhoggBookingCalendar;
 
 use Groundhogg\DB\Manager;
 use Groundhogg\Extension;
+use GroundhoggBookingCalendar\Admin\Cards\Appointment_Card;
 use GroundhoggBookingCalendar\DB\Appointment_Meta;
 use GroundhoggBookingCalendar\DB\Appointments;
 use GroundhoggBookingCalendar\DB\Calendar_Meta;
@@ -253,14 +254,12 @@ class Plugin extends Extension
 	 * @param \Groundhogg\Admin\Contacts\Info_Cards $cards
 	 */
 	public function register_contact_info_cards( $cards ) {
+		//new Appointment_Card($cards);
+        wp_register_style( 'groundhogg-appointment-info-cards-css', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'css/admin/appointment-info-card.css', [], GROUNDHOGG_VERSION );
 
-		wp_register_style( 'groundhogg-appointment-info-cards-css', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'css/admin/appointment-info-card.css', [], GROUNDHOGG_RSP_VERSION );
-		wp_enqueue_style( 'groundhogg-appointment-info-cards-css' );
-		$cards::register( 'appointment-info-card', 'Appointments', function ( $contact ) {
-			include( GROUNDHOGG_BOOKING_CALENDAR_PATH . 'admin/cards/appointmentlist.php' );
-		} );
-
-
+        $cards::register( 'appointment-new-info-card', 'Appointments', function ( $contact ) {
+            include( __DIR__ . '/../admin/cards/appointmentlist.php' );
+        } );
 	}
 }
 
