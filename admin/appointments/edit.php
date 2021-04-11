@@ -69,12 +69,14 @@ if ( !$appointment->exists() ) {
                     'value' => ucwords( $appointment->get_status() ),
                     'readonly' => true
                 ] ); ?>
-                <div class="row-actions">
+<!--                <div class="row-actions">-->
+                <p>
                     <a class="button btn-approve"
                        href="<?php echo wp_nonce_url( admin_url( 'admin.php?page=gh_calendar&action=approve_appointment&appointment=' . $appointment->get_id() ) ); ?>"><?php _e( 'Approve' ); ?></a>
                     <a class="button btn-cancel"
                        href="<?php echo wp_nonce_url( admin_url( 'admin.php?page=gh_calendar&action=cancel_appointment&appointment=' . $appointment->get_id() ) ); ?>"><?php _e( 'Cancel' ); ?></a>
-                </div>
+                </p>
+<!--                </div>-->
             </td>
         </tr>
         <tr>
