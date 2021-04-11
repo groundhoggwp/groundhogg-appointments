@@ -149,8 +149,6 @@ class Plugin extends Extension
         wp_register_style( 'jquery-ui-datepicker', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'css/calendar.css', [ 'jquery-ui' ], GROUNDHOGG_BOOKING_CALENDAR_VERSION );
         wp_register_style( 'groundhogg-calendar-frontend', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'css/frontend.css', [ 'jquery-ui-datepicker', 'groundhogg-form' ], GROUNDHOGG_BOOKING_CALENDAR_VERSION );
 
-	    wp_register_style( 'groundhogg-appointment-info-cards-css', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'css/admin/appointment-info-card.css', [], GROUNDHOGG_BOOKING_CALENDAR_VERSION );
-
     }
 
     /**
@@ -256,7 +254,12 @@ class Plugin extends Extension
 	 * @param \Groundhogg\Admin\Contacts\Info_Cards $cards
 	 */
 	public function register_contact_info_cards( $cards ) {
-		new Appointment_Card($cards);
+		//new Appointment_Card($cards);
+        wp_register_style( 'groundhogg-appointment-info-cards-css', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'css/admin/appointment-info-card.css', [], GROUNDHOGG_VERSION );
+
+        $cards::register( 'appointment-new-info-card', 'Appointments', function ( $contact ) {
+            include( __DIR__ . '/../admin/cards/appointmentlist.php' );
+        } );
 	}
 }
 

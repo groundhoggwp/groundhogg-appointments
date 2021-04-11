@@ -6,6 +6,9 @@ use Groundhogg\Contact;
 use GroundhoggBookingCalendar\Classes\Appointment;
 use function Groundhogg\admin_page_url;
 use function Groundhogg\get_db;
+//use GroundhoggBookingCalendar\Admin\Appointments;
+use GroundhoggBookingCalendar\Admin\Appointments\Appointments_Table;
+
 
 class appointment_card {
 
@@ -15,7 +18,6 @@ class appointment_card {
 	 * @param \Groundhogg\Admin\Contacts\Info_Cards $cards
 	 */
 	public function __construct( $cards ) {
-	wp_enqueue_style( 'groundhogg-appointment-info-cards-css' );
 
 		$cards::register( 'appointment-info-card', __( 'Appointments', 'groundhogg-appointment' ), [
 			$this,
@@ -24,6 +26,24 @@ class appointment_card {
 
 	}
 
+	public function get_status($status)
+	{
+		switch ( $status ):
+				case 'approved':
+					$color = 'green';
+					break;
+				case 'canceled':
+					$color = 'red';
+					break;
+				case 'pending':
+				default:
+					$color = 'orange';
+					break;
+			endswitch;
+			?>
+			<span class="<?php echo $color ?>"><?php echo ucfirst($status); ?></span>
+			<?php
+	}
 	/**
 	 * @param $contact Contact
 	 */
@@ -51,7 +71,7 @@ class appointment_card {
 		] );
 
 
-		print_r( $appointments );
+		//print_r( $appointments );
 
 		?>
         <div class="appointment-section">
@@ -68,6 +88,8 @@ class appointment_card {
 					<?php if ( ! empty( $appointments ) ): ?>
 						<?php foreach ( $appointments as $appointment ):
 							$appointment = new Appointment( $appointment->ID );
+							//$appointments_table = new Appointments_Table();
+
 							?>
                             <div class="ic-section">
                                 <div class="ic-section-header">
@@ -77,6 +99,9 @@ class appointment_card {
 												'action'      => 'edit_appointment',
 												'appointment' => $appointment->get_id()
 											] ) ); ?> ">#<?php echo $appointment->get_id(); ?> </a>
+
+											<?php $this->get_status($appointment->get_status()); ?>
+
                                         </div>
                                     </div>
 
@@ -105,13 +130,15 @@ class appointment_card {
                     <div class="ic-section-header-content">
                         <span class="dashicons dashicons-list-view"></span>
 						<?php _e( 'Past Appointment', 'groundhogg-calendar' );
-						echo '(' . count( $appointments ) . ')'; ?>
+						echo '(' . count( $past_appointments ) . ')'; ?>
                     </div>
                 </div>
                 <div class="ic-section-content">
 					<?php if ( ! empty( $past_appointments ) ): ?>
 						<?php foreach ( $past_appointments as $appointment ):
 							$appointment = new Appointment( $appointment->ID );
+							$table = new Appointments_Table($appointment);
+
 							?>
                             <div class="ic-section">
                                 <div class="ic-section-header">
@@ -121,11 +148,14 @@ class appointment_card {
 												'action'      => 'edit_appointment',
 												'appointment' => $appointment->get_id()
 											] ) ); ?> ">#<?php echo $appointment->get_id(); ?> </a>
+											
+											<?php $this->get_status($appointment->get_status()); ?>
+
                                         </div>
                                     </div>
 
                                 </div>
-                                <span class="subdata">March 19 2021<?php //echo ucfirst($appointment->column_stat_time());
+                                <span class="subdata"><?php echo ucfirst($table->column_stat_time($appointment));
 									?> </span>
                                 <div class="ic-section-content">
                                     <span>111<?php echo $appointment->get_name(); ?></span>
@@ -138,7 +168,7 @@ class appointment_card {
                             </div>
 						<?php endforeach; ?>
 					<?php
-					else: _e( 'There is no any upcoming appointment yet!!', 'groundhogg-calendar' ); endif; ?>
+					else: _e( 'There is no any past appointment yet!!', 'groundhogg-calendar' ); endif; ?>
                 </div>
             </div>
         </div>
