@@ -289,7 +289,7 @@ class Replacements
             return false;
         }
 
-        return wpautop( $this->get_appointment()->get_zoom_meeting_detail() );
+        return wpautop( $this->get_appointment()->get_zoom_meeting_details() );
 
     }
 
