@@ -9,6 +9,8 @@ use Groundhogg\Event;
 use Groundhogg\Plugin;
 use GroundhoggBookingCalendar\Classes\Calendar;
 use GroundhoggBookingCalendar\Classes\SMS_Reminder;
+use GroundhoggBookingCalendar\Connections\Google;
+use GroundhoggBookingCalendar\Connections\Zoom;
 use GroundhoggSMS\Classes\SMS;
 use mysql_xdevapi\Exception;
 use function Groundhogg\admin_page_url;
@@ -28,6 +30,53 @@ use function Groundhogg\key_to_words;
 use function Groundhogg\words_to_key;
 use function GroundhoggSMS\send_sms;
 use function GroundhoggSMS\validate_mobile_number;
+
+/**
+ * Zoom stuff!
+ *
+ * @return Zoom
+ */
+function zoom() {
+	static $zoom;
+
+	if ( ! $zoom ) {
+		$zoom = new Zoom();
+	}
+
+	return $zoom;
+}
+
+
+/**
+ * Google stuff!
+ *
+ * @return Google
+ */
+function google() {
+	static $google;
+
+	if ( ! $google ) {
+		$google = new Google();
+	}
+
+	return $google;
+}
+
+/**
+ * @return Google_Calendar
+ */
+function google_calendar(){
+	return \GroundhoggBookingCalendar\Plugin::$instance->google_calendar;
+}
+
+/**
+ * @param $google_account_id
+ *
+ * @return \Google_Client|\WP_Error
+ */
+function get_google_client( $google_account_id ){
+	return google_calendar()->get_client( $google_account_id );
+}
 
 function convert_to_client_timezone( $time, $timezone = '' ) {
 	if ( ! $timezone ) {
@@ -52,8 +101,8 @@ function convert_to_client_timezone( $time, $timezone = '' ) {
 
 /**
  * @param $value mixed
- * @param $a mixed Lower
- * @param $b mixed Higher
+ * @param $a     mixed Lower
+ * @param $b     mixed Higher
  *
  * @return bool
  */
@@ -63,8 +112,8 @@ function in_between( $value, $a, $b ) {
 
 /**
  * @param $value mixed
- * @param $a mixed Lower
- * @param $b mixed Higher
+ * @param $a     mixed Lower
+ * @param $b     mixed Higher
  *
  * @return bool
  */
@@ -148,9 +197,9 @@ add_action( 'groundhogg/event/post_setup', __NAMESPACE__ . '\setup_reminder_noti
 /**
  * Schedule a 1 off reminder notification
  *
- * @param $email_id int the ID of the email to send
- * @param $appointment_id int|string the ID of the appointment being referenced
- * @param int $time time time to send at, defaults to time()
+ * @param     $email_id       int the ID of the email to send
+ * @param     $appointment_id int|string the ID of the appointment being referenced
+ * @param int $time           time time to send at, defaults to time()
  *
  * @return bool whether the scheduling was successful.
  */
@@ -205,9 +254,9 @@ add_action( 'groundhogg/event/post_setup', __NAMESPACE__ . '\setup_reminder_noti
 /**
  * Schedule a 1 off reminder notification
  *
- * @param $sms_id int the ID of the email to send
- * @param $appointment_id int|string the ID of the appointment being referenced
- * @param int $time time time to send at, defaults to time()
+ * @param     $sms_id         int the ID of the email to send
+ * @param     $appointment_id int|string the ID of the appointment being referenced
+ * @param int $time           time time to send at, defaults to time()
  *
  * @return bool whether the scheduling was successful.
  */
@@ -248,11 +297,11 @@ function is_sms_plugin_active() {
 
 function add_booking_appointment() {
 	?>
-    <table class="form-table">
-        <tr>
-            <th><?php _ex( 'Book Appointment', 'contact_record', 'groundhogg-calendar' ); ?></th>
-            <td>
-                <div style="max-width: 400px;">
+	<table class="form-table">
+		<tr>
+			<th><?php _ex( 'Book Appointment', 'contact_record', 'groundhogg-calendar' ); ?></th>
+			<td>
+				<div style="max-width: 400px;">
 					<?php
 					$calendars = get_calendar_list();
 					echo Plugin::$instance->utils->html->select2( [
@@ -264,14 +313,14 @@ function add_booking_appointment() {
 						'placeholder' => __( 'Please select a calendar', 'groundhogg-calendar' ),
 					] );
 					?>
-                    <div class="row-actions">
-                        <button type="submit" name="appointment_book" value="appointment_book"
-                                class="button"><?php _e( 'Book Appointment', 'groundhogg-calendar' ); ?></button>
-                    </div>
-                </div>
-            </td>
-        </tr>
-    </table>
+					<div class="row-actions">
+						<button type="submit" name="appointment_book" value="appointment_book"
+						        class="button"><?php _e( 'Book Appointment', 'groundhogg-calendar' ); ?></button>
+					</div>
+				</div>
+			</td>
+		</tr>
+	</table>
 	<?php
 }
 
@@ -510,7 +559,7 @@ function send_admin_notification( $appointment, $status ) {
 	];
 
 
-	if ( is_sms_plugin_active() &&   $appointment->get_calendar()->get_meta(  'sms_admin_notification' ) ) {
+	if ( is_sms_plugin_active() && $appointment->get_calendar()->get_meta( 'sms_admin_notification' ) ) {
 		//hook to send sms
 //        wp_send_json( 'here' );
 		do_action( 'groundhogg/calendar/appointment/admin_notification/sms_notification', $send_to, $finished_note );
@@ -522,7 +571,7 @@ function send_admin_notification( $appointment, $status ) {
 }
 
 /**
- * @param $email string contact email address to find detail about the sms
+ * @param $email   string contact email address to find detail about the sms
  * @param $content string contact text message to send to admin
  *
  * @return bool|\WP_Error

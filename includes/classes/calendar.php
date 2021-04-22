@@ -6,6 +6,8 @@ use Exception;
 use Google_Service_Calendar;
 use Google_Service_Calendar_Calendar;
 use Groundhogg\Base_Object_With_Meta;
+use function Groundhogg\do_replacements;
+use function Groundhogg\utils;
 use function GroundhoggBookingCalendar\get_tz_db_name;
 use WP_Error;
 use function Groundhogg\get_array_var;
@@ -14,10 +16,13 @@ use function Groundhogg\isset_not_empty;
 use Groundhogg\Plugin;
 use function GroundhoggBookingCalendar\better_human_readable_duration;
 use function GroundhoggBookingCalendar\convert_to_client_timezone;
+use function GroundhoggBookingCalendar\google;
+use function GroundhoggBookingCalendar\google_calendar;
 use function GroundhoggBookingCalendar\in_between;
 use function GroundhoggBookingCalendar\in_between_inclusive;
 use GroundhoggBookingCalendar\DB\Appointments;
 use function GroundhoggBookingCalendar\send_reminder_notification;
+use function GroundhoggBookingCalendar\zoom;
 use function GuzzleHttp\Psr7\str;
 
 class Calendar extends Base_Object_With_Meta {
@@ -53,50 +58,45 @@ class Calendar extends Base_Object_With_Meta {
 		return $this->description;
 	}
 
-	public function google_enabled() {
-		return $this->get_access_token() && $this->get_google_calendar_id();
+	/**
+	 * @return bool
+	 */
+	public function is_connected_to_google() {
+		return $this->get_google_account_id() && $this->get_google_calendar_id();
 	}
 
+	/**
+	 * @return \Google_Client|WP_Error
+	 */
+	public function get_google_client() {
+		return google_calendar()->get_client( $this->get_google_account_id() );
+	}
+
+	/**
+	 * @return bool|mixed|WP_Error
+	 * @deprecated
+	 *
+	 */
 	public function get_access_token() {
-		return $this->get_meta( 'access_token', true );
+		return google()->get_access_token( $this->get_google_account_id() );
 	}
 
+	/**
+	 * The id of the calendar of which appointments are added to
+	 *
+	 * @return string
+	 */
 	public function get_google_calendar_id() {
 		return $this->get_meta( 'google_calendar_id', true );
 	}
 
+	/**
+	 * List of all connected google calendars
+	 *
+	 * @return array|mixed
+	 */
 	public function get_google_calendar_list() {
 		return $this->get_meta( 'google_calendar_list', true );
-	}
-
-	/**
-	 * Create new google calendar inside google
-	 */
-	public function add_in_google() {
-		$access_token = $this->get_access_token();
-
-		if ( $access_token ) {
-			$google_calendar = new Google_Service_Calendar_Calendar();
-			// fetch calendar name from DB
-			$client = \GroundhoggBookingCalendar\Plugin::$instance->google_calendar->get_google_client_from_access_token( $this->get_id() );
-
-			$google_calendar->setSummary( $this->get_name() );
-
-			if ( get_tz_db_name() ) {
-				$google_calendar->setTimeZone( get_tz_db_name() );
-			}
-
-			$service         = new Google_Service_Calendar( $client );
-			$createdCalendar = $service->calendars->insert( $google_calendar );
-			$this->update_meta( 'google_calendar_id', sanitize_text_field( $createdCalendar->getId() ) );
-
-			$appointments = get_db( 'appointments' )->query( [ 'calendar_id' => $this->get_id() ] );
-
-			foreach ( $appointments as $appo ) {
-				$appointment = new Appointment( $appo->ID );
-				$appointment->add_in_google();
-			}
-		}
 	}
 
 	/**
@@ -106,11 +106,9 @@ class Calendar extends Base_Object_With_Meta {
 		return $this->get_meta( 'time_12hour', true );
 	}
 
-
 	public function get_start_time() {
 		return $this->get_meta( 'start_time', true );
 	}
-
 
 	public function get_end_time() {
 		return $this->get_meta( 'end_time', true );
@@ -470,13 +468,13 @@ class Calendar extends Base_Object_With_Meta {
 				try {
 
 					$slots[ $i ]['display'] = sprintf( '%s - %s',
-						date_i18n( $format, Plugin::$instance->utils->date_time->convert_to_foreign_time( absint( $slot['start'] ), $timezone ) ),
-						date_i18n( $format, Plugin::$instance->utils->date_time->convert_to_foreign_time( absint( $slot['end'] ), $timezone ) )
+						date_i18n( $format, utils()->date_time->convert_to_foreign_time( absint( $slot['start'] ), $timezone ) ),
+						date_i18n( $format, utils()->date_time->convert_to_foreign_time( absint( $slot['end'] ), $timezone ) )
 					);
 				} catch ( Exception $e ) {
 					$slots[ $i ]['display'] = sprintf( '%s - %s',
-						date_i18n( $format, Plugin::$instance->utils->date_time->convert_to_local_time( absint( $slot['start'] ) ) ),
-						date_i18n( $format, Plugin::$instance->utils->date_time->convert_to_local_time( absint( $slot['end'] ) ) )
+						date_i18n( $format, utils()->date_time->convert_to_local_time( absint( $slot['start'] ) ) ),
+						date_i18n( $format, utils()->date_time->convert_to_local_time( absint( $slot['end'] ) ) )
 					);
 				}
 			}
@@ -488,8 +486,8 @@ class Calendar extends Base_Object_With_Meta {
 
 				// Show display...
 				$slots[ $i ]['display'] = sprintf( '%s - %s',
-					date_i18n( $format, Plugin::$instance->utils->date_time->convert_to_local_time( absint( $slot['start'] ) ) ),
-					date_i18n( $format, Plugin::$instance->utils->date_time->convert_to_local_time( absint( $slot['end'] ) ) )
+					date_i18n( $format, utils()->date_time->convert_to_local_time( absint( $slot['start'] ) ) ),
+					date_i18n( $format, utils()->date_time->convert_to_local_time( absint( $slot['end'] ) ) )
 				);
 			}
 		}
@@ -546,7 +544,7 @@ class Calendar extends Base_Object_With_Meta {
 
 			// 09:00
 			$start_time = date( 'H:i:s', strtotime( "{$period[0]}:00" ) );
-			$start_time = Plugin::$instance->utils->date_time->convert_to_utc_0( strtotime( "{$str_date_no_hours} {$start_time}" ) );
+			$start_time = utils()->date_time->convert_to_utc_0( strtotime( "{$str_date_no_hours} {$start_time}" ) );
 			if ( $start_time < $base_time ) {
 				$start_time = strtotime( date( 'Y-m-d H:00:00', $base_time ) );
 			}
@@ -555,7 +553,7 @@ class Calendar extends Base_Object_With_Meta {
 
 			// 17:00
 			$end_time = date( 'H:i:s', strtotime( "{$period[1]}:00" ) );
-			$end_time = Plugin::$instance->utils->date_time->convert_to_utc_0( strtotime( "{$str_date_no_hours} {$end_time}" ) );
+			$end_time = utils()->date_time->convert_to_utc_0( strtotime( "{$str_date_no_hours} {$end_time}" ) );
 			$end_date = new \DateTime( date( 'Y-m-d H:i:s', $end_time ) );
 
 			if ( $end_date < $request_date ) {
@@ -631,7 +629,6 @@ class Calendar extends Base_Object_With_Meta {
 		return true;
 	}
 
-
 	/**
 	 *
 	 * Fetch all the appointments between start and end-time from google calendar.
@@ -641,96 +638,95 @@ class Calendar extends Base_Object_With_Meta {
 	 *
 	 * @return array
 	 */
-	protected function get_google_appointment( $min_time, $max_time ) {
-		$access_token       = $this->get_access_token();
-		$google_calendar_id = $this->get_google_calendar_id();
-		if ( $access_token && $google_calendar_id ) {
+	protected function get_google_appointments( $min_time, $max_time ) {
 
-			$google_min           = date( 'c', ( $min_time ) );
-			$google_max           = date( 'c', ( $max_time ) );
-			$google_appointments  = [];
-			$client               = \GroundhoggBookingCalendar\Plugin::$instance->google_calendar->get_google_client_from_access_token( $this->get_id() );
-			$service              = new Google_Service_Calendar( $client );
-			$google_calendar_list = $this->get_meta( 'google_calendar_list', true ) ?: [];
-			if ( count( $google_calendar_list ) > 0 ) {
-				foreach ( $google_calendar_list as $google_cal ) {
-					try {
-						$google_calendar = $service->calendars->get( $google_cal );
-						$optParams       = array(
+		if ( ! $this->is_connected_to_google() ) {
+			return [];
+		}
+
+		$client = $this->get_google_client();
+
+		$google_min           = date( 'c', ( $min_time ) );
+		$google_max           = date( 'c', ( $max_time ) );
+		$google_appointments  = [];
+		$service              = new Google_Service_Calendar( $client );
+		$google_calendar_list = $this->get_meta( 'google_calendar_list', true ) ?: [];
+
+		if ( count( $google_calendar_list ) > 0 ) {
+			foreach ( $google_calendar_list as $google_cal ) {
+				try {
+					$google_calendar = $service->calendars->get( $google_cal );
+					$optParams       = array(
 //							'orderBy'      => 'startTime',
-							'singleEvents' => true,
-							'timeMin' => $google_min,
-							'timeMax' => $google_max
-						);
-						$results         = $service->events->listEvents( $google_calendar->getId(), $optParams );
-						$events          = $results->getItems();
+						'singleEvents' => true,
+						'timeMin'      => $google_min,
+						'timeMax'      => $google_max
+					);
+
+					$results = $service->events->listEvents( $google_calendar->getId(), $optParams );
+					$events  = $results->getItems();
+
+					if ( ! empty( $events ) ) {
+						foreach ( $events as $event ) {
 
 
-						if ( ! empty( $events ) ) {
-							foreach ( $events as $event ) {
+							$google_start = $event->start->dateTime;
+							$google_end   = $event->end->dateTime;
+							/**
+							 * event contains start and end time thus it is appointment
+							 */
+							if ( ! empty( $google_start ) && ! empty( $google_end ) ) {
 
-
-								$google_start = $event->start->dateTime;
-								$google_end   = $event->end->dateTime;
-								/**
-								 * event contains start and end time thus it is appointment
-								 */
-								if ( ! empty( $google_start ) && ! empty( $google_end ) ) {
-
-									if ( strpos( $google_start, 'Z' ) ) {
-										$google_start = str_replace( 'Z', '', $google_start );
-										$google_end   = str_replace( 'Z', '', $google_end );
-
-										$google_appointments[] = array(
-											'display' => $event->getSummary(),
-											'start'   => Plugin::$instance->utils->date_time->convert_to_utc_0( strtotime( '+1 seconds', strtotime( date( $google_start ) ) ) ),
-											'end'     => Plugin::$instance->utils->date_time->convert_to_utc_0( strtotime( date( $google_end ) ) )
-										);
-
-									} else {
-
-										$google_appointments[] = array(
-											'display' => $event->getSummary(),
-											'start'   => strtotime( '+1 seconds', Plugin::$instance->utils->date_time->convert_to_utc_0( strtotime( date( $google_start ) ) ) ),
-											'end'     => Plugin::$instance->utils->date_time->convert_to_utc_0( strtotime( date( $google_end ) ) )
-										);
-									}
-
-								} else {
-									/**
-									 * Event does not contain start and end date time thus its all day event
-									 */
-
-									if ( $event->start->dateTime == null ) {
-										$google_start = $event->start->date;
-									}
-
-									if ( $event->end->dateTime == null ) {
-										$google_end = $event->end->date;
-									}
+								if ( strpos( $google_start, 'Z' ) ) {
+									$google_start = str_replace( 'Z', '', $google_start );
+									$google_end   = str_replace( 'Z', '', $google_end );
 
 									$google_appointments[] = array(
 										'display' => $event->getSummary(),
-										'start'   => strtotime( '+1 seconds', Plugin::$instance->utils->date_time->convert_to_utc_0( strtotime( date( $google_start ) ) ) ),
-										'end'     => Plugin::$instance->utils->date_time->convert_to_utc_0( strtotime( date( $google_end ) ) )
+										'start'   => utils()->date_time->convert_to_utc_0( strtotime( '+1 seconds', strtotime( date( $google_start ) ) ) ),
+										'end'     => utils()->date_time->convert_to_utc_0( strtotime( date( $google_end ) ) )
+									);
+
+								} else {
+
+									$google_appointments[] = array(
+										'display' => $event->getSummary(),
+										'start'   => strtotime( '+1 seconds', utils()->date_time->convert_to_utc_0( strtotime( date( $google_start ) ) ) ),
+										'end'     => utils()->date_time->convert_to_utc_0( strtotime( date( $google_end ) ) )
 									);
 								}
+
+							} else {
+								/**
+								 * Event does not contain start and end date time thus its all day event
+								 */
+
+								if ( $event->start->dateTime == null ) {
+									$google_start = $event->start->date;
+								}
+
+								if ( $event->end->dateTime == null ) {
+									$google_end = $event->end->date;
+								}
+
+								$google_appointments[] = array(
+									'display' => $event->getSummary(),
+									'start'   => strtotime( '+1 seconds', utils()->date_time->convert_to_utc_0( strtotime( date( $google_start ) ) ) ),
+									'end'     => utils()->date_time->convert_to_utc_0( strtotime( date( $google_end ) ) )
+								);
 							}
 						}
-
-					} catch ( Exception $e ) {
-						// catch if the calendar does not exist in google calendar
-						return [];
 					}
+
+				} catch ( Exception $e ) {
+					// catch if the calendar does not exist in google calendar
+					return [];
 				}
 			}
-
-			return $google_appointments;
 		}
 
-		return [];
+		return $google_appointments;
 	}
-
 
 	protected $google_appointments;
 
@@ -748,7 +744,7 @@ class Calendar extends Base_Object_With_Meta {
 		}
 
 		if ( ! $this->google_appointments ) {
-			$this->google_appointments = $this->get_google_appointment( strtotime( $this->get_min_booking_period() ), strtotime( $this->get_max_booking_period() ) );
+			$this->google_appointments = $this->get_google_appointments( strtotime( $this->get_min_booking_period() ), strtotime( $this->get_max_booking_period() ) );
 		}
 
 
@@ -761,7 +757,6 @@ class Calendar extends Base_Object_With_Meta {
 
 		return $clean2;
 	}
-
 
 	/**
 	 * Fetches valid appointment.
@@ -823,6 +818,7 @@ class Calendar extends Base_Object_With_Meta {
 		return $clean_slots;
 	}
 
+
 	/**
 	 * Clean appointments where time slots are bigger then appointment.
 	 *
@@ -850,7 +846,6 @@ class Calendar extends Base_Object_With_Meta {
 		return $clean_slots;
 	}
 
-
 	/**
 	 *  Removes duplicate slots from the slots array and sort array to display time slots in ascending order.
 	 *
@@ -875,11 +870,12 @@ class Calendar extends Base_Object_With_Meta {
 		return $slot;
 	}
 
+
 	/**
 	 * Return number of slots based on value entered in meta
 	 *
 	 * @param $slots array
-	 * @param $date int
+	 * @param $date  int
 	 *
 	 * @return array
 	 */
@@ -903,7 +899,6 @@ class Calendar extends Base_Object_With_Meta {
 		return $this->sort_slots( $busy_slots );
 	}
 
-
 	/**
 	 * shuffle array to get random appointment from appointment list.
 	 *
@@ -919,6 +914,7 @@ class Calendar extends Base_Object_With_Meta {
 			$items[ $j ] = $tmp;
 		}
 	}
+
 
 	/**
 	 * Returns day number based on day name
@@ -975,7 +971,6 @@ class Calendar extends Base_Object_With_Meta {
 		return get_array_var( $sms, $which );
 	}
 
-
 	/**
 	 * Get the list of reminder emails...
 	 *
@@ -1017,6 +1012,7 @@ class Calendar extends Base_Object_With_Meta {
 		return $reminders;
 	}
 
+
 	/**
 	 * Add a new appointment to this calendar.
 	 *
@@ -1025,30 +1021,25 @@ class Calendar extends Base_Object_With_Meta {
 	 * @return Appointment|false
 	 */
 	public function schedule_appointment( $args ) {
+
 		$args = wp_parse_args( $args, [
 			'contact_id'  => 0,
 			'calendar_id' => $this->get_id(),
 			'name'        => $this->get_name(),
-			'status'      => 'pending',
+			'status'      => 'approved',
 			'start_time'  => time(),
 			'end_time'    => time() + $this->get_appointment_length( true ),
-			'notes'       => ''
 		] );
 
 		do_action( 'groundhogg/calendar/schedule_appointment/before', $this, $args );
 
 		$args = apply_filters( 'groundhogg/calendar/schedule_appointment', $args, $this );
 
-		$note = $args['notes'];
-		unset( $args['notes'] );
 		$appointment = new Appointment( $args );
 
-		$notes = '';
-		if ( $appointment->get_calendar()->get_meta( 'default_note' ) ) {
-			$notes = $appointment->get_calendar()->get_meta( 'default_note' );
-			$notes .= sprintf( "\n\n========== \n\n" );
-		}
-		$notes .= $note;
+		$notes = sanitize_textarea_field(
+			do_replacements( $appointment->get_calendar()->get_meta( 'default_note' ),
+				$args['contact_id'] ) );
 
 		$appointment->update_meta( 'notes', $notes );
 
@@ -1079,76 +1070,86 @@ class Calendar extends Base_Object_With_Meta {
 	}
 
 	/**
+	 * Set the Google account ID
+	 *
+	 * @param $id
+	 *
+	 * @return bool|mixed
+	 */
+	public function set_google_account_id( $id ) {
+		return $this->update_meta( 'google_account_id', $id );
+
+	}
+
+	/**
+	 * Get the Google Account ID
+	 *
+	 * @return string
+	 */
+	public function get_google_account_id() {
+		return $this->get_meta( 'google_account_id' );
+	}
+
+	/**
+	 * Returns the evalue of google meet enabled checkbox.
+	 *
+	 * @return bool
+	 */
+	public function is_google_meet_enabled() {
+		return (bool) $this->get_meta( 'google_meet_enable', true );
+	}
+
+	/**
 	 * Return value of zoom enable checkbox.
 	 *
 	 * @return bool
 	 */
 	public function is_zoom_enabled() {
-		return (bool) $this->get_meta( 'zoom_enable', true );
+		return (bool) $this->get_meta( 'zoom_account_id', true );
 	}
-
-	/**
-	 * Returns the evalue of google meet enabled checkbox.
-	 * @return bool
-	 */
-	public function is_google_meet_enabled()
-	{
-		return (bool) $this->get_meta( 'google_meet_enable', true );
-	}
-
 
 	/**
 	 * fetch access_token for the zoom
 	 *
-	 * @return WP_Error | string
+	 * @return WP_Error|string
 	 */
-	public function get_access_token_zoom() {
-		if ( ! $this->is_access_token_zoom() ) {
-			return new WP_Error( 'no_token', 'Access token not found!' );;
+	public function get_zoom_access_token( $refresh_if_expired = false ) {
+
+		$account_id = $this->get_zoom_account_id();
+		$token      = zoom()->get_access_token( $account_id );
+
+		if ( ! $token || ! $account_id ) {
+			return new WP_Error( 'error', 'no token' );
 		}
 
-		// refresh token
-		$json = json_decode( $this->get_meta( 'access_token_zoom', true ) );
+		if ( $refresh_if_expired && zoom()->is_token_expired( $account_id ) ) {
+			$account_id = zoom()->refresh_connection( $account_id );
 
-		if ( ! $json->refresh_token ) {
-			return new WP_Error( 'no_refresh', 'Refresh token not found' );
+			if ( is_wp_error( $account_id ) ) {
+				return $account_id;
+			}
+
+			$token = zoom()->get_access_token( $account_id );
 		}
 
-		$response = Plugin::instance()->proxy_service->request( 'authentication/refresh', [
-			'token' => $json->refresh_token,
-			'slug'  => 'zoom'
-		] );
-
-		if ( is_wp_error( $response ) ) {
-			$this->delete_meta( 'access_token_zoom' );
-
-			return new WP_Error( 'rest_error', $response->get_error_message() );
-		}
-
-		$access_token = get_array_var( $response, 'token' );
-
-		if ( ! $access_token ) {
-			$this->delete_meta( 'access_token_zoom' );
-
-			return new WP_Error( 'no_token', __( 'Could not retrieve access token.', 'groundhogg-calendar' ) );
-		}
-
-		$access_token_json_encoded = json_encode( $access_token );
-		$access_token_json_decoded = json_decode( $access_token_json_encoded );
-
-		if ( $access_token_json_decoded->access_token ) {
-			$this->update_meta( 'access_token_zoom', $access_token_json_encoded );
-
-			return $access_token_json_decoded->access_token;
-		}
-		$this->delete_meta( 'access_token_zoom' );
-
-		return new WP_Error( 'no_token', __( 'Token refresh Failed', 'groundhogg-calendar' ) );
+		return $token;
 	}
 
-	public function is_access_token_zoom() {
-		return (bool) $this->get_meta( 'access_token_zoom', true );
+	/**
+	 * Set the zoom access token
+	 *
+	 * @param string $id
+	 */
+	public function set_zoom_account_id( $id ) {
+		$this->update_meta( 'zoom_account_id', $id );
 	}
 
-
+	/**
+	 * Set the soom access token
+	 *
+	 * @param string $id
+	 */
+	public function get_zoom_account_id() {
+		return $this->get_meta( 'zoom_account_id' );
+	}
 }
