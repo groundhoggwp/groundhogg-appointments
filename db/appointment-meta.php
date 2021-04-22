@@ -1,10 +1,13 @@
 <?php
+
 namespace GroundhoggBookingCalendar\DB;
 
 use Groundhogg\DB\Meta_DB;
 
 // Exit if accessed directly
-if ( ! defined( 'ABSPATH' ) ) exit;
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 /**
  * Appointment Meta DB
@@ -16,36 +19,34 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  * @license     https://opensource.org/licenses/GPL-3.0 GNU Public License v3
  * @since       File available since Release 2.0
  */
-class Appointment_Meta extends Meta_DB  {
+class Appointment_Meta extends Meta_DB {
 
-    /**
-     * Get the DB suffix
-     * @return string
-     */
-    public function get_db_suffix()
-    {
-        return 'gh_appointmentmeta';
-    }
+	/**
+	 * Get the DB suffix
+	 *
+	 * @return string
+	 */
+	public function get_db_suffix() {
+		return 'gh_appointmentmeta';
+	}
 
-    /**
-     * Get the DB version
-     *
-     * @return mixed
-     */
-    public function get_db_version()
-    {
-        return '2.0';
-    }
+	/**
+	 * Get the DB version
+	 *
+	 * @return mixed
+	 */
+	public function get_db_version() {
+		return '2.0';
+	}
 
 
-    /**
-     * Get the object type we're inserting/updateing/deleting.
-     *
-     * @return string
-     */
-    public function get_object_type()
-    {
-        return 'appointment';
-    }
+	/**
+	 * Get the object type we're inserting/updateing/deleting.
+	 *
+	 * @return string
+	 */
+	public function get_object_type() {
+		return 'appointment';
+	}
 
 }

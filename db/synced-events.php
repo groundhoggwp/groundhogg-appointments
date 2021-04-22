@@ -11,9 +11,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 
 /**
- * Appointments DB
+ * Synced events
  *
- * Store appointment info
+ * rather than store events from google calendar and other synced calendars in the main appointments table, add them to this other table
+ * which can be easily truncated and manipulated
  *
  * @package     Includes
  * @subpackage  includes/DB
@@ -23,9 +24,10 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @since       File available since Release 2.0
  *
  */
-class Appointments extends DB {
+class Synced_Events extends DB {
+
 	public function get_db_suffix() {
-		return 'gh_appointments';
+		return 'gh_synced_events';
 	}
 
 	public function get_primary_key() {
@@ -37,14 +39,13 @@ class Appointments extends DB {
 	}
 
 	public function get_object_type() {
-		return 'appointment';
+		return 'synced_event';
 	}
 
 	/**
 	 * Clean up DB events when this happens.
 	 */
 	protected function add_additional_actions() {
-		add_action( 'groundhogg/db/post_delete/contact', [ $this, 'contact_deleted' ] );
 		add_action( 'groundhogg/db/post_delete/calendar', [ $this, 'calendar_deleted' ] );
 	}
 
@@ -58,10 +59,8 @@ class Appointments extends DB {
 	public function get_columns() {
 		return array(
 			'ID'          => '%d',
-			'contact_id'  => '%d',
+			'event_id'    => '%s',
 			'calendar_id' => '%d',
-			'name'        => '%s',
-			'status'      => '%s',
 			'start_time'  => '%d',
 			'end_time'    => '%d',
 		);
@@ -76,10 +75,8 @@ class Appointments extends DB {
 	public function get_column_defaults() {
 		return array(
 			'ID'          => 0,
-			'contact_id'  => 0,
+			'event_id'    => '',
 			'calendar_id' => 0,
-			'name'        => '',
-			'status'      => 'pending',
 			'start_time'  => 0,
 			'end_time'    => 0,
 		);
@@ -134,23 +131,6 @@ class Appointments extends DB {
 		return $result;
 	}
 
-	/**
-	 * Delete appointments associated with the calendars...
-	 *
-	 * @param $id int Calendar ID
-	 *
-	 * @return mixed
-	 */
-	public function contact_deleted( $id ) {
-		$appointments = $this->query( [ 'contact_id' => $id ] );
-		$result       = false;
-		foreach ( $appointments as $appointment ) {
-			$result = $this->delete( absint( $appointment->ID ) );
-		}
-
-		return $result;
-	}
-
 
 	/**
 	 * Create the table
@@ -163,10 +143,8 @@ class Appointments extends DB {
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 		$sql = "CREATE TABLE " . $this->table_name . " (
         ID bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-        contact_id bigint(20) unsigned NOT NULL,
+        event_id varchar({$this->get_max_index_length()}) NOT NULL,
         calendar_id bigint(20) unsigned NOT NULL,
-        name mediumtext NOT NULL,
-        status VARCHAR(20) NOT NULL,
         start_time bigint(20) unsigned NOT NULL,
         end_time bigint(20) unsigned NOT NULL,                
         PRIMARY KEY (ID),
