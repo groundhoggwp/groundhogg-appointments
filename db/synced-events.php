@@ -31,7 +31,7 @@ class Synced_Events extends DB {
 	}
 
 	public function get_primary_key() {
-		return 'ID';
+		return 'event_id';
 	}
 
 	public function get_db_version() {
@@ -58,11 +58,15 @@ class Synced_Events extends DB {
 	 */
 	public function get_columns() {
 		return array(
-			'ID'          => '%d',
-			'event_id'    => '%s',
-			'calendar_id' => '%d',
-			'start_time'  => '%d',
-			'end_time'    => '%d',
+			'event_id'           => '%s',
+			'summary'            => '%s',
+			'local_gcalendar_id' => '%d',
+			'google_calendar_id' => '%s',
+			'start_time'         => '%d',
+			'end_time'           => '%d',
+			'start_time_pretty'  => '%s',
+			'end_time_pretty'    => '%s',
+			'last_synced'        => '%d',
 		);
 	}
 
@@ -74,44 +78,45 @@ class Synced_Events extends DB {
 	 */
 	public function get_column_defaults() {
 		return array(
-			'ID'          => 0,
-			'event_id'    => '',
-			'calendar_id' => 0,
-			'start_time'  => 0,
-			'end_time'    => 0,
+			'event_id'           => '',
+			'summary'            => '',
+			'local_gcalendar_id' => 0,
+			'google_calendar_id' => '',
+			'start_time'         => 0,
+			'end_time'           => 0,
+			'start_time_pretty'  => '',
+			'end_time_pretty'    => '',
+			'last_synced'        => time(),
 		);
 	}
 
 	/**
-	 * @param $a           int
-	 * @param $b           int
-	 * @param $calendar_id int
+	 * @param $start
+	 * @param $end
+	 * @param $local_gcalendar_id
 	 *
-	 * @return array|null|object
+	 * @return bool
 	 */
-	public function appointments_exist_in_range( $a, $b, $calendar_id ) {
+	public function time_available( $start, $end, $local_gcalendar_id ) {
 		global $wpdb;
 
-		$results = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$this->get_table_name()} WHERE ( (start_time BETWEEN %d AND %d) OR (end_time BETWEEN %d AND %d) ) AND calendar_id = %d",
-			$a, $b, $a, $b, absint( $calendar_id ) ) );
+		// 1. Start time of an existing event is within the range of the slot
+		// 2. End time of an existing event is within the range of the slot
+		// 3. An existing event is within the bounds of the slot
+		// 4. Slot is within the bounds of an existing event
 
-		return $results;
-	}
+		$results = $wpdb->get_results( sprintf( '
+	SELECT * FROM %4$s
+		WHERE ( 
+		    ( start_time BETWEEN %1$d AND %2$d )
+			OR ( end_time BETWEEN %1$d AND %2$d )
+		    OR ( start_time <= %1$d AND end_time >= %2$d ) 
+		    OR ( start_time >= %1$d AND end_time <= %2$d ) 
+		) 
+		AND local_gcalendar_id = %3$d',
+			$start, $end, $local_gcalendar_id, $this->table_name ) );
 
-	/**
-	 * @param $a           int
-	 * @param $b           int
-	 * @param $calendar_id int
-	 *
-	 * @return array|null|object
-	 */
-	public function appointments_exist_in_range_except_same_appointment( $a, $b, $calendar_id, $appointment_id ) {
-		global $wpdb;
-
-		$results = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$this->get_table_name()} WHERE ( (start_time BETWEEN %d AND %d) OR (end_time BETWEEN %d AND %d) ) AND calendar_id = %d AND ID != %d",
-			$a, $b, $a, $b, absint( $calendar_id ), absint( $appointment_id ) ) );
-
-		return $results;
+		return empty( $results );
 	}
 
 	/**
@@ -131,6 +136,21 @@ class Synced_Events extends DB {
 		return $result;
 	}
 
+	/**
+	 * Delete older events
+	 */
+	public function delete_old_events() {
+
+		global $wpdb;
+
+		// Delete events which haven't been synced in at least an hour (assume they were deleted in Google)
+		// OR events older than the current time
+		$wpdb->query( $wpdb->prepare( "DELETE FROM {$this->table_name} WHERE `end_time` < %s OR `last_synced` < %s", time(), time() - HOUR_IN_SECONDS  ) );
+
+		// Cache compat
+		$this->cache_set_last_changed();
+
+	}
 
 	/**
 	 * Create the table
@@ -142,12 +162,17 @@ class Synced_Events extends DB {
 		global $wpdb;
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 		$sql = "CREATE TABLE " . $this->table_name . " (
-        ID bigint(20) unsigned NOT NULL AUTO_INCREMENT,
         event_id varchar({$this->get_max_index_length()}) NOT NULL,
-        calendar_id bigint(20) unsigned NOT NULL,
+        summary mediumtext NOT NULL,
+        google_calendar_id varchar({$this->get_max_index_length()}) NOT NULL,
+        local_gcalendar_id bigint(20) unsigned NOT NULL,
         start_time bigint(20) unsigned NOT NULL,
-        end_time bigint(20) unsigned NOT NULL,                
-        PRIMARY KEY (ID),
+        end_time bigint(20) unsigned NOT NULL,
+        start_time_pretty datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+        end_time_pretty datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,                
+        last_synced bigint(20) unsigned NOT NULL,                
+        PRIMARY KEY (event_id),
+        KEY google_calendar_id (google_calendar_id),
         KEY start_time (start_time),
         KEY end_time (end_time)
 		) {$this->get_charset_collate()};";
