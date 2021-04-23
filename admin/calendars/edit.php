@@ -8,14 +8,14 @@ use GroundhoggBookingCalendar\Admin\Appointments\Appointments_Table;
 use function GroundhoggBookingCalendar\is_sms_plugin_active;
 
 $tab_list = [
-	'view'         => __( 'View', 'groundhogg-calendar' ), // Show calendar and add appointments
-	'settings'     => __( 'Settings', 'groundhogg-calendar' ), // Show calendar settings
-	'integration'  => __( 'Integration', 'groundhogg-calendar' ), // Show calendar settings
-	'availability' => __( 'Availability', 'groundhogg-calendar' ), // Show calendar settings
-	'emails'       => __( 'Emails', 'groundhogg-calendar' ), // Show calendar reminders
-	'notification' => __( 'Admin Notification', 'groundhogg-calendar' ), // Show calendar reminders
-	'sms'          => __( 'SMS', 'groundhogg-calendar' ), // Show calendar reminders
-	'list'         => __( 'Appointments', 'groundhogg-calendar' ), // show appointments in list table.
+	'view'         => __( 'View', 'groundhogg-calendar' ),
+	'settings'     => __( 'Settings', 'groundhogg-calendar' ),
+	'integration'  => __( 'Integration', 'groundhogg-calendar' ),
+	'availability' => __( 'Availability', 'groundhogg-calendar' ),
+	'notification' => __( 'Admin Notifications', 'groundhogg-calendar' ),
+	'emails'       => __( 'Reminder Emails', 'groundhogg-calendar' ),
+	'sms'          => __( 'Reminder SMS', 'groundhogg-calendar' ),
+	'list'         => __( 'Appointments', 'groundhogg-calendar' ),
 ];
 
 if ( ! is_sms_plugin_active() ) {

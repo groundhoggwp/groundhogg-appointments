@@ -16,14 +16,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 $calendar_id = $_GET['calendar'];
 $calendar    = new Calendar( $calendar_id );
 
-$appointments = get_db( 'appointments' )->query( [ 'calendar_id' => $calendar_id ] );
-$display_data = [];
-foreach ( $appointments as $appo ) {
+$events = wp_json_encode( $calendar->get_events_for_full_calendar() );
 
-	$appointment    = new Appointment( $appo->ID );
-	$display_data[] = $appointment->get_full_calendar_event();
-}
-$json       = json_encode( $display_data );
 $start_time = '00:00';
 $end_time   = '23:59';
 
@@ -92,19 +86,6 @@ $end_time   = '23:59';
 					<input type="button" name="btndisplay" id="btnalert" value="Book appointment"
 					       class="button button-primary"/>
 				</div>
-				<?php if ( $calendar->is_connected_to_google() ) : ?>
-					<div class="alert alert-success">
-						<p><b><?php _e( 'Google sync is enabled.', 'groundhogg-calendar' ); ?></b>
-							<a class="button"
-							   href="<?php echo wp_nonce_url( admin_url( 'admin.php?page=gh_calendar&action=google_sync&calendar=' . $_GET['calendar'] ) ); ?>"><?php _e( 'Sync Now' ); ?></a>
-						</p>
-					</div>
-				<?php endif; ?>
-				<?php if ( $calendar->is_zoom_enabled() && ( ! is_wp_error( $calendar->get_zoom_access_token() ) ) ) : ?>
-					<div class="alert alert-success">
-						<p><b><?php _e( 'Zoom sync is enabled.', 'groundhogg-calendar' ); ?></b></p>
-					</div>
-				<?php endif; ?>
 			</div>
 		</div>
 	</div>
@@ -115,8 +96,7 @@ $end_time   = '23:59';
 					<div id='calendar' class=""></div>
 					<table class="status-colors">
 						<tr>
-							<td class="pending"><b><?php _e( 'Pending', 'groundhogg-calendar' ); ?></b></td>
-							<td class="approved"><b><?php _e( 'Approved', 'groundhogg-calendar' ); ?></b></td>
+							<td class="scheduled"><b><?php _e( 'Scheduled', 'groundhogg-calendar' ); ?></b></td>
 							<td class="canceled"><b><?php _e( 'Canceled', 'groundhogg-calendar' ); ?></b></td>
 						</tr>
 					</table>
@@ -160,96 +140,18 @@ $end_time   = '23:59';
     })
 	  <?php endif; ?>
 
-
-    $('#calendar').fullCalendar({
-      header: {
+    var calendarEl = document.getElementById('calendar');
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+      headerToolbar: {
         left: 'prev,next today',
         center: 'title',
-        right: 'month,agendaWeek,agendaDay,listMonth'
+        right: 'dayGridMonth,timeGridWeek,dayGridWeek,listWeek'
       },
       businessHours: display,
-      defaultView: 'month', //agendaWeek
-      slotDuration: '00:15:00',
-      editable: true,
-      eventLimit: true, // allow "more" link when too many events
-      selectable: false,
-      firstDay: <?php echo get_option( 'start_of_week' ); ?>,
-      minTime: '<?php echo $start_time;  ?>',
-      maxTime: '<?php echo $end_time; ?>',
-      navLinks: true,
-      droppable: true,
-      allDaySlot: false,
-      nowIndicator: true,
-      dayRender: function (date, cell) {
-        if (date < new Date()) {
-          cell.css('background-color', '')
-        }
-      },
-      eventOverlap: false,
-      eventDrop: function (event, delta, revertFunc) {
-        // disable booking previous date
-        if ((event.start / 1000) < <?php echo current_time( 'timestamp' );?>   ) {
-          revertFunc()
-          alert('You can not book past Date.')
-        } else {
-          if (event.id != 'booking_event') {
-            // make a cll if event is not a booking event
-            // make AJAX request to handle reschedule
-            adminAjaxRequest(
-              {
-                action: 'groundhogg_update_appointments',
-                start_time: moment(event.start).format('YYYY-MM-DD HH:mm:00'),
-                end_time: moment(event.end).format('YYYY-MM-DD HH:mm:00'),
-                id: event.id,
-              },
-              function callback (response) {
-                // Handler
-                if (response.success) {
-                  alert(response.data.msg)
-                } else {
-                  alert(response.data)
-                }
-              }
-            )
-          }
-        }
-      },
-      eventResize: function (event, delta, revertFunc) {
-        // handle resizing of event
-        if (event.id != 'booking_event') {
-          // make a cll if event is not a booking event
-          // make AJAX request to handle reschedule
-          adminAjaxRequest(
-            {
-              action: 'groundhogg_update_appointments',
-              start_time: moment(event.start).format('YYYY-MM-DD HH:mm:00'),
-              end_time: moment(event.end).format('YYYY-MM-DD HH:mm:00'),
-              id: event.id,
-            },
-            function callback (response) {
-              // Handler
-              if (response.success) {
-                alert(response.data.msg)
-              } else {
-                alert(response.data)
-                revertFunc()
-              }
-            }
-          )
-        }
-      },
-      events: <?php echo $json; ?>
-    })
-
-    function isOverlapping (start, end) {
-      var arrCalEvents = $('#calendar').fullCalendar('clientEvents')
-      for (i in arrCalEvents) {
-        if ((end >= arrCalEvents[i].start && start <= arrCalEvents[i].end) || (end == null && (event.start >= arrCalEvents[i].start && start <= arrCalEvents[i].end))) {//!(Date(arrCalEvents[i].start) >= Date(event.end) || Date(arrCalEvents[i].end) <= Date(event.start))
-          return true
-        }
-      }
-      return false
-    }
+      initialView: 'timeGridWeek',
+      events: <?php echo $events; ?>
+    });
+    calendar.render();
   })
 
 </script>

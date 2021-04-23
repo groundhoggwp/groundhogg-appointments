@@ -1,16 +1,12 @@
 <?php
 namespace GroundhoggBookingCalendar\Admin\Calendars;
 
-use Google_Service_Calendar;
-use Groundhogg\Base_Object;
 use function Groundhogg\action_url;
+use function Groundhogg\array_map_keys;
 use function Groundhogg\array_map_with_keys;
-use function Groundhogg\get_form_list;
+use function Groundhogg\get_db;
 use function Groundhogg\html;
 use GroundhoggBookingCalendar\Classes\Calendar;
-use GroundhoggBookingCalendar\Plugin;
-use function GroundhoggBookingCalendar\get_google_client;
-use function GroundhoggBookingCalendar\google;
 use function GroundhoggBookingCalendar\zoom;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -30,12 +26,12 @@ $connect_to_zoom_url = action_url( 'access_code_zoom', [
 	'calendar' => $calendar_id
 ] );
 
-$google_account_id    = $calendar->get_google_account_id();
-$google_calendar_id   = $calendar->get_google_calendar_id();
-$google_calendar_list = (array) $calendar->get_google_calendar_list();
+$google_connection = $calendar->get_google_connection();
+
+$connections = get_db( 'google_connections' )->query();
 
 ?>
-<form name="" id="" method="post" action="">
+<form method="post">
 	<?php wp_nonce_field(); ?>
 	<h2><?php _e( 'Google Calendar Integration', 'groundhogg-calendar' ); ?></h2>
 	<table class="form-table">
@@ -43,13 +39,17 @@ $google_calendar_list = (array) $calendar->get_google_calendar_list();
 		<tr>
 			<th scope="row"><label><?php _e( 'Select Account', 'groundhogg-calendar' ) ?></label></th>
 			<td id="google">
-				<?php if ( count( google()->get_connections() ) > 0 ) : ?>
+				<?php if ( ! empty( $connections ) ) : ?>
 					<p>
 						<?php _e( 'Choose an existing Google Calendar integration', 'groundhogg-calendar' ); ?>
 						<?php echo html()->dropdown( [
-							'options'     => google()->get_connections_for_dropdown(),
+							'options'     => array_map_with_keys( array_map_keys( $connections, function ( $i, $v ) {
+								return $v->ID;
+							} ), function ( $v, $i ) {
+								return $v->account_email;
+							} ),
 							'name'        => 'google_account_id',
-							'selected'    => $calendar->get_google_account_id(),
+							'selected'    => $calendar->get_google_connection_id(),
 							'option_none' => __( 'No connection', 'groundhogg-calendar' )
 						] ); ?>
 						<?php printf( __( 'or <a href="%s">connect to another Google account.</a>', 'groundhogg-calendar' ), esc_url( $connect_to_google_url ) ); ?>
@@ -62,32 +62,7 @@ $google_calendar_list = (array) $calendar->get_google_calendar_list();
 				<?php endif; ?>
 			</td>
 		</tr>
-		<?php if ( $google_account_id ) : ?>
-			<?php
-			$client       = get_google_client( $google_account_id );
-			$allCalendars = [];
-
-			if ( ! is_wp_error( $client ) ) {
-				$service      = new Google_Service_Calendar( $client );
-				$calendarList = $service->calendarList->listCalendarList();
-
-				do {
-					foreach ( $calendarList->getItems() as $calendarListEntry ) {
-						$allCalendars[ $calendarListEntry->getId() ] = $calendarListEntry->getSummary();
-					}
-
-					$pageToken = $calendarList->getNextPageToken();
-
-					if ( $pageToken ) {
-						$optParams    = array( 'pageToken' => $pageToken );
-						$calendarList = $service->calendarList->listCalendarList( $optParams );
-					}
-				} while ( $pageToken );
-			} else {
-				echo 'oops';
-			}
-
-			?>
+		<?php if ( $google_connection->exists() ) : ?>
 			<tr>
 				<th scope="row"><label><?php _e( 'Use for appointments' ) ?></label></th>
 				<td id="appointments">
@@ -95,8 +70,12 @@ $google_calendar_list = (array) $calendar->get_google_calendar_list();
 						<?php
 
 						echo html()->dropdown( [
-							'options'     => $allCalendars,
-							'selected'    => $google_calendar_id,
+							'options'     => array_map_with_keys( array_map_keys( $google_connection->get_calendars(), function ( $i, $v ) {
+								return $v->get_id();
+							} ), function ( $v, $i ) {
+								return $v->name;
+							} ),
+							'selected'    => $calendar->get_google_calendar_id(),
 							'name'        => 'google_calendar_id',
 							'option_none' => __( 'Please select a calendar', 'groundhogg-calendar' ),
 						] );
@@ -113,12 +92,12 @@ $google_calendar_list = (array) $calendar->get_google_calendar_list();
 					<p>
 						<?php
 
-						foreach ( $allCalendars as $id => $calendarName ) {
+						foreach ( $google_connection->get_calendars() as $google_calendar ) {
 							echo html()->checkbox( array(
 								'name'    => 'google_calendar_list[]',
-								'value'   => $id,
-								'label'   => $calendarName,
-								'checked' => in_array( $id, $google_calendar_list ) || $google_calendar_id === $id,
+								'value'   => $google_calendar->get_id(),
+								'label'   => $google_calendar->name,
+								'checked' => in_array( $google_calendar->get_id(), $calendar->get_google_calendar_list() ) || $calendar->get_google_calendar_id() === $google_calendar->get_id(),
 							) );
 							echo '<br/>';
 						}
