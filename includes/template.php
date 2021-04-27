@@ -29,15 +29,15 @@ function template_details( $calendar ) {
 	$booking_data = get_post_var( 'booking_data', [] );
 
 	?>
-    <h4><?php esc_html_e( get_bloginfo( 'name' ) ); ?></h4>
-    <h1><?php esc_html_e( $calendar->get_name() ); ?></h1>
-    <div class="details">
+	<h4><?php esc_html_e( get_bloginfo( 'name' ) ); ?></h4>
+	<h1><?php esc_html_e( $calendar->get_name() ); ?></h1>
+	<div class="details">
 		<?php
 		$appt_length_formatted = $calendar->get_appointment_length_formatted();
 
 		?>
-        <div class="details-length"><span class="clock-icon"></span> <?php esc_html_e( $appt_length_formatted ); ?>
-        </div><?php
+		<div class="details-length"><span class="clock-icon"></span> <?php esc_html_e( $appt_length_formatted ); ?>
+		</div><?php
 
 		if ( ! empty( $booking_data ) ):
 
@@ -50,20 +50,21 @@ function template_details( $calendar ) {
 			$end_time   = get_in_time_zone( $end_time, $time_zone );
 
 			//compared the length of the start and end time instead of comparing the individual value
-			if ( ($start_time > 0 && $end_time > 0 ) && strlen($start_time)>=10  && strlen( $end_time) >= 10 ):
+			if ( ( $start_time > 0 && $end_time > 0 ) && strlen( $start_time ) >= 10 && strlen( $end_time ) >= 10 ):
 
-			$time_string = sprintf( '%s - %s, %s', date_i18n( get_time_format(), $start_time ), date_i18n( get_time_format(), $end_time ), date_i18n( get_date_format(), $start_time ) );
+				$time_string = sprintf( '%s - %s, %s', date_i18n( get_time_format(), $start_time ), date_i18n( get_time_format(), $end_time ), date_i18n( get_date_format(), $start_time ) );
 				?>
-                <div class="details-slot"><span class="date-icon"></span> <?php esc_html_e( $time_string ); ?></div>
-              <?php
+				<div class="details-slot"><span class="date-icon"></span> <?php esc_html_e( $time_string ); ?></div>
+			<?php
 
 			endif; ?>
-            <div class="details-zone"><span class="world-icon"></span> <?php esc_html_e( str_replace( '_', ' ', $time_zone ) ); ?></div><?php
+			<div class="details-zone"><span
+			class="world-icon"></span> <?php esc_html_e( str_replace( '_', ' ', $time_zone ) ); ?></div><?php
 		endif;
 
 		?>
-    </div>
-    <p><?php esc_html_e( $calendar->get_description() ); ?></p>
+	</div>
+	<p><?php esc_html_e( $calendar->get_description() ); ?></p>
 	<?php
 }
 
@@ -76,12 +77,12 @@ add_action( 'groundhogg/calendar/template/details', __NAMESPACE__ . '\template_d
  */
 function template_date_picker( $calendar ) {
 	?>
-    <div class="date-picker-wrap">
-        <div id="date-picker"></div>
-    </div>
-    <div id="calendar-time-slots">
+	<div class="date-picker-wrap">
+		<div id="date-picker"></div>
+	</div>
+	<div id="calendar-time-slots">
 		<?php do_action( 'groundhogg/calendar/template/time_slots', $calendar ); ?>
-    </div>
+	</div>
 	<?php
 }
 
@@ -110,18 +111,18 @@ function template_time_slots( $calendar ) {
 	$date_string = date_i18n( get_date_format(), strtotime( $date ) );
 
 	?>
-    <div class="back-button">
-        <span class="back-arrow-icon"></span>
-    </div>
-    <p class="time-slot-select-text"><?php esc_html_e( $date_string ); ?></p>
-    <div id="time-slots-inner">
+	<div class="back-button">
+		<span class="back-arrow-icon"></span>
+	</div>
+	<p class="time-slot-select-text"><?php esc_html_e( strtoupper( $date_string ) ); ?></p>
+	<div id="time-slots-inner">
 		<?php
 
 		$slots = $calendar->get_appointment_slots( $date, $time_zone );
 
 		if ( empty( $slots ) ):
 			?><p
-                class="gh-message-wrapper gh-form-errors-wrapper"><?php _e( 'Sorry, No time slots are available on this date.', 'groundhogg-calendar' ); ?></p><?php
+			class="gh-message-wrapper gh-form-errors-wrapper"><?php _e( 'Sorry, No time slots are available on this date.', 'groundhogg-calendar' ); ?></p><?php
 		else:
 			foreach ( $slots as $i => $slot ):
 
@@ -130,9 +131,9 @@ function template_time_slots( $calendar ) {
 					'class'           => 'appointment-time',
 					'name'            => 'appointment_time',
 					'id'              => 'gh_appointment_' . $i,
-					'data-start_date' => $slot[ 'start' ],
-					'data-end_date'   => $slot[ 'end' ],
-					'value'           => $slot[ 'display' ],
+					'data-start_date' => $slot['start'],
+					'data-end_date'   => $slot['end'],
+					'value'           => $slot['display'],
 				] );
 
 			endforeach;
@@ -140,7 +141,7 @@ function template_time_slots( $calendar ) {
 		endif;
 
 		?>
-    </div>
+	</div>
 	<?php
 }
 
@@ -160,14 +161,14 @@ function template_form( $calendar ) {
 	$booking_data = get_post_var( 'booking_data', [] );
 
 	?>
-    <div class="back-button">
-        <span class="back-arrow-icon"></span>
-    </div>
+	<div class="back-button">
+		<span class="back-arrow-icon"></span>
+	</div>
 
 	<?php if ( ! isset_not_empty( $booking_data, 'reschedule' ) ): ?>
-        <h3><?php _e( 'Enter Details', 'groundhogg-calendar' ); ?></h3>
+		<h3><?php _e( 'Enter Details', 'groundhogg-calendar' ); ?></h3>
 	<?php else: ?>
-        <h3><?php _e( 'Confirm Change', 'groundhogg-calendar' ); ?></h3>
+		<h3><?php _e( 'Confirm Change', 'groundhogg-calendar' ); ?></h3>
 	<?php endif;
 
 	if ( isset_not_empty( $booking_data, 'reschedule' ) ) {
@@ -175,7 +176,7 @@ function template_form( $calendar ) {
 		$appointment_id = absint( get_array_var( $booking_data, 'reschedule' ) );
 
 		?>
-        <form class="gh-form details-form" method="post" target="_parent">
+		<form class="gh-form details-form" method="post" target="_parent">
 		<?php
 
 		echo html()->input( [
@@ -200,7 +201,7 @@ function template_form( $calendar ) {
 		] );
 
 		?>
-        </form><?php
+		</form><?php
 
 		return;
 	}
@@ -228,13 +229,13 @@ function default_form() {
 	$contact = get_current_contact();
 
 	?>
-    <div class="gh-form-wrapper">
-        <form class="gh-form details-form" method="post" target="_parent">
-            <div class="gh-form">
-                <div class="gh-form-row clearfix">
-                    <div class="gh-form-column col-1-of-2">
-                        <div class="gh-form-field">
-                            <label class="gh-input-label">
+	<div class="gh-form-wrapper">
+		<form class="gh-form details-form" method="post" target="_parent">
+			<div class="gh-form">
+				<div class="gh-form-row clearfix">
+					<div class="gh-form-column col-1-of-2">
+						<div class="gh-form-field">
+							<label class="gh-input-label">
 								<?php
 
 								_e( 'First *', 'groundhogg-calendar' );
@@ -249,12 +250,12 @@ function default_form() {
 									'value'       => $contact ? $contact->get_first_name() : '',
 								] );
 								?>
-                            </label>
-                        </div>
-                    </div>
-                    <div class="gh-form-column col-1-of-2">
-                        <div class="gh-form-field">
-                            <label class="gh-input-label">
+							</label>
+						</div>
+					</div>
+					<div class="gh-form-column col-1-of-2">
+						<div class="gh-form-field">
+							<label class="gh-input-label">
 								<?php
 
 								_e( 'Last *', 'groundhogg-calendar' );
@@ -269,14 +270,14 @@ function default_form() {
 									'value'       => $contact ? $contact->get_last_name() : '',
 								] );
 								?>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-                <div class="gh-form-row clearfix">
-                    <div class="gh-form-column col-1-of-1">
-                        <div class="gh-form-field">
-                            <label class="gh-input-label">
+							</label>
+						</div>
+					</div>
+				</div>
+				<div class="gh-form-row clearfix">
+					<div class="gh-form-column col-1-of-1">
+						<div class="gh-form-field">
+							<label class="gh-input-label">
 								<?php
 
 								_e( 'Email *', 'groundhogg-calendar' );
@@ -291,14 +292,14 @@ function default_form() {
 									'value'       => $contact ? $contact->get_email() : '',
 								] );
 								?>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-                <div class="gh-form-row clearfix">
-                    <div class="gh-form-column col-1-of-1">
-                        <div class="gh-form-field">
-                            <label class="gh-input-label">
+							</label>
+						</div>
+					</div>
+				</div>
+				<div class="gh-form-row clearfix">
+					<div class="gh-form-column col-1-of-1">
+						<div class="gh-form-field">
+							<label class="gh-input-label">
 								<?php
 
 								_e( 'Phone *', 'groundhogg-calendar' );
@@ -313,41 +314,61 @@ function default_form() {
 									'value'       => $contact ? $contact->get_phone_number() : '',
 								] );
 								?>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-	            <?php if (is_option_enabled( 'gh_enable_gdpr' ) ) :  ?>
-                    <div class="gh-form-row clearfix">
-                        <div class="gh-form-column col-1-of-1">
-                            <div class="gh-form-field">
-                                <p>
-                                    <?php echo html()->checkbox( [
-                                        'label'   => sprintf( _x( "I agree to %s's storage and processing of my personal data.", 'form_default', 'groundhogg' ), get_bloginfo() ),
-                                        'name'    => 'gdpr_consent',
-                                        'id'      => 'gdpr_consent',
-                                        'class'   => 'gh-gdpr',
-                                        'value'   => 'yes',
-                                        'title'   => _x( 'I Consent', 'form_default', 'groundhogg' ),
-                                    ] ) ?>
-                                </p>
-                                <p>
-                                    <?php echo html()->checkbox( [
-                                        'label'   => sprintf( _x( "I agree to receive marketing offers and updates from %s.", 'form_default', 'groundhogg' ), get_bloginfo() ),
-                                        'name'    => 'marketing_consent',
-                                        'id'      => 'marketing_consent',
-                                        'class'   => 'gh-gdpr',
-                                        'value'   => 'yes',
-                                        'title'   => _x( 'I Consent', 'form_default', 'groundhogg' ),
-                                    ] ) ?>
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                <?php endif; ?>
-                <div class="gh-form-row clearfix">
-                    <div class="gh-form-column col-1-of-1">
-                        <div class="gh-form-field">
+							</label>
+						</div>
+					</div>
+				</div>
+				<div class="gh-form-row clearfix">
+					<div class="gh-form-column col-1-of-1">
+						<div class="gh-form-field">
+							<label class="gh-input-label">
+								<?php
+
+								_e( 'Anything we should know?', 'groundhogg-calendar' );
+
+								echo html()->textarea( [
+									'name'     => 'additional',
+									'id'       => 'additional',
+									'class'    => 'gh-input',
+									'required' => false,
+									'rows'     => 2,
+								] );
+								?>
+							</label>
+						</div>
+					</div>
+				</div>
+				<?php if ( is_option_enabled( 'gh_enable_gdpr' ) ) : ?>
+					<div class="gh-form-row clearfix">
+						<div class="gh-form-column col-1-of-1">
+							<div class="gh-form-field">
+								<p>
+									<?php echo html()->checkbox( [
+										'label' => sprintf( _x( "I agree to %s's storage and processing of my personal data.", 'form_default', 'groundhogg' ), get_bloginfo() ),
+										'name'  => 'gdpr_consent',
+										'id'    => 'gdpr_consent',
+										'class' => 'gh-gdpr',
+										'value' => 'yes',
+										'title' => _x( 'I Consent', 'form_default', 'groundhogg' ),
+									] ) ?>
+								</p>
+								<p>
+									<?php echo html()->checkbox( [
+										'label' => sprintf( _x( "I agree to receive marketing offers and updates from %s.", 'form_default', 'groundhogg' ), get_bloginfo() ),
+										'name'  => 'marketing_consent',
+										'id'    => 'marketing_consent',
+										'class' => 'gh-gdpr',
+										'value' => 'yes',
+										'title' => _x( 'I Consent', 'form_default', 'groundhogg' ),
+									] ) ?>
+								</p>
+							</div>
+						</div>
+					</div>
+				<?php endif; ?>
+				<div class="gh-form-row clearfix">
+					<div class="gh-form-column col-1-of-1">
+						<div class="gh-form-field">
 							<?php
 							$book_text = apply_filters( 'groundhogg/calendar/shortcode/confirm_text', __( 'Book Appointment', 'groundhogg-calendar' ) );
 							echo html()->input( [
@@ -356,11 +377,11 @@ function default_form() {
 								'id'    => 'book_appointment',
 								'value' => $book_text
 							] ); ?>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </form>
-    </div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</form>
+	</div>
 	<?php
 }
