@@ -109,30 +109,37 @@
 .groundhogg-calendar td.ui-datepicker-unselectable .ui-state-default {
     background: none;
     border-radius: 0;
+    border: none;
 }
 
 .groundhogg-calendar td .ui-state-default {
     display: inline-block;
-    background: #efefef;
+    background: rgba(30, 160, 212, 0.08);
     border-radius: 50%;
     height: 50px;
     width: 50px;
     border: none;
+    line-height: 1.5;
     text-align: center;
     padding: 1em 0;
     margin: 10px auto 0 auto;
     font-weight: bold;
-    color: #636363;
+    color: #00b0ff;
+    /*border: 1px solid #2586b3;*/
     font-size: 14px;
 }
 
 .groundhogg-calendar td .ui-state-hover {
-    background: #e4e4e4;
+    background-color: rgba(30, 160, 212, 0.18);
 }
 
 .groundhogg-calendar td .ui-state-active {
-    color: #5c9d4f;
-    background: rgba(118, 197, 103, 0.18);
+    background-color: #00b0ff;
+    color: #FFF;
+
+    /*border-color: #008fcd;*/
+    /*padding: 11px;*/
+    /*border-width: 2px;*/
 }
 
 @media only screen and (max-width: 400px) {

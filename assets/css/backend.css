@@ -101,26 +101,9 @@
 
 
 .select-time .appointment-time{
-    color: #555;
-    border-color: #ccc;
-    background: #f7f7f7;
-    box-shadow: 0 1px 0 #ccc;
-    vertical-align: top;
-    display: inline-block;
-    text-decoration: none;
-    line-height: 26px;
-    height: 28px;
-    padding: 0 10px 1px;
-    cursor: pointer;
-    border-width: 1px;
-    border-style: solid;
-    -webkit-appearance: none;
-    border-radius: 3px;
-    white-space: nowrap;
-    box-sizing: border-box;
-    margin: 5px;
-    font-size: 14px;
-
+    display: block;
+    margin: 0 0 5px 10px;
+    width: 100%;
 }
 
 .select-time .appointment-time.selected{
@@ -166,7 +149,7 @@ table.status-colors td.pending{
     background-color: #cce5ff;
 }
 
-table.status-colors td.approved{
+table.status-colors td.scheduled{
     color: #155724;
     background-color: #d4edda;
     border-color: #28a745;
