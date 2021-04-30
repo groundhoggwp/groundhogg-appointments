@@ -33,6 +33,7 @@ class Calendars extends DB {
 			'ID'          => '%d',
 			'user_id'     => '%d',
 			'name'        => '%s',
+			'slug'        => '%s',
 			'description' => '%s',
 		);
 	}
@@ -48,6 +49,7 @@ class Calendars extends DB {
 			'ID'          => 0,
 			'user_id'     => 0,
 			'name'        => '',
+			'slug'        => '',
 			'description' => '',
 		);
 	}
@@ -91,6 +93,7 @@ class Calendars extends DB {
         ID bigint(20) unsigned NOT NULL AUTO_INCREMENT,
         user_id bigint(20) unsigned NOT NULL,        
         name mediumtext NOT NULL,
+        slug varchar({$this->get_max_index_length()}) NOT NULL,
         description text NOT NULL,        
         PRIMARY KEY (ID)
 		) {$this->get_charset_collate()};";

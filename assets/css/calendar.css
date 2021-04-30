@@ -1,6 +1,8 @@
-.groundhogg-calendar {
-    font-size: 90%;
-}
+
+
+/*.groundhogg-calendar {*/
+/*    font-size: 90%;*/
+/*}*/
 
 .groundhogg-calendar .ui-widget {
     border: none;
@@ -12,7 +14,7 @@
 .groundhogg-calendar .ui-datepicker {
     padding: 0;
     font-family: inherit !important;
-    background: #ffffff !important;
+    background: transparent !important;
     width: 100%;
 }
 
@@ -57,7 +59,7 @@
 
 .ui-datepicker-prev:before,
 .ui-datepicker-next:before {
-    font-size: 24px;
+    font-size: 18px;
     /*position: absolute;*/
     /*top: 10px;*/
     vertical-align: middle;
@@ -88,8 +90,8 @@
 .groundhogg-calendar .ui-datepicker th {
     /*padding: 3em 0;*/
     color: #6c6c6c;
-    font-size: 14px;
-    font-weight: 600;
+    font-size: 12px;
+    font-weight: 300;
     /*text-shadow: 0 0 1px #b2b2b2;*/
     text-transform: uppercase;
     border: none;
@@ -110,19 +112,21 @@
     background: none;
     border-radius: 0;
     border: none;
+    font-weight: 400;
+    color: #404040;
 }
 
 .groundhogg-calendar td .ui-state-default {
     display: inline-block;
     background: rgba(30, 160, 212, 0.08);
     border-radius: 50%;
-    height: 50px;
+    /*height: 50px;*/
     width: 50px;
     border: none;
-    line-height: 1.5;
+    /*line-height: 1.5;*/
     text-align: center;
-    padding: 1em 0;
-    margin: 10px auto 0 auto;
+    padding: 18px 0;
+    margin: 10px 10px 0 auto;
     font-weight: bold;
     color: #00b0ff;
     /*border: 1px solid #2586b3;*/
@@ -142,11 +146,12 @@
     /*border-width: 2px;*/
 }
 
-@media only screen and (max-width: 400px) {
+@media only screen and (max-width: 850px) {
     .groundhogg-calendar td .ui-state-default{
-        height: 40px;
-        width: 40px;
-        padding: 8px;
-        cursor: pointer;
+        /*height: 40px;*/
+        /*width: 40px;*/
+        /*padding: 12px;*/
+        margin: 0;
+        /*cursor: pointer;*/
     }
 }

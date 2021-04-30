@@ -31,10 +31,10 @@ $cols = [
 
 $rows = [];
 
-$reminders = $calendar->get_meta( 'reminders' ); // TODO get the reminders
+$reminders = $calendar->get_meta( 'email_reminders' ); // TODO get the reminders
 
 function reminder_name( $att = '' ) {
-	return sprintf( 'reminders[%s][]', $att );
+	return sprintf( 'email_reminders[%s][]', $att );
 }
 
 if ( empty( $reminders ) ) {

@@ -9,12 +9,13 @@ use function GroundhoggBookingCalendar\is_sms_plugin_active;
 
 $tab_list = [
 	'view'         => __( 'View', 'groundhogg-calendar' ),
+	'embed'        => __( 'Embed', 'groundhogg-calendar' ),
 	'settings'     => __( 'Settings', 'groundhogg-calendar' ),
 	'integration'  => __( 'Integration', 'groundhogg-calendar' ),
 	'availability' => __( 'Availability', 'groundhogg-calendar' ),
 	'notification' => __( 'Admin Notifications', 'groundhogg-calendar' ),
-	'emails'       => __( 'Reminder Emails', 'groundhogg-calendar' ),
-	'sms'          => __( 'Reminder SMS', 'groundhogg-calendar' ),
+	'emails'       => __( 'Email Reminders', 'groundhogg-calendar' ),
+	'sms'          => __( 'SMS Reminders', 'groundhogg-calendar' ),
 	'list'         => __( 'Appointments', 'groundhogg-calendar' ),
 ];
 
@@ -29,6 +30,9 @@ switch ( $tab ):
 	default:
 	case 'view':
 		include_once dirname( __FILE__ ) . '/view.php';
+		break;
+	case 'embed':
+		include_once dirname( __FILE__ ) . '/embed.php';
 		break;
 	case 'settings':
 		include_once dirname( __FILE__ ) . '/settings.php';

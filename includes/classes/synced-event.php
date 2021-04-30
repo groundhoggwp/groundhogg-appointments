@@ -42,7 +42,7 @@ class Synced_Event extends Base_Object {
 		$end   = strtotime( $event->getEnd()->getDateTime() );
 
 		// handle all day event
-		if ( ! $start || ! $end ){
+		if ( ! $start || ! $end ) {
 			$start = strtotime( $event->getStart()->getDate() );
 			$end   = strtotime( $event->getEnd()->getDate() );
 
@@ -67,6 +67,7 @@ class Synced_Event extends Base_Object {
 		$args = wp_parse_args( $this->get_dates_from_event( $event ), [
 			'event_id'           => $event->getId(),
 			'summary'            => $event->getSummary(),
+			'status'             => $event->getStatus(),
 			'local_gcalendar_id' => $gcal->get_id(),
 			'google_calendar_id' => $gcal->google_calendar_id,
 		] );
@@ -81,11 +82,13 @@ class Synced_Event extends Base_Object {
 
 		$times = $this->get_dates_from_event( $event );
 
-		if ( $this->start_time !== $times['start_time'] || $this->end_time !== $times['end_time'] ) {
-			$this->update( wp_parse_args( $times, [
-				'last_synced' => time()
-			] ) );
-		}
+//		if ( $this->start_time !== $times['start_time'] || $this->end_time !== $times['end_time'] ) {
+		$this->update( wp_parse_args( $times, [
+			'summary'     => $event->getSummary(),
+			'status'      => $event->getStatus(),
+			'last_synced' => time()
+		] ) );
+//		}
 	}
 
 	public function get_id() {

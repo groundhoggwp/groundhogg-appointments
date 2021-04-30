@@ -3,14 +3,15 @@
 namespace GroundhoggBookingCalendar;
 
 use Groundhogg\Event;
-use GroundhoggBookingCalendar\Classes\Calendar;
 use GroundhoggBookingCalendar\Classes\SMS_Reminder;
+use function Groundhogg\convert_to_local_time;
 use function Groundhogg\get_contactdata;
 use function Groundhogg\get_date_time_format;
 use function Groundhogg\get_db;
 use function Groundhogg\html;
 use GroundhoggBookingCalendar\Classes\Appointment;
 use GroundhoggBookingCalendar\Classes\Email_Reminder;
+use function Groundhogg\managed_page_url;
 
 /**
  * Created by PhpStorm.
@@ -50,76 +51,94 @@ class Replacements {
 	public function get_replacements() {
 		return [
 			[
-				'name'        => __( "Contact Appointment Start Time", 'groundhogg-calendar' ),
+				'name'        => __( 'Time to appointment', 'groundhogg-calendar' ),
+				'code'        => 'time_to_appointment',
+				'callback'    => array( $this, 'time_to_appointment' ),
+				'description' => __( 'The time difference to the start of the appointment', 'groundhogg-calendar' ),
+			],
+			[
+				'name'        => __( 'Contact Appointment Start Time', 'groundhogg-calendar' ),
 				'code'        => 'appointment_start_time',
 				'callback'    => array( $this, 'start_time' ),
 				'description' => __( 'Returns the start date & time of a contact\'s appointment.', 'groundhogg-calendar' ),
 			],
 			[
-				'name'        => __( "Contact Appointment End Time", 'groundhogg-calendar' ),
+				'name'        => __( 'Contact Appointment End Time', 'groundhogg-calendar' ),
 				'code'        => 'appointment_end_time',
 				'callback'    => array( $this, 'end_time' ),
 				'description' => __( 'Returns the end date & time of a contact\'s appointment.', 'groundhogg-calendar' ),
 			],
 			[
-				'name'        => __( "Admin Appointment Start Time", 'groundhogg-calendar' ),
+				'name'        => __( 'Admin Appointment Start Time', 'groundhogg-calendar' ),
 				'code'        => 'appointment_start_time_admin',
 				'callback'    => array( $this, 'start_time_admin' ),
 				'description' => __( 'Returns the start date & time of a contact\'s appointment in the admin\'s timezone.', 'groundhogg-calendar' ),
 			],
 			[
-				'name'        => __( "Admin Appointment End Time", 'groundhogg-calendar' ),
+				'name'        => __( 'Admin Appointment End Time', 'groundhogg-calendar' ),
 				'code'        => 'appointment_end_time_admin',
 				'callback'    => array( $this, 'end_time_admin' ),
 				'description' => __( 'Returns the end date & time of a contact\'s appointment in the admin\'s timezone.', 'groundhogg-calendar' ),
 			],
 			[
-				'name'        => __( "Appointment Actions", 'groundhogg-calendar' ),
+				'name'        => __( 'Appointment Actions', 'groundhogg-calendar' ),
 				'code'        => 'appointment_actions',
 				'callback'    => array( $this, 'appointment_actions' ),
 				'description' => __( 'Links to allow cancelling or re-scheduling appointments.', 'groundhogg-calendar' ),
 			],
 			[
-				'name'        => __( "Appointment Notes", 'groundhogg-calendar' ),
+				'name'        => __( 'Appointment Notes', 'groundhogg-calendar' ),
 				'code'        => 'appointment_notes',
 				'callback'    => array( $this, 'appointment_notes' ),
 				'description' => __( 'Any notes about the appointment.', 'groundhogg-calendar' ),
 			],
 			[
-				'name'        => __( "Google Meet URL", 'groundhogg-calendar' ),
+				'name'        => __( 'Google Meet URL', 'groundhogg-calendar' ),
 				'code'        => 'google_meet_url',
 				'callback'    => array( $this, 'google_meet_url' ),
 				'description' => __( 'Google Meet meeting URL. (Needs Google Meet Enabled)', 'groundhogg-calendar' ),
 			],
 			[
-				'name'        => __( "Zoom Meeting Details", 'groundhogg-calendar' ),
+				'name'        => __( 'Zoom Meeting Details', 'groundhogg-calendar' ),
 				'code'        => 'zoom_meeting_details',
 				'callback'    => array( $this, 'zoom_meeting_details' ),
 				'description' => __( 'Detail Description about zoom meeting. (Needs zoom enabled and synced)', 'groundhogg-calendar' ),
 			],
 			[
-				'name'        => __( "", 'groundhogg-calendar' ),
+				'name'        => __( 'Calender Owner First Name', 'groundhogg-calendar' ),
 				'code'        => 'calendar_owner_first_name',
 				'callback'    => array( $this, 'calendar_owner_first_name' ),
 				'description' => __( 'First name of calendar owner.', 'groundhogg-calendar' ),
 			],
 			[
-				'name'        => __( "", 'groundhogg-calendar' ),
+				'name'        => __( 'Calender Owner Last Name', 'groundhogg-calendar' ),
 				'code'        => 'calendar_owner_last_name',
 				'callback'    => array( $this, 'calendar_owner_last_name' ),
 				'description' => __( 'Last name of calendar owner.', 'groundhogg-calendar' ),
 			],
 			[
-				'name'        => __( "", 'groundhogg-calendar' ),
+				'name'        => __( 'Calender Owner Email', 'groundhogg-calendar' ),
 				'code'        => 'calendar_owner_email',
 				'callback'    => array( $this, 'calendar_owner_email' ),
 				'description' => __( 'Email address of calendar owner.', 'groundhogg-calendar' ),
 			],
 			[
-				'name'        => __( "", 'groundhogg-calendar' ),
+				'name'        => __( 'Calender Owner Phone Number', 'groundhogg-calendar' ),
 				'code'        => 'calendar_owner_phone',
 				'callback'    => array( $this, 'calendar_owner_phone' ),
 				'description' => __( 'Phone number of calendar owner.', 'groundhogg-calendar' ),
+			],
+			[
+				'name'        => __( 'Calender Owner Signature', 'groundhogg-calendar' ),
+				'code'        => 'calendar_owner_signature',
+				'callback'    => array( $this, 'calendar_owner_signature' ),
+				'description' => __( 'Signature of calendar owner.', 'groundhogg-calendar' ),
+			],
+			[
+				'name'        => __( 'Calendar Link', 'groundhogg-calendar' ),
+				'code'        => 'calender_link',
+				'callback'    => array( $this, 'calender_link' ),
+				'description' => __( 'Links to the booking calendar.', 'groundhogg-calendar' ),
 			],
 		];
 	}
@@ -166,6 +185,14 @@ class Replacements {
 		$this->appointment = $appointment;
 	}
 
+	public function time_to_appointment(){
+		if ( ! $this->get_appointment() ) {
+			return false;
+		}
+
+		return human_time_diff( time(), $this->get_appointment()->get_start_time() );
+	}
+
 	/**
 	 * Get the appointment start time.
 	 *
@@ -200,7 +227,7 @@ class Replacements {
 			return false;
 		}
 
-		$local_time = \Groundhogg\Plugin::$instance->utils->date_time->convert_to_local_time( $this->get_appointment()->get_start_time() );
+		$local_time = convert_to_local_time( $this->get_appointment()->get_start_time() );
 		$format     = get_date_time_format();
 
 		return date_i18n( $format, $local_time );
@@ -239,7 +266,7 @@ class Replacements {
 			return false;
 		}
 
-		$local_time = \Groundhogg\Plugin::$instance->utils->date_time->convert_to_local_time( $this->get_appointment()->get_end_time() );
+		$local_time = convert_to_local_time( $this->get_appointment()->get_end_time() );
 		$format     = get_date_time_format();
 
 		return date_i18n( $format, $local_time );
@@ -258,12 +285,17 @@ class Replacements {
 			return false;
 		}
 
-		if ( ! $this->get_appointment()->get_meta( 'notes' ) ) {
-			return __( 'There is no additional note with this appointment.', 'groundhogg-calendar' );
-		}
-
-		return wpautop( $this->get_appointment()->get_meta( 'notes' ) );
+		return wpautop( $this->get_appointment()->get_details() );
 	}
+
+	public function cancellation_reason(){
+
+	}
+
+	public function reschedule_reason(){
+
+	}
+
 
 	/**
 	 * Insert appointment management links.
@@ -297,7 +329,6 @@ class Replacements {
 		}
 
 		return wpautop( $this->get_appointment()->get_zoom_meeting_details() );
-
 	}
 
 
@@ -311,10 +342,9 @@ class Replacements {
 			return false;
 		}
 
-		return wpautop( $this->get_appointment()->get_meta( 'google_meet_url' ) );
+		return $this->get_appointment()->get_meta( 'google_meet_url' );
 
 	}
-
 
 	/**
 	 * Get the appointment end time.
@@ -385,6 +415,13 @@ class Replacements {
 		return $user->user_email;
 	}
 
+	/**
+	 * Get the owners phone number
+	 *
+	 * @param int $contact_id
+	 *
+	 * @return false|int|mixed|string
+	 */
 	public function calendar_owner_phone( $contact_id = 0 ) {
 		if ( ! $this->get_appointment() ) {
 			return false;
@@ -401,5 +438,39 @@ class Replacements {
 		return $user->phone;
 	}
 
+	/**
+	 * Find the owner's signature
+	 *
+	 * @return false|int|mixed|string
+	 */
+	public function calendar_owner_signature(){
+		if ( ! $this->get_appointment() ) {
+			return false;
+		}
+
+		$owner_id = $this->get_appointment()->get_owner_id();
+
+		$user = get_user_by( 'ID', $owner_id );
+
+		if ( ! $user ) {
+			//return admin details
+			return \Groundhogg\Plugin::instance()->replacements->replacement_owner_signature();
+		}
+
+		return $user->signature;
+	}
+
+	/**
+	 * Retrieve the calendar link
+	 *
+	 * @return false|string|void
+	 */
+	public function calender_link(){
+		if ( ! $this->get_appointment() ) {
+			return false;
+		}
+
+		return managed_page_url( sprintf( 'calendar/%s/', $this->get_appointment()->get_calendar()->slug ) );
+	}
 
 }
