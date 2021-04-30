@@ -14,6 +14,7 @@ use GroundhoggSMS\Classes\SMS;
 use WP_Error;
 use function Groundhogg\admin_page_url;
 use function Groundhogg\current_user_is;
+use function Groundhogg\do_replacements;
 use function Groundhogg\get_array_var;
 use function Groundhogg\get_contactdata;
 use function Groundhogg\get_db;
@@ -26,11 +27,13 @@ use GroundhoggBookingCalendar\Classes\Appointment;
 use GroundhoggBookingCalendar\Classes\Calendar;
 use Groundhogg\Plugin;
 use function Groundhogg\is_replacement_code_format;
+use function Groundhogg\utils;
 use function Groundhogg\validate_mobile_number;
 use function GroundhoggBookingCalendar\google;
 use function GroundhoggBookingCalendar\google_calendar;
 use function GroundhoggBookingCalendar\in_between_inclusive;
 use function GroundhoggBookingCalendar\is_sms_plugin_active;
+use function GroundhoggBookingCalendar\set_calendar_default_settings;
 use function GroundhoggBookingCalendar\zoom;
 
 
@@ -118,12 +121,15 @@ class Calendar_Page extends Admin_Page {
 			wp_send_json_error( __( 'Please provide a valid date selection.', 'groundhogg-calendar' ) );
 		}
 
+		$appt_name  = sanitize_text_field( get_post_var( 'appointment_name' ) );
+		$additional = sanitize_textarea_field( get_post_var( 'additional' ) );
+
 		$appointment = $calendar->schedule_appointment( [
 			'contact_id' => $contact->get_id(),
-			'name'       => sanitize_text_field( get_request_var( 'appointment_name' ) ),
+			'name'       => $appt_name,
 			'start_time' => absint( $start ),
 			'end_time'   => absint( $end ),
-			'notes'      => sanitize_textarea_field( get_request_var( 'notes' ) )
+			'additional' => $additional
 		] );
 
 		if ( ! $appointment->exists() ) {
@@ -154,8 +160,8 @@ class Calendar_Page extends Admin_Page {
 		$appointment = new Appointment( absint( get_request_var( 'id' ) ) );
 
 		$status = $appointment->reschedule( [
-			'start_time' => Plugin::$instance->utils->date_time->convert_to_utc_0( strtotime( sanitize_text_field( get_request_var( 'start_time' ) ) ) ),
-			'end_time'   => Plugin::$instance->utils->date_time->convert_to_utc_0( strtotime( sanitize_text_field( get_request_var( 'end_time' ) ) ) ),
+			'start_time' => utils()->date_time->convert_to_utc_0( strtotime( sanitize_text_field( get_request_var( 'start_time' ) ) ) ),
+			'end_time'   => utils()->date_time->convert_to_utc_0( strtotime( sanitize_text_field( get_request_var( 'end_time' ) ) ) ),
 		] );
 
 		if ( ! $status ) {
@@ -202,22 +208,24 @@ class Calendar_Page extends Admin_Page {
 
 		wp_enqueue_style( 'groundhogg-admin' );
 
-		if ( ( $this->get_current_action() === 'edit' && get_url_var( 'tab' ) === 'view' ) ) {
+		if ( $this->get_current_action() === 'edit' && get_url_var( 'tab', 'view' ) === 'view' ) {
+
 			$calendar = new Calendar( absint( get_url_var( 'calendar' ) ) );
+
 			wp_enqueue_script( 'groundhogg-appointments-admin' );
 			wp_localize_script( 'groundhogg-appointments-admin', 'GroundhoggCalendar', [
-				'calendar_id'   => absint( get_request_var( 'calendar' ) ),
-				'start_of_week' => get_option( 'start_of_week' ),
-				'min_date'      => $calendar->get_min_booking_period( true ),
-				'max_date'      => $calendar->get_max_booking_period( true ),
-				'disabled_days' => $calendar->get_dates_no_slots(),
-				'tab'           => get_request_var( 'tab', 'view' ),
-				'action'        => $this->get_current_action()
+				'calendar_id'    => absint( get_url_var( 'calendar' ) ),
+				'start_of_week'  => get_option( 'start_of_week' ),
+				'min_date'       => $calendar->get_min_booking_period( true ),
+				'max_date'       => $calendar->get_max_booking_period( true ),
+				'disabled_days'  => $calendar->get_dates_no_slots(),
+				'business_hours' => $calendar->get_business_hours(),
+				'events'         => $calendar->get_events_for_full_calendar(),
+				'tab'            => get_url_var( 'tab', 'view' ),
+				'action'         => $this->get_current_action(),
+				'item'           => $calendar
 			] );
 		}
-
-		wp_enqueue_script( 'fullcalendar-moment' );
-		wp_enqueue_script( 'fullcalendar-main' );
 
 		// STYLES
 		wp_enqueue_style( 'groundhogg-fullcalendar' );
@@ -288,18 +296,29 @@ class Calendar_Page extends Admin_Page {
 			$this->wp_die_no_access();
 		}
 
-		$name        = sanitize_text_field( get_request_var( 'name' ) );
-		$description = sanitize_textarea_field( get_request_var( 'description' ) );
+		$name        = sanitize_text_field( get_post_var( 'name' ) );
+		$description = sanitize_textarea_field( get_post_var( 'description' ) );
 
 		if ( ( ! $name ) || ( ! $description ) ) {
 			return new \WP_Error( 'no_data', __( 'Please enter name and description of calendar.', 'groundhogg-calendar' ) );
 		}
 
+		$slug     = sanitize_title( $name );
+		$new_slug = $slug;
+		$count    = 1;
+
+		while ( get_db( 'calendars' )->exists( [ 'slug' => $new_slug ] ) ) {
+			$new_slug = sprintf( "%s-%d", $slug, $count );
+			$count ++;
+		}
+
 		$owner_id = absint( get_request_var( 'owner_id', get_current_user_id() ) );
+
 		$calendar = new Calendar( [
 			'user_id'     => $owner_id,
 			'name'        => $name,
 			'description' => $description,
+			'slug'        => $new_slug
 		] );
 
 		if ( ! $calendar->exists() ) {
@@ -308,114 +327,7 @@ class Calendar_Page extends Admin_Page {
 
 		/* SET DEFAULTS */
 
-		// max booking period in availability
-		$calendar->update_meta( 'max_booking_period_count', absint( get_request_var( 'max_booking_period_count', 3 ) ) );
-		$calendar->update_meta( 'max_booking_period_type', sanitize_text_field( get_request_var( 'max_booking_period_type', 'months' ) ) );
-
-		//min booking period in availability
-		$calendar->update_meta( 'min_booking_period_count', absint( get_request_var( 'min_booking_period_count', 0 ) ) );
-		$calendar->update_meta( 'min_booking_period_type', sanitize_text_field( get_request_var( 'min_booking_period_type', 'days' ) ) );
-
-		//set default settings
-		$calendar->update_meta( 'slot_hour', 1 );
-		$calendar->update_meta( 'message', __( 'Appointment booked successfully!', 'groundhogg-calendar' ) );
-
-		// Create default emails...
-		$templates = get_email_templates();
-
-		// Booked
-		$scheduled = new Email( [
-			'title'     => $templates['scheduled']['title'],
-			'subject'   => $templates['scheduled']['title'],
-			'content'   => $templates['scheduled']['content'],
-			'status'    => 'ready',
-			'from_user' => $owner_id,
-		] );
-
-		$cancelled = new Email( [
-			'title'     => $templates['cancelled']['title'],
-			'subject'   => $templates['cancelled']['title'],
-			'content'   => $templates['cancelled']['content'],
-			'status'    => 'ready',
-			'from_user' => $owner_id,
-		] );
-
-		$rescheduled = new Email( [
-			'title'     => $templates['rescheduled']['title'],
-			'subject'   => $templates['rescheduled']['title'],
-			'content'   => $templates['rescheduled']['content'],
-			'status'    => 'ready',
-			'from_user' => $owner_id,
-		] );
-
-		$reminder = new Email( [
-			'title'     => $templates['reminder']['title'],
-			'subject'   => $templates['reminder']['title'],
-			'content'   => $templates['reminder']['content'],
-			'status'    => 'ready',
-			'from_user' => $owner_id,
-		] );
-
-		$calendar->update_meta( 'email_notifications', [
-			Email_Reminder::SCHEDULED   => $scheduled->get_id(),
-			Email_Reminder::RESCHEDULED => $rescheduled->get_id(),
-			Email_Reminder::CANCELLED   => $cancelled->get_id(),
-		] );
-
-		// set one hour before reminder by default
-
-		$calendar->update_meta( 'email_reminders', [
-			[
-				'when'     => 'before',
-				'period'   => 'hours',
-				'number'   => 1,
-				'email_id' => $reminder->get_id()
-			]
-		] );
-
-
-		//Create default SMS
-		if ( is_sms_plugin_active() ) {
-			$sms_scheduled = new SMS( [
-				'title'   => __( 'Appointment Scheduled', 'groundhogg-calendar' ),
-				'message' => __( "Hey {first},\n\nThank you for booking an appointment.\n\nYour appointment will be from {appointment_start_time} to {appointment_end_time}.\n\nThank you!\n\n@ the {business_name} team", 'groundhogg-calendar' ),
-
-			] );
-
-			$sms_cancelled = new SMS( [
-				'title'   => __( 'Appointment Cancelled', 'groundhogg-calendar' ),
-				'message' => __( "Hey {first},\n\nYour appointment scheduled on {appointment_start_time} has been cancelled.\n\nYou can always book another appointment using our booking page.\n\nThank you!\n\n@ the {business_name} team", 'groundhogg-calendar' ),
-
-			] );
-
-			$sms_rescheduled = new SMS( [
-				'title'   => __( 'Appointment Rescheduled', 'groundhogg-calendar' ),
-				'message' => __( "Hey {first},\n\nWe successfully rescheduled your appointment. Your new appointment will be from {appointment_start_time} to {appointment_end_time}.\n\nThank you!\n\n@ the {business_name} team", 'groundhogg-calendar' ),
-
-			] );
-
-			$sms_reminder = new SMS( [
-				'title'   => __( 'Appointment Reminder', 'groundhogg-calendar' ),
-				'message' => __( "Hey {first},\n\nJust a friendly reminder that you have appointment coming up with us on {appointment_start_time} we look forward to seeing you then.\n\nThank you!\n\n@ the {business_name} team", 'groundhogg-calendar' ),
-			] );
-
-			$calendar->update_meta( 'sms_notifications', [
-				SMS_Reminder::SCHEDULED   => $sms_scheduled->get_id(),
-				SMS_Reminder::RESCHEDULED => $sms_rescheduled->get_id(),
-				SMS_Reminder::CANCELLED   => $sms_cancelled->get_id(),
-			] );
-
-			// set one hour before reminder by default
-
-			$calendar->update_meta( 'sms_reminders', [
-				[
-					'when'   => 'before',
-					'period' => 'hours',
-					'number' => 1,
-					'sms_id' => $sms_reminder->get_id()
-				]
-			] );
-		}
+		set_calendar_default_settings( $calendar );
 
 		// update meta data to get set sms
 		$this->add_notice( 'success', __( 'New calendar created successfully!', 'groundhogg-calendar' ), 'success' );
@@ -475,36 +387,13 @@ class Calendar_Page extends Admin_Page {
 			return new \WP_Error( 'different_date', __( 'Start date and end date needs to be same.', 'groundhogg-calendar' ) );
 		}
 
-		//check appointment is in working hours.....
-		$availability = $appointment->get_calendar()->get_todays_available_periods( get_request_var( 'start_date' ) );
-
-		if ( empty( $availability ) ) {
-			return new \WP_Error( 'not_available', __( 'This date is not available.', 'groundhogg-calendar' ) );
-		}
-
-		$start_time = Plugin::$instance->utils->date_time->convert_to_utc_0( strtotime( get_request_var( 'start_date' ) . ' ' . get_request_var( 'start_time' ) ) );
-		$end_time   = Plugin::$instance->utils->date_time->convert_to_utc_0( strtotime( get_request_var( 'end_date' ) . ' ' . get_request_var( 'end_time' ) ) );
-
-		//check for times
-		if ( $start_time > $end_time ) {
-			return new \WP_Error( 'no_contact', __( 'End time can not be smaller then start time.', 'groundhogg-calendar' ) );
-		}
-
-		/**
-		 * @var $appointments_table \GroundhoggBookingCalendar\DB\Appointments;
-		 */
-		$appointments_table = get_db( 'appointments' );
-
-		if ( $appointments_table->appointments_exist_in_range_except_same_appointment( $start_time, $end_time, $appointment->get_calendar_id(), $appointment->get_id() ) ) {
-			return new \WP_Error( 'appointment_clash', __( 'You already have an appointment in this time slot.', 'groundhogg-calendar' ) );
-		}
 
 		// updates current appointment with the updated details and updates google appointment
 		$status = $appointment->reschedule( [
 			'contact_id' => $contact_id,
 			'name'       => sanitize_text_field( get_request_var( 'appointmentname' ) ),
-			'start_time' => $start_time,
-			'end_time'   => $end_time,
+//			'start_time' => $start_time,
+//			'end_time'   => $end_time,
 			'notes'      => sanitize_textarea_field( get_request_var( 'notes' ) )
 		] );
 
@@ -764,8 +653,10 @@ class Calendar_Page extends Admin_Page {
 		$calendar->update_meta( 'min_booking_period_count', absint( get_request_var( 'min_booking_period_count', 0 ) ) );
 		$calendar->update_meta( 'min_booking_period_type', sanitize_text_field( get_request_var( 'min_booking_period_type', 'days' ) ) );
 
-
 		$calendar->update_meta( 'rules', $availability );
+
+		// Save make me look busy
+		$calendar->update_meta( 'busy_slot', absint( get_request_var( 'busy_slot', 0 ) ) );
 
 		$this->add_notice( 'updated', __( 'Availability updated.' ) );
 	}
@@ -804,14 +695,12 @@ class Calendar_Page extends Admin_Page {
 		// Save buffer time
 		$calendar->update_meta( 'buffer_time', absint( get_request_var( 'buffer_time', 0 ) ) );
 
-		// Save make me look busy
-		$calendar->update_meta( 'busy_slot', absint( get_request_var( 'busy_slot', 0 ) ) );
-
 		// save success message
 		$calendar->update_meta( 'message', wp_kses_post( get_request_var( 'message' ) ) );
 
 		//save default note
 		$calendar->update_meta( 'default_note', sanitize_textarea_field( get_request_var( 'default_note' ) ) );
+		$calendar->update_meta( 'default_name', sanitize_text_field( get_request_var( 'default_name' ) ) );
 
 		// save thank you page
 		$calendar->update_meta( 'redirect_link_status', absint( get_request_var( 'redirect_link_status' ) ) );
@@ -835,13 +724,13 @@ class Calendar_Page extends Admin_Page {
 		// Turn of deselected calendars
 		$to_turn_off_sync = array_diff( $calendars_being_used, $google_calendar_list );
 
-		foreach ( $to_turn_off_sync as $google_calendar_id ){
+		foreach ( $to_turn_off_sync as $google_calendar_id ) {
 			$gcal = new Google_Calendar( $google_calendar_id );
 			$gcal->disable_sync();
 		}
 
 		// Turn on selected calendars
-		foreach ( $google_calendar_list as $google_calendar_id ){
+		foreach ( $google_calendar_list as $google_calendar_id ) {
 			$gcal = new Google_Calendar( $google_calendar_id );
 			$gcal->enable_sync();
 		}
@@ -857,13 +746,18 @@ class Calendar_Page extends Admin_Page {
 			$calendar->delete_meta( 'google_meet_enable' );
 		}
 
-		//save Zoom Meeting settings
+		//save Google Account id
 		if ( $account_id = absint( get_post_var( 'google_account_id' ) ) ) {
 			$calendar->set_google_connection_id( $account_id );
 		}
 
 		if ( $google_calendar_id = absint( get_post_var( 'google_calendar_id' ) ) ) {
 			$calendar->update_meta( 'google_calendar_id', $google_calendar_id );
+		}
+
+		//save Zoom Account id
+		if ( $account_id = absint( get_post_var( 'zoom_account_id' ) ) ) {
+			$calendar->set_zoom_account_id( $account_id );
 		}
 
 		$this->add_notice( 'success', _x( 'Integrations updated.', 'notice', 'groundhogg-calendar' ), 'success' );
@@ -932,7 +826,7 @@ class Calendar_Page extends Admin_Page {
 			'_wpnonce' => wp_create_nonce()
 		] );
 
-		return add_query_arg( [ 'return' => urlencode( $redirect_uri ) ], 'https://proxy.groundhogg.io/oauth/zoom/start/' );
+		return add_query_arg( [ 'redirect_uri' => urlencode( $redirect_uri ) ], 'https://proxy.groundhogg.io/oauth/zoom/start/' );
 	}
 
 

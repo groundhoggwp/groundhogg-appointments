@@ -45,10 +45,10 @@ $past_appointments = get_db( 'appointments' )->query( $args );
  */
 function get_status( $status ) {
 	switch ( $status ):
-		case 'approved':
+		case 'scheduled':
 			$color = 'green';
 			break;
-		case 'canceled':
+		case 'cancelled':
 			$color = 'red';
 			break;
 		case 'pending':
@@ -104,8 +104,9 @@ if ( empty( $appointments ) ):?>
 							<div class="ic-section-header">
 								<div class="ic-section-header-content">
 									<div class="basic-details">
-										<a href="<?php echo esc_url( admin_page_url( 'gh_calendar', [ 'action'      => 'edit_appointment',
-										                                                              'appointment' => $appointment->get_id()
+										<a href="<?php echo esc_url( admin_page_url( 'gh_calendar', [
+											'action'      => 'edit_appointment',
+											'appointment' => $appointment->get_id()
 										] ) ); ?> ">#<?php echo $appointment->get_id(); ?> </a>
 										<?php get_status( $appointment->get_status() ); ?>
 
@@ -143,8 +144,9 @@ if ( empty( $appointments ) ):?>
 							<div class="ic-section-header">
 								<div class="ic-section-header-content">
 									<div class="basic-details">
-										<a href="<?php echo esc_url( admin_page_url( 'gh_calendar', [ 'action'      => 'edit_appointment',
-										                                                              'appointment' => $appointment->get_id()
+										<a href="<?php echo esc_url( admin_page_url( 'gh_calendar', [
+											'action'      => 'edit_appointment',
+											'appointment' => $appointment->get_id()
 										] ) ); ?> ">#<?php echo $appointment->get_id(); ?> </a>
 										<?php get_status( $appointment->get_status() ); ?>
 

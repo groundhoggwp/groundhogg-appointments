@@ -1,12 +1,14 @@
 <?php
 namespace GroundhoggBookingCalendar\Admin;
 
+use function Groundhogg\get_date_time_format;
 use function Groundhogg\get_request_var;
 use Groundhogg\Plugin;
 use function  Groundhogg\html;
 use function  Groundhogg\get_contactdata;
 use GroundhoggBookingCalendar\Classes\Appointment;
 use GroundhoggBookingCalendar\Classes\Calendar;
+use function Groundhogg\utils;
 
 /*
  *  View Detail description about appointment and change status of appointment
@@ -22,8 +24,6 @@ if ( !$appointment->exists() ) {
 ?>
 <form name="" id="" method="post" action="">
     <?php wp_nonce_field(); ?>
-    <input type="hidden" name="appointment" value="<?php echo $appointment->get_id(); ?>"/>
-    <input type="hidden" name="calendar" value="<?php echo $appointment->get_calendar_id(); ?>"/>
     <table class="form-table">
         <tbody>
         <tr>
@@ -60,71 +60,33 @@ if ( !$appointment->exists() ) {
             </td>
         </tr>
         <tr>
-            <th scope="row"><label for="appointment-status"><?php _e( 'Appointment Status', 'groundhogg-calendar' ) ?></label>
+            <th scope="row"><label for="appointment-status"><?php _e( 'Status', 'groundhogg-calendar' ) ?></label>
             </th>
             <td id="appointment-status">
-                <?php echo html()->input( [
-                    'name' => 'status',
-                    'class' => 'input',
-                    'value' => ucwords( $appointment->get_status() ),
-                    'readonly' => true
-                ] ); ?>
-<!--                <div class="row-actions">-->
-                <p>
-                    <a class="button btn-approve"
-                       href="<?php echo wp_nonce_url( admin_url( 'admin.php?page=gh_calendar&action=approve_appointment&appointment=' . $appointment->get_id() ) ); ?>"><?php _e( 'Approve' ); ?></a>
-                    <a class="button btn-cancel"
-                       href="<?php echo wp_nonce_url( admin_url( 'admin.php?page=gh_calendar&action=cancel_appointment&appointment=' . $appointment->get_id() ) ); ?>"><?php _e( 'Cancel' ); ?></a>
-                </p>
-<!--                </div>-->
+                <?php echo html()->dropdown([
+                	'name' => 'change_status',
+	                'selected' => $appointment->get_status(),
+	                'options' => [
+	                	'scheduled' => __( 'Scheduled','groundhogg-calendar' ),
+	                	'cancelled' => __( 'Cancelled','groundhogg-calendar' ),
+	                ]
+                ]) ?>
             </td>
         </tr>
         <tr>
-            <th scope="row"><label for="start_date"><?php _e( 'Appointment Start Time', 'groundhogg-calendar' ) ?></label></th>
+            <th scope="row"><label for="start_date"><?php _e( 'Scheduled for', 'groundhogg-calendar' ) ?></label></th>
             <td>
                 <?php
-                echo html()->date_picker( [
-                    'class' => 'input',
-                    'placeholder' => 'Y-m-d',
-                    'type' => 'text',
-                    'id' => 'start_date',
-                    'name' => 'start_date',
-                    'value' => date( 'Y-m-d', Plugin::$instance->utils->date_time->convert_to_local_time( $appointment->get_start_time() ) ),
-                ] );
-
-                echo html()->input( [
-                    'type' => 'time',
-                    'class' => 'input',
-                    'id' => 'time',
-                    'name' => 'start_time',
-                    'value' => date( 'H:i:s', Plugin::$instance->utils->date_time->convert_to_local_time( $appointment->get_start_time() ) )
-                ] );
-
+                printf( __( '<b>%s</b> to <b>%s</b>', 'groundhogg-calendar' ),
+	                date_i18n( get_date_time_format(), $appointment->get_start_time( true ) ),
+	                date_i18n( get_date_time_format(), $appointment->get_end_time(true ) )
+                );
                 ?>
-            </td>
-        </tr>
-        <tr>
-            <th scope="row"><label for="end_date"><?php _e( 'Appointment End Time', 'groundhogg-calendar' ) ?></label></th>
-            <td>
-                <?php
-                echo html()->date_picker( [
-                    'class' => 'input',
-                    'placeholder' => 'Y-m-d',
-                    'type' => 'text',
-                    'id' => 'end_date',
-                    'name' => 'end_date',
-                    'value' => date( 'Y-m-d', Plugin::$instance->utils->date_time->convert_to_local_time( $appointment->get_end_time() ) ),
-                ] );
-
-                echo html()->input( [
-                    'type' => 'time',
-                    'class' => 'input',
-                    'id' => 'time',
-                    'name' => 'end_time',
-                    'value' => date( 'H:i:s', Plugin::$instance->utils->date_time->convert_to_local_time( $appointment->get_end_time() ) )
-                ] );
-
-                ?>
+	            <p>
+		            <?php echo html()->e( 'a', [
+		            	'href' => $appointment->reschedule_link()
+		            ], __( 'Reschedule', 'groundhogg-calendar' ) ) ?>
+	            </p>
             </td>
         </tr>
         <tr>

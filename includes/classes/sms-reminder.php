@@ -26,8 +26,7 @@ class SMS_Reminder implements Event_Process {
 	 */
 	public $appointment;
 
-	const BOOKED = 'appointment_booked';
-	const APPROVED = 'appointment_approved';
+	const SCHEDULED = 'appointment_scheduled';
 	const RESCHEDULED = 'appointment_rescheduled';
 	const CANCELLED = 'appointment_cancelled';
 

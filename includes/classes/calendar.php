@@ -3,27 +3,23 @@
 namespace GroundhoggBookingCalendar\Classes;
 
 use Exception;
-use Google_Service_Calendar;
-use Google_Service_Calendar_Calendar;
-use Groundhogg\Base_Object_With_Meta;
-use function Groundhogg\do_replacements;
-use function Groundhogg\utils;
-use function GroundhoggBookingCalendar\get_tz_db_name;
 use WP_Error;
-use function Groundhogg\get_array_var;
-use function Groundhogg\get_db;
-use function Groundhogg\isset_not_empty;
 use Groundhogg\Plugin;
-use function GroundhoggBookingCalendar\better_human_readable_duration;
-use function GroundhoggBookingCalendar\convert_to_client_timezone;
-use function GroundhoggBookingCalendar\google;
-use function GroundhoggBookingCalendar\google_calendar;
-use function GroundhoggBookingCalendar\in_between;
-use function GroundhoggBookingCalendar\in_between_inclusive;
+use Google_Service_Calendar;
+use Groundhogg\Base_Object_With_Meta;
 use GroundhoggBookingCalendar\DB\Appointments;
-use function GroundhoggBookingCalendar\send_reminder_notification;
+use function Groundhogg\array_map_keys;
+use function Groundhogg\convert_to_local_time;
+use function Groundhogg\utils;
+use function Groundhogg\get_db;
+use function Groundhogg\get_array_var;
+use function Groundhogg\do_replacements;
+use function Groundhogg\isset_not_empty;
+use function GroundhoggBookingCalendar\get_default_availability;
+use function GroundhoggBookingCalendar\get_time_format;
 use function GroundhoggBookingCalendar\zoom;
-use function GuzzleHttp\Psr7\str;
+use function GroundhoggBookingCalendar\in_between;
+use function GroundhoggBookingCalendar\better_human_readable_duration;
 
 class Calendar extends Base_Object_With_Meta {
 	protected function get_meta_db() {
@@ -62,23 +58,22 @@ class Calendar extends Base_Object_With_Meta {
 	 * @return bool
 	 */
 	public function is_connected_to_google() {
-		return $this->get_google_account_id() && $this->get_google_calendar_id();
+		return $this->get_google_connection_id() && $this->get_local_google_calendar_id();
 	}
 
 	/**
 	 * @return \Google_Client|WP_Error
 	 */
 	public function get_google_client() {
-		return google_calendar()->get_client( $this->get_google_account_id() );
+		return $this->get_google_connection()->get_client();
 	}
 
 	/**
 	 * @return bool|mixed|WP_Error
 	 * @deprecated
-	 *
 	 */
 	public function get_access_token() {
-		return google()->get_access_token( $this->get_google_account_id() );
+		return $this->get_google_connection()->get_client()->getAccessToken();
 	}
 
 	/**
@@ -86,8 +81,21 @@ class Calendar extends Base_Object_With_Meta {
 	 *
 	 * @return string
 	 */
-	public function get_google_calendar_id() {
+	public function get_local_google_calendar_id() {
 		return $this->get_meta( 'google_calendar_id', true );
+	}
+
+	/**
+	 * The id of the calendar of which appointments are added to
+	 *
+	 * @return string
+	 */
+	public function get_remote_google_calendar_id() {
+
+		$cal = new Google_Calendar( $this->get_local_google_calendar_id() );
+
+		return $cal->get_remote_google_id();
+
 	}
 
 	/**
@@ -96,7 +104,9 @@ class Calendar extends Base_Object_With_Meta {
 	 * @return array|mixed
 	 */
 	public function get_google_calendar_list() {
-		return $this->get_meta( 'google_calendar_list', true );
+		return $this->get_meta( 'google_calendar_list', true ) ?: [
+			$this->get_local_google_calendar_id()
+		];
 	}
 
 	/**
@@ -172,20 +182,18 @@ class Calendar extends Base_Object_With_Meta {
 	 * @return Appointment[]
 	 */
 	public function get_all_appointments() {
-		$ids = wp_parse_id_list( wp_list_pluck( Plugin::$instance->dbs->get_db( 'appointments' )->query( [ 'calendar_id' => $this->get_id() ] ), 'ID' ) );
+		$ids = wp_parse_id_list( wp_list_pluck( get_db( 'appointments' )->query( [ 'calendar_id' => $this->get_id() ] ), 'ID' ) );
 
-		$appts = [];
-
-		foreach ( $ids as $id ) {
-
-			$appts[] = new Appointment( $id );
-		}
-
-		return $appts;
+		/**
+		 * Ids to appointments
+		 */
+		return array_map( function ( $id ) {
+			return new Appointment( $id );
+		}, $ids );
 	}
 
 	public function get_rules() {
-		return $this->get_meta( 'rules' );
+		return $this->get_meta( 'rules' ) ?: get_default_availability();
 	}
 
 	/**
@@ -294,6 +302,7 @@ class Calendar extends Base_Object_With_Meta {
 			} else {
 				//check by checking the time slots
 				$slots = $this->get_appointment_slots( $start->format( 'Y-m-d' ) );
+
 				if ( empty( $slots ) ) {
 					$disabled_dates[] = $start->format( 'Y-m-d' );
 				}
@@ -394,7 +403,6 @@ class Calendar extends Base_Object_With_Meta {
 		return $interval;
 	}
 
-
 	/**
 	 * @param bool $as_string
 	 *
@@ -419,7 +427,6 @@ class Calendar extends Base_Object_With_Meta {
 		return $interval;
 	}
 
-
 	/**
 	 * Fetches valid time slots for end using by performing all the cleaning operations.
 	 * (Most Important method)
@@ -430,7 +437,7 @@ class Calendar extends Base_Object_With_Meta {
 	 * @return array|false|mixed
 	 */
 	public function get_appointment_slots( $date = '', $timezone = '' ) {
-		$slots = $this->get_all_available_slots( strtotime( $date ) );
+		$slots = $this->get_all_available_slots( $date );
 
 		$slots = $this->sort_slots( $slots );
 
@@ -438,16 +445,33 @@ class Calendar extends Base_Object_With_Meta {
 			return [];
 		}
 
-
-		$slots = $this->validate_appointments( $slots );
-		$slots = $this->clean_google_slots( $slots );
+		$slots = array_filter( $slots, [ $this, 'slot_is_available' ] );
 
 		if ( ! current_user_can( 'edit_appointment' ) ) {
 			$slots = $this->make_me_look_busy( $slots, strtotime( $date ) );
 		}
-		$slots = $this->get_slots_name( $slots, $timezone );
 
-		return $slots;
+		return array_values( $this->get_slots_name( $slots, $timezone ) );
+	}
+
+
+	/**
+	 * Check if a slot is taken based on the synced google appointments
+	 * and the regular appointments table
+	 *
+	 * @param $slot
+	 */
+	public function slot_is_available( $slot ) {
+
+		$connected_gcals = $this->get_google_calendar_list();
+
+		foreach ( $connected_gcals as $gcal ) {
+			if ( ! get_db( 'synced_events' )->time_available( $slot['start'], $slot['end'], $gcal ) ) {
+				return false;
+			}
+		}
+
+		return get_db( 'appointments' )->time_available( $slot['start'], $slot['end'], $this->get_id() );
 	}
 
 	/**
@@ -458,36 +482,26 @@ class Calendar extends Base_Object_With_Meta {
 	 *
 	 * @return mixed
 	 */
-	protected function get_slots_name( $slots, $timezone ) {
-		if ( $timezone ) {
+	protected function get_slots_name( $slots, $timezone = false ) {
 
-			foreach ( $slots as $i => $slot ) {
+		$format = get_time_format();
 
-				$format = $this->show_in_12_hour() ? "h:i A" : "H:i";
-				// Show display...
+		foreach ( $slots as $i => $slot ) {
+
+			// Show display...
+			if ( $timezone ) {
 				try {
-
-					$slots[ $i ]['display'] = sprintf( '%s - %s',
-						date_i18n( $format, utils()->date_time->convert_to_foreign_time( absint( $slot['start'] ), $timezone ) ),
-						date_i18n( $format, utils()->date_time->convert_to_foreign_time( absint( $slot['end'] ), $timezone ) )
+					$slots[ $i ]['display'] = sprintf( '%s',
+						date_i18n( $format, utils()->date_time->convert_to_foreign_time( absint( $slot['start'] ), $timezone ) )
 					);
 				} catch ( Exception $e ) {
-					$slots[ $i ]['display'] = sprintf( '%s - %s',
-						date_i18n( $format, utils()->date_time->convert_to_local_time( absint( $slot['start'] ) ) ),
-						date_i18n( $format, utils()->date_time->convert_to_local_time( absint( $slot['end'] ) ) )
+					$slots[ $i ]['display'] = sprintf( '%s',
+						date_i18n( $format, convert_to_local_time( absint( $slot['start'] ) ) )
 					);
 				}
-			}
-
-		} else {
-			foreach ( $slots as $i => $slot ) {
-
-				$format = $this->show_in_12_hour() ? "h:i A" : "H:i";
-
-				// Show display...
-				$slots[ $i ]['display'] = sprintf( '%s - %s',
-					date_i18n( $format, utils()->date_time->convert_to_local_time( absint( $slot['start'] ) ) ),
-					date_i18n( $format, utils()->date_time->convert_to_local_time( absint( $slot['end'] ) ) )
+			} else {
+				$slots[ $i ]['display'] = sprintf( '%s',
+					date_i18n( $format, convert_to_local_time( absint( $slot['start'] ) ) )
 				);
 			}
 		}
@@ -537,7 +551,7 @@ class Calendar extends Base_Object_With_Meta {
 		$base_time = time();
 
 		if ( $this->get_meta( 'min_booking_period_type' ) == 'hours' ) {
-			$base_time = $base_time + ( 60 * 60 * intval( $this->get_meta( 'min_booking_period_count' ) ) );
+			$base_time += HOUR_IN_SECONDS * intval( $this->get_meta( 'min_booking_period_count' ) );
 		}
 
 		foreach ( $available_periods as $period ) {
@@ -545,6 +559,7 @@ class Calendar extends Base_Object_With_Meta {
 			// 09:00
 			$start_time = date( 'H:i:s', strtotime( "{$period[0]}:00" ) );
 			$start_time = utils()->date_time->convert_to_utc_0( strtotime( "{$str_date_no_hours} {$start_time}" ) );
+
 			if ( $start_time < $base_time ) {
 				$start_time = strtotime( date( 'Y-m-d H:00:00', $base_time ) );
 			}
@@ -629,6 +644,8 @@ class Calendar extends Base_Object_With_Meta {
 		return true;
 	}
 
+	protected $google_appointments;
+
 	/**
 	 *
 	 * Fetch all the appointments between start and end-time from google calendar.
@@ -646,89 +663,86 @@ class Calendar extends Base_Object_With_Meta {
 
 		$client = $this->get_google_client();
 
-		$google_min           = date( 'c', ( $min_time ) );
-		$google_max           = date( 'c', ( $max_time ) );
-		$google_appointments  = [];
-		$service              = new Google_Service_Calendar( $client );
-		$google_calendar_list = $this->get_meta( 'google_calendar_list', true ) ?: [];
+		$google_min          = date( 'c', $min_time );
+		$google_max          = date( 'c', $max_time );
+		$google_appointments = [];
+		$service             = new Google_Service_Calendar( $client );
 
-		if ( count( $google_calendar_list ) > 0 ) {
-			foreach ( $google_calendar_list as $google_cal ) {
-				try {
-					$google_calendar = $service->calendars->get( $google_cal );
-					$optParams       = array(
+		// loop through calendars which are being used for availability
+		foreach ( $this->get_google_calendar_list() as $calendar_id ) {
+
+			try {
+				$optParams = array(
 //							'orderBy'      => 'startTime',
-						'singleEvents' => true,
-						'timeMin'      => $google_min,
-						'timeMax'      => $google_max
-					);
+					'singleEvents' => true,
+					'timeMin'      => $google_min,
+					'timeMax'      => $google_max
+				);
 
-					$results = $service->events->listEvents( $google_calendar->getId(), $optParams );
-					$events  = $results->getItems();
+				$results = $service->events->listEvents( $calendar_id, $optParams );
+				$events  = $results->getItems();
 
-					if ( ! empty( $events ) ) {
-						foreach ( $events as $event ) {
-
-
-							$google_start = $event->start->dateTime;
-							$google_end   = $event->end->dateTime;
-							/**
-							 * event contains start and end time thus it is appointment
-							 */
-							if ( ! empty( $google_start ) && ! empty( $google_end ) ) {
-
-								if ( strpos( $google_start, 'Z' ) ) {
-									$google_start = str_replace( 'Z', '', $google_start );
-									$google_end   = str_replace( 'Z', '', $google_end );
-
-									$google_appointments[] = array(
-										'display' => $event->getSummary(),
-										'start'   => utils()->date_time->convert_to_utc_0( strtotime( '+1 seconds', strtotime( date( $google_start ) ) ) ),
-										'end'     => utils()->date_time->convert_to_utc_0( strtotime( date( $google_end ) ) )
-									);
-
-								} else {
-
-									$google_appointments[] = array(
-										'display' => $event->getSummary(),
-										'start'   => strtotime( '+1 seconds', utils()->date_time->convert_to_utc_0( strtotime( date( $google_start ) ) ) ),
-										'end'     => utils()->date_time->convert_to_utc_0( strtotime( date( $google_end ) ) )
-									);
-								}
-
-							} else {
-								/**
-								 * Event does not contain start and end date time thus its all day event
-								 */
-
-								if ( $event->start->dateTime == null ) {
-									$google_start = $event->start->date;
-								}
-
-								if ( $event->end->dateTime == null ) {
-									$google_end = $event->end->date;
-								}
-
-								$google_appointments[] = array(
-									'display' => $event->getSummary(),
-									'start'   => strtotime( '+1 seconds', utils()->date_time->convert_to_utc_0( strtotime( date( $google_start ) ) ) ),
-									'end'     => utils()->date_time->convert_to_utc_0( strtotime( date( $google_end ) ) )
-								);
-							}
-						}
-					}
-
-				} catch ( Exception $e ) {
-					// catch if the calendar does not exist in google calendar
-					return [];
+				if ( empty( $events ) ) {
+					continue;
 				}
+
+				foreach ( $events as $event ) {
+
+					$google_start = $event->start->dateTime;
+					$google_end   = $event->end->dateTime;
+					/**
+					 * event contains start and end time thus it is appointment
+					 */
+					if ( ! empty( $google_start ) && ! empty( $google_end ) ) {
+
+						if ( strpos( $google_start, 'Z' ) ) {
+
+							$google_start = str_replace( 'Z', '', $google_start );
+							$google_end   = str_replace( 'Z', '', $google_end );
+
+							$google_appointments[] = array(
+								'display' => $event->getSummary(),
+								'start'   => utils()->date_time->convert_to_utc_0( strtotime( '+1 seconds', strtotime( date( $google_start ) ) ) ),
+								'end'     => utils()->date_time->convert_to_utc_0( strtotime( date( $google_end ) ) )
+							);
+
+						} else {
+
+							$google_appointments[] = array(
+								'display' => $event->getSummary(),
+								'start'   => strtotime( '+1 seconds', utils()->date_time->convert_to_utc_0( strtotime( date( $google_start ) ) ) ),
+								'end'     => utils()->date_time->convert_to_utc_0( strtotime( date( $google_end ) ) )
+							);
+						}
+
+					} else {
+						/**
+						 * Event does not contain start and end date time thus its all day event
+						 */
+
+						if ( $event->start->dateTime == null ) {
+							$google_start = $event->start->date;
+						}
+
+						if ( $event->end->dateTime == null ) {
+							$google_end = $event->end->date;
+						}
+
+						$google_appointments[] = array(
+							'display' => $event->getSummary(),
+							'start'   => strtotime( '+1 seconds', utils()->date_time->convert_to_utc_0( strtotime( date( $google_start ) ) ) ),
+							'end'     => utils()->date_time->convert_to_utc_0( strtotime( date( $google_end ) ) )
+						);
+					}
+				}
+			} catch ( Exception $e ) {
+				// catch if the calendar does not exist in google calendar
+				return [];
 			}
 		}
 
 		return $google_appointments;
 	}
-
-	protected $google_appointments;
 
 	/**
 	 * Removes google appointment slots from all the appointment slots.
@@ -791,7 +805,6 @@ class Calendar extends Base_Object_With_Meta {
 		return $clean2;
 	}
 
-
 	/**
 	 * Clean appointments where time slots are smaller then appointment.
 	 *
@@ -817,7 +830,6 @@ class Calendar extends Base_Object_With_Meta {
 
 		return $clean_slots;
 	}
-
 
 	/**
 	 * Clean appointments where time slots are bigger then appointment.
@@ -845,6 +857,7 @@ class Calendar extends Base_Object_With_Meta {
 
 		return $clean_slots;
 	}
+
 
 	/**
 	 *  Removes duplicate slots from the slots array and sort array to display time slots in ascending order.
@@ -938,14 +951,42 @@ class Calendar extends Base_Object_With_Meta {
 	}
 
 	/**
+	 * Whether an admin notification is enabled or not.
+	 *
+	 * @param $which
+	 *
+	 * @return bool
+	 */
+	public function is_admin_notification_enabled( $which ) {
+		$notifications = $this->get_meta( 'enabled_admin_notifications' );
+
+		// Default to true if these have not been specifically configured.
+		if ( ! $notifications ) {
+			return true;
+		}
+
+		return (bool) get_array_var( $notifications, $which );
+	}
+
+
+	/**
+	 * Whether SMS notifications are enabled or not.
+	 *
+	 * @return bool
+	 */
+	public function are_sms_notifications_enabled() {
+		return (bool) $this->get_meta( 'enable_sms_notifications' );
+	}
+
+	/**
 	 * Get the set of notification emails.
 	 *
 	 * @param string $which which email to retrieve, otherwise get ALL emails
 	 *
 	 * @return array|int
 	 */
-	public function get_notification_emails( $which = '' ) {
-		$emails = $this->get_meta( 'emails' );
+	public function get_email_notification( $which ) {
+		$emails = $this->get_meta( 'email_notifications' );
 
 		if ( ! $which ) {
 			return $emails;
@@ -961,8 +1002,8 @@ class Calendar extends Base_Object_With_Meta {
 	 *
 	 * @return mixed|int
 	 */
-	public function get_notification_sms( $which = '' ) {
-		$sms = $this->get_meta( 'sms' );
+	public function get_sms_notification( $which ) {
+		$sms = $this->get_meta( 'sms_notifications' );
 
 		if ( ! $which ) {
 			return $sms;
@@ -976,8 +1017,8 @@ class Calendar extends Base_Object_With_Meta {
 	 *
 	 * @return array
 	 */
-	public function get_reminder_emails() {
-		$reminders = $this->get_meta( 'reminders' );
+	public function get_email_reminders() {
+		$reminders = $this->get_meta( 'email_reminders' );
 
 		if ( ! is_array( $reminders ) ) {
 			$reminders = []; // Todo Add defaults?
@@ -991,13 +1032,12 @@ class Calendar extends Base_Object_With_Meta {
 		return $reminders;
 	}
 
-
 	/**
 	 * Get the list of reminder emails...
 	 *
 	 * @return array
 	 */
-	public function get_reminder_sms() {
+	public function get_sms_reminders() {
 		$reminders = $this->get_meta( 'sms_reminders' );
 
 		if ( ! is_array( $reminders ) ) {
@@ -1012,7 +1052,6 @@ class Calendar extends Base_Object_With_Meta {
 		return $reminders;
 	}
 
-
 	/**
 	 * Add a new appointment to this calendar.
 	 *
@@ -1025,49 +1064,33 @@ class Calendar extends Base_Object_With_Meta {
 		$args = wp_parse_args( $args, [
 			'contact_id'  => 0,
 			'calendar_id' => $this->get_id(),
-			'name'        => $this->get_name(),
-			'status'      => 'approved',
+			'name'        => $this->get_meta( 'default_name' ),
+			'status'      => 'scheduled',
 			'start_time'  => time(),
 			'end_time'    => time() + $this->get_appointment_length( true ),
+			'additional'  => '',
 		] );
 
-		do_action( 'groundhogg/calendar/schedule_appointment/before', $this, $args );
+		$args['name'] = do_replacements( $args['name'], $args['contact_id'] );
 
 		$args = apply_filters( 'groundhogg/calendar/schedule_appointment', $args, $this );
 
 		$appointment = new Appointment( $args );
 
-		$notes = sanitize_textarea_field(
-			do_replacements( $appointment->get_calendar()->get_meta( 'default_note' ),
-				$args['contact_id'] ) );
-
-		$appointment->update_meta( 'notes', $notes );
-
 		if ( ! $appointment->exists() ) {
 			return false;
 		}
 
-		$appointment->create_zoom_meeting();
+		$appointment->update_meta( 'additional', $appointment['additional'] );
 
-		$appointment->add_in_google();
-
-		$appointment->book();
+		$appointment->schedule();
 
 		do_action( 'groundhogg/calendar/schedule_appointment/after', $this, $appointment );
-
-		do_action( 'groundhogg/calendar/appointment/book', $appointment->get_id(), Reminder::BOOKED );
-
-		if ( $args['status'] === 'approved' ) {
-			$appointment->approve();
-		}
-
-		if ( $args['status'] === 'cancelled' ) {
-			$appointment->cancel();
-		}
 
 		return $appointment;
 
 	}
+
 
 	/**
 	 * Set the Google account ID
@@ -1076,9 +1099,20 @@ class Calendar extends Base_Object_With_Meta {
 	 *
 	 * @return bool|mixed
 	 */
-	public function set_google_account_id( $id ) {
-		return $this->update_meta( 'google_account_id', $id );
+	public function set_google_connection_id( $id ) {
+		return $this->update_meta( 'google_connection_id', $id );
+	}
 
+
+	/**
+	 * Set the Google account ID
+	 *
+	 * @param $id
+	 *
+	 * @return bool|mixed
+	 */
+	public function set_google_calendar_id( $id ) {
+		return $this->update_meta( 'google_calendar_id', $id );
 	}
 
 	/**
@@ -1086,8 +1120,24 @@ class Calendar extends Base_Object_With_Meta {
 	 *
 	 * @return string
 	 */
-	public function get_google_account_id() {
-		return $this->get_meta( 'google_account_id' );
+	public function get_google_connection_id() {
+		return $this->get_meta( 'google_connection_id' );
+	}
+
+	/**
+	 * @var Google_Connection
+	 */
+	protected $google_connection;
+
+	/**
+	 * @return Google_Connection
+	 */
+	public function get_google_connection() {
+		if ( ! $this->google_connection ) {
+			$this->google_connection = new Google_Connection( $this->get_google_connection_id() );
+		}
+
+		return $this->google_connection;
 	}
 
 	/**
@@ -1152,4 +1202,54 @@ class Calendar extends Base_Object_With_Meta {
 	public function get_zoom_account_id() {
 		return $this->get_meta( 'zoom_account_id' );
 	}
+
+	/**
+	 * Get all appointments from this calendar and also any google events
+	 */
+	public function get_events_for_full_calendar() {
+
+		$local_appointments = $this->get_all_appointments();
+		$local_events       = array_map_keys( array_map( function ( $event ) {
+			return $event->get_for_full_calendar();
+		}, $local_appointments ), function ( $i, $event ) {
+			return $event['id'];
+		} );
+
+		$google_events = get_db( 'synced_events' )->query( [
+			'local_gcalendar_id' => $this->get_google_calendar_list()
+		] );
+
+		$google_events = array_map_keys( array_map( function ( $event ) {
+			$event = new Synced_Event( $event->event_id );
+
+			return $event->get_for_full_calendar();
+		}, $google_events ), function ( $i, $event ) {
+			return $event['id'];
+		} );
+
+		return array_values( array_merge( $google_events, $local_events ) );
+	}
+
+	/**
+	 * Get the business hours in a readable format for Fullcalendar
+	 *
+	 * @return array
+	 */
+	public function get_business_hours() {
+
+		$availability = $this->get_meta( 'rules', true ) ?: get_default_availability();
+
+		$business_hours = [];
+
+		foreach ( $availability as $avail ) :
+			$business_hours[] = [
+				'dow'   => $this->get_day_number( $avail['day'] ),
+				'start' => $avail['start'],
+				'end'   => $avail['end'],
+			];
+		endforeach;
+
+		return $business_hours;
+	}
+
 }

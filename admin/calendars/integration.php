@@ -1,6 +1,7 @@
 <?php
 namespace GroundhoggBookingCalendar\Admin\Calendars;
 
+use Groundhogg\Plugin;
 use function Groundhogg\action_url;
 use function Groundhogg\array_map_keys;
 use function Groundhogg\array_map_with_keys;
@@ -75,7 +76,7 @@ $connections = get_db( 'google_connections' )->query();
 							} ), function ( $v, $i ) {
 								return $v->name;
 							} ),
-							'selected'    => $calendar->get_google_calendar_id(),
+							'selected'    => $calendar->get_local_google_calendar_id(),
 							'name'        => 'google_calendar_id',
 							'option_none' => __( 'Please select a calendar', 'groundhogg-calendar' ),
 						] );
@@ -97,7 +98,7 @@ $connections = get_db( 'google_connections' )->query();
 								'name'    => 'google_calendar_list[]',
 								'value'   => $google_calendar->get_id(),
 								'label'   => $google_calendar->name,
-								'checked' => in_array( $google_calendar->get_id(), $calendar->get_google_calendar_list() ) || $calendar->get_google_calendar_id() === $google_calendar->get_id(),
+								'checked' => in_array( $google_calendar->get_id(), $calendar->get_google_calendar_list() ) || $calendar->get_local_google_calendar_id() === $google_calendar->get_id(),
 							) );
 							echo '<br/>';
 						}
@@ -107,7 +108,7 @@ $connections = get_db( 'google_connections' )->query();
 				</td>
 			</tr>
 			<tr>
-				<th scope="row"><label><?php _e( 'Enable Google Meet', 'groundhogg-calendar' ) ?></label></th>
+				<th scope="row"><label><?php _e( 'Create a Google Meet room', 'groundhogg-calendar' ) ?></label></th>
 				<td>
 					<?php echo html()->checkbox( [
 						'label'   => "Enable",
@@ -118,31 +119,37 @@ $connections = get_db( 'google_connections' )->query();
 				</td>
 			</tr>
 			<tr>
-				<th scope="row"><label><?php _e( 'Google Appointment Name' ) ?></label></th>
-				<td id="appointment-name">
+				<th scope="row">
+					<label><?php _e( 'Override appointment name in Google', 'groundhogg-calendar' ) ?></label></th>
+				<td>
+					<p><?php Plugin::$instance->replacements->show_replacements_dropdown(); ?></p>
 					<?php
 					echo html()->input( [
-						'type'  => 'text',
-						'name'  => 'google_appointment_name',
-						'value' => $calendar->get_meta( 'google_appointment_name', true )
+						'type'        => 'text',
+						'name'        => 'google_appointment_name',
+						'value'       => $calendar->get_meta( 'google_appointment_name', true ),
+						'placeholder' => $calendar->get_meta( 'default_name' ),
 					] );
 					?>
 
-					<p class="description"><?php _e( 'This name will be displayed in the Google calendar when appointment is booked. It supports replacement codes. It also updates the name in Groundhogg Calendar after sync.', 'groundhogg-calendar' ); ?></p>
+					<p class="description"><?php _e( 'This will override the regular appointment name in your Google calendar. Leave empty if no change is required.', 'groundhogg-calendar' ); ?></p>
 				</td>
 			</tr>
 			<tr>
-				<th scope="row"><label><?php _e( 'Google Appointment Description' ) ?></label></th>
-				<td id="appointment-name">
-					<p><?php \Groundhogg\Plugin::$instance->replacements->show_replacements_dropdown(); ?></p>
+				<th scope="row"><label><?php _e( 'Additional details for Google' ) ?></label></th>
+				<td>
+					<p><?php Plugin::$instance->replacements->show_replacements_dropdown(); ?></p>
 					<p><?php
 						echo html()->textarea( [
-							'name'  => 'google_appointment_description',
-							'value' => $calendar->get_meta( 'google_appointment_description', true )
+							'name'        => 'google_appointment_description',
+							'value'       => $calendar->get_meta( 'google_appointment_description', true ),
+							'class'       => '',
+							'cols'        => 60,
+							'placeholder' => __( 'Additional details only visible in Google calendar...', 'groundhogg-calendar' ),
 						] );
 						?></p>
 
-					<p class="description"><?php _e( 'This description will be displayed in the Google calendar when appointment is booked. It supports replacement codes.', 'groundhogg-calendar' ); ?></p>
+					<p class="description"><?php _e( 'These details will be added to the regular appointment notes in your Google calendar.', 'groundhogg-calendar' ); ?></p>
 				</td>
 			</tr>
 		<?php endif; ?>
@@ -177,8 +184,5 @@ $connections = get_db( 'google_connections' )->query();
 		</tr>
 		</tbody>
 	</table>
-	<input type="hidden" value="<?php echo $calendar_id; ?>" name="calendar" id="calendar"/>
-	<div class="add-calendar-actions">
-		<?php submit_button( __( 'Save changes' ), 'primary', 'update', false ); ?>
-	</div>
+	<?php submit_button( __( 'Save changes' ), 'primary', 'update' ); ?>
 </form>

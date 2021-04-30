@@ -107,8 +107,14 @@ abstract class Base {
 		$connection = $this->get_connection_details( $id );
 
 		if ( ! $connection ) {
-			return new \WP_Error( 'error', 'no token' );
+			return false;
 		}
+
+		if ( $this->is_token_expired( $id ) ){
+			$id = $this->refresh_connection( $id );
+		}
+
+		$connection = $this->get_connection_details( $id );
 
 		return get_array_var( $connection, 'access_token' );
 	}

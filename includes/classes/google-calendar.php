@@ -19,6 +19,10 @@ class Google_Calendar extends Base_Object {
 		$this->connection = $connection;
 	}
 
+	public function get_remote_google_id() {
+		return $this->google_calendar_id;
+	}
+
 	protected function post_setup() {
 		$numeric_keys = [
 			'google_account_id',

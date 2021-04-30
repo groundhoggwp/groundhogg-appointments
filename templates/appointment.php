@@ -2,13 +2,12 @@
 
 namespace GroundhoggBookingCalendar;
 
-use function Groundhogg\get_request_query;
 use function Groundhogg\get_request_var;
 use function Groundhogg\html;
 use function Groundhogg\managed_page_footer;
 use function Groundhogg\managed_page_head;
 use GroundhoggBookingCalendar\Classes\Appointment;
-use GroundhoggBookingCalendar\Classes\Calendar;
+use function Groundhogg\tracking;
 
 if ( !defined( 'ABSPATH' ) ) exit;
 
@@ -31,7 +30,7 @@ $action = get_query_var( 'action' );
 $appointment_id = get_query_var( 'appointment_id' );
 $appointment = new Appointment( $appointment_id );
 
-if ( \Groundhogg\Plugin::$instance->tracking->get_current_contact_id() !== $appointment->get_contact_id() ) {
+if ( tracking()->get_current_contact_id() !== $appointment->get_contact_id() && ! current_user_can( 'edit_contacts' ) ) {
     wp_die();
 }
 
@@ -41,14 +40,7 @@ switch ( $action ):
     default:
     case 'reschedule':
 
-        ?>
-        <div class="box">
-            <!-- BOOKING CALENDAR GOES HERE -->
-            <?php
-            echo do_shortcode( sprintf( '[gh_calendar id="%d" reschedule="%d"]', $appointment->get_calendar_id(), $appointment->get_id() ) );
-            ?>
-        </div>
-        <?php
+        echo do_shortcode( sprintf( '[gh_calendar id="%d" reschedule="%d"]', $appointment->get_calendar_id(), $appointment->get_id() ) );
 
         break;
     case 'cancel':

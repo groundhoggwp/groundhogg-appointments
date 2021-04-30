@@ -46,7 +46,6 @@ class Synced_Events extends DB {
 	 * Clean up DB events when this happens.
 	 */
 	protected function add_additional_actions() {
-		add_action( 'groundhogg/db/post_delete/calendar', [ $this, 'calendar_deleted' ] );
 	}
 
 
@@ -62,6 +61,7 @@ class Synced_Events extends DB {
 			'summary'            => '%s',
 			'local_gcalendar_id' => '%d',
 			'google_calendar_id' => '%s',
+			'status'             => '%s',
 			'start_time'         => '%d',
 			'end_time'           => '%d',
 			'start_time_pretty'  => '%s',
@@ -82,6 +82,7 @@ class Synced_Events extends DB {
 			'summary'            => '',
 			'local_gcalendar_id' => 0,
 			'google_calendar_id' => '',
+			'status'             => '',
 			'start_time'         => 0,
 			'end_time'           => 0,
 			'start_time_pretty'  => '',
@@ -108,32 +109,15 @@ class Synced_Events extends DB {
 		$results = $wpdb->get_results( sprintf( '
 	SELECT * FROM %4$s
 		WHERE ( 
-		    ( start_time BETWEEN %1$d AND %2$d )
-			OR ( end_time BETWEEN %1$d AND %2$d )
+		    ( start_time > %1$d AND start_time < %2$d )
+			OR ( end_time >  %1$d AND end_time < %2$d )
 		    OR ( start_time <= %1$d AND end_time >= %2$d ) 
 		    OR ( start_time >= %1$d AND end_time <= %2$d ) 
 		) 
-		AND local_gcalendar_id = %3$d',
-			$start, $end, $local_gcalendar_id, $this->table_name ) );
+		AND local_gcalendar_id = %3$d AND status = "%5$s"',
+			$start, $end, $local_gcalendar_id, $this->table_name, 'confirmed' ) );
 
 		return empty( $results );
-	}
-
-	/**
-	 * Delete appointments associated with the calendars...
-	 *
-	 * @param $id int Calendar ID
-	 *
-	 * @return mixed
-	 */
-	public function calendar_deleted( $id ) {
-		$appointments = $this->query( [ 'calendar_id' => $id ] );
-		$result       = false;
-		foreach ( $appointments as $appointment ) {
-			$result = $this->delete( absint( $appointment->ID ) );
-		}
-
-		return $result;
 	}
 
 	/**
@@ -145,7 +129,7 @@ class Synced_Events extends DB {
 
 		// Delete events which haven't been synced in at least an hour (assume they were deleted in Google)
 		// OR events older than the current time
-		$wpdb->query( $wpdb->prepare( "DELETE FROM {$this->table_name} WHERE `end_time` < %s OR `last_synced` < %s", time(), time() - HOUR_IN_SECONDS  ) );
+		$wpdb->query( $wpdb->prepare( "DELETE FROM {$this->table_name} WHERE `end_time` < %s OR `last_synced` < %s", time(), time() - HOUR_IN_SECONDS ) );
 
 		// Cache compat
 		$this->cache_set_last_changed();
@@ -166,6 +150,7 @@ class Synced_Events extends DB {
         summary mediumtext NOT NULL,
         google_calendar_id varchar({$this->get_max_index_length()}) NOT NULL,
         local_gcalendar_id bigint(20) unsigned NOT NULL,
+        status varchar(20) NOT NULL,
         start_time bigint(20) unsigned NOT NULL,
         end_time bigint(20) unsigned NOT NULL,
         start_time_pretty datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,

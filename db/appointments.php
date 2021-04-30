@@ -4,6 +4,7 @@ namespace GroundhoggBookingCalendar\DB;
 
 use Groundhogg\DB\DB;
 use GroundhoggBookingCalendar\Plugin;
+use function GroundhoggBookingCalendar\generate_uuid;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -48,6 +49,9 @@ class Appointments extends DB {
 		add_action( 'groundhogg/db/post_delete/calendar', [ $this, 'calendar_deleted' ] );
 	}
 
+	public function get_date_key() {
+		return 'start_time';
+	}
 
 	/**
 	 * Get columns and formats
@@ -59,12 +63,42 @@ class Appointments extends DB {
 		return array(
 			'ID'          => '%d',
 			'contact_id'  => '%d',
+			'uuid'        => '%s',
 			'calendar_id' => '%d',
 			'name'        => '%s',
 			'status'      => '%s',
 			'start_time'  => '%d',
 			'end_time'    => '%d',
 		);
+	}
+
+	/**
+	 * @param $start
+	 * @param $end
+	 * @param $local_gcalendar_id
+	 *
+	 * @return bool
+	 */
+	public function time_available( $start, $end, $calendar_id ) {
+		global $wpdb;
+
+		// 1. Start time of an existing event is within the range of the slot
+		// 2. End time of an existing event is within the range of the slot
+		// 3. An existing event is within the bounds of the slot
+		// 4. Slot is within the bounds of an existing event
+
+		$results = $wpdb->get_results( sprintf( '
+	SELECT * FROM %4$s
+		WHERE ( 
+		    ( start_time > %1$d AND start_time < %2$d )
+			OR ( end_time > %1$d AND end_time < %2$d )
+		    OR ( start_time <= %1$d AND end_time >= %2$d ) 
+		    OR ( start_time >= %1$d AND end_time <= %2$d ) 
+		) 
+		AND calendar_id = %3$d AND status = "%5$s"',
+			$start, $end, $calendar_id, $this->table_name, 'scheduled' ) );
+
+		return empty( $results );
 	}
 
 	/**
@@ -77,44 +111,13 @@ class Appointments extends DB {
 		return array(
 			'ID'          => 0,
 			'contact_id'  => 0,
+			'uuid'        => generate_uuid(),
 			'calendar_id' => 0,
 			'name'        => '',
-			'status'      => 'pending',
+			'status'      => 'scheduled',
 			'start_time'  => 0,
 			'end_time'    => 0,
 		);
-	}
-
-	/**
-	 * @param $a           int
-	 * @param $b           int
-	 * @param $calendar_id int
-	 *
-	 * @return array|null|object
-	 */
-	public function appointments_exist_in_range( $a, $b, $calendar_id ) {
-		global $wpdb;
-
-		$results = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$this->get_table_name()} WHERE ( (start_time BETWEEN %d AND %d) OR (end_time BETWEEN %d AND %d) ) AND calendar_id = %d",
-			$a, $b, $a, $b, absint( $calendar_id ) ) );
-
-		return $results;
-	}
-
-	/**
-	 * @param $a           int
-	 * @param $b           int
-	 * @param $calendar_id int
-	 *
-	 * @return array|null|object
-	 */
-	public function appointments_exist_in_range_except_same_appointment( $a, $b, $calendar_id, $appointment_id ) {
-		global $wpdb;
-
-		$results = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$this->get_table_name()} WHERE ( (start_time BETWEEN %d AND %d) OR (end_time BETWEEN %d AND %d) ) AND calendar_id = %d AND ID != %d",
-			$a, $b, $a, $b, absint( $calendar_id ), absint( $appointment_id ) ) );
-
-		return $results;
 	}
 
 	/**
@@ -163,6 +166,7 @@ class Appointments extends DB {
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 		$sql = "CREATE TABLE " . $this->table_name . " (
         ID bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        uuid varchar({$this->get_max_index_length()}) NOT NULL,
         contact_id bigint(20) unsigned NOT NULL,
         calendar_id bigint(20) unsigned NOT NULL,
         name mediumtext NOT NULL,

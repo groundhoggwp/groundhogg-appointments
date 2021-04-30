@@ -10,7 +10,7 @@ use function Groundhogg\html;
 use Groundhogg\Step;
 use Groundhogg\Steps\Benchmarks\Benchmark;
 use GroundhoggBookingCalendar\Classes\Appointment;
-use GroundhoggBookingCalendar\Classes\Reminder;
+use GroundhoggBookingCalendar\Classes\Email_Reminder;
 
 class Booking_Calendar extends Benchmark {
 
@@ -32,17 +32,16 @@ class Booking_Calendar extends Benchmark {
 
 	protected function get_complete_hooks() {
 		return [
-			'groundhogg/calendar/appointment/book'       => 2,
-			'groundhogg/calendar/appointment/reschedule' => 2,
-			'groundhogg/calendar/appointment/cancelled'  => 2,
-			'groundhogg/calendar/appointment/approve'    => 2
+			'groundhogg/calendar/appointment/scheduled'   => 1,
+			'groundhogg/calendar/appointment/rescheduled' => 1,
+			'groundhogg/calendar/appointment/cancelled'   => 1,
 		];
 	}
 
 	public function settings( $step ) {
 		html()->start_form_table();
 		html()->start_row();
-		html()->th( __( 'Run when appointment book in this calendar:', 'groundhogg-calendar' ) );
+		html()->th( __( 'Run when appointment status changed for this calendar:', 'groundhogg-calendar' ) );
 		html()->td(
 			[
 				$this->dropdown_calendar( [ 'selected' => $this->get_setting( 'calendar' ) ] ),
@@ -50,20 +49,18 @@ class Booking_Calendar extends Benchmark {
 		);
 		html()->end_row();
 		html()->start_row();
-		html()->th( __( 'Run when appointment book in this calendar:', 'groundhogg-calendar' ) );
+		html()->th( __( 'For which status should this run:', 'groundhogg-calendar' ) );
 		html()->td(
 			[
 				html()->dropdown( [
 					'id'       => $this->setting_id_prefix( 'action' ),
 					'name'     => $this->setting_name_prefix( 'action' ),
 					'options'  => [
-						Reminder::BOOKED      => __( 'Appointment Created' ),
-						Reminder::RESCHEDULED => __( 'Appointment Rescheduled' ),
-						Reminder::APPROVED    => __( 'Appointment Approved' ),
-						Reminder::CANCELLED   => __( 'Appointment Cancelled' ),
-//                        'deleted' => __( 'Appointment Deleted' ),
+						Email_Reminder::SCHEDULED   => __( 'Appointment Scheduled' ),
+						Email_Reminder::RESCHEDULED => __( 'Appointment Rescheduled' ),
+						Email_Reminder::CANCELLED   => __( 'Appointment Cancelled' ),
 					],
-					'selected' => $this->get_setting( 'action' )
+					'selected' => $this->get_setting( 'action' ),
 				] ),
 			]
 		);
@@ -110,14 +107,28 @@ class Booking_Calendar extends Benchmark {
 
 
 	/**
-	 * @param $appointment_id
-	 * @param $action
+	 * Setup the benchmark when the appt is cancelled, rescheduled, or first scheduled
+	 *
+	 * @param $appointment Appointment
 	 */
-	public function setup( $appointment_id, $action ) {
-		$appointment = new Appointment( $appointment_id );
+	public function setup( $appointment ) {
+		$appointment = is_int( $appointment ) ? new Appointment( $appointment ) : $appointment;
+
 		$this->add_data( 'calendar_id', $appointment->get_calendar_id() );
 		$this->add_data( 'contact_id', $appointment->get_contact_id() );
-		$this->add_data( 'action', $action );
+
+		switch ( current_action() ) {
+			case 'groundhogg/calendar/appointment/scheduled':
+				$this->add_data( 'action', Email_Reminder::SCHEDULED );
+				break;
+			case 'groundhogg/calendar/appointment/rescheduled':
+				$this->add_data( 'action', Email_Reminder::RESCHEDULED );
+				break;
+			case 'groundhogg/calendar/appointment/cancelled':
+				$this->add_data( 'action', Email_Reminder::CANCELLED );
+				break;
+		}
+
 	}
 
 }

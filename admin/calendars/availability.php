@@ -6,6 +6,7 @@ use function Groundhogg\get_request_var;
 use function Groundhogg\html;
 use GroundhoggBookingCalendar\Classes\Calendar;
 use function GroundhoggBookingCalendar\days_of_week;
+use function GroundhoggBookingCalendar\get_default_availability;
 
 $cols = [
     __( 'Day' ),
@@ -24,17 +25,7 @@ $calendar = new Calendar( $calendar_id );
 $rules = $calendar->get_meta( 'rules' ); // TODO Get rules somehow.
 
 if ( ! $rules ){
-
-    $rules = [];
-
-    $times = [ 'start' => '09:00', 'end' => '17:00' ];
-
-    $days = days_of_week();
-    $days = array_keys( $days );
-
-    foreach ( $days as $day ){
-        $rules[] = array_merge( [ 'day' => $day ], $times );
-    }
+	$rules = get_default_availability();
 }
 
 $rows = [];
@@ -86,7 +77,7 @@ endforeach;
 
     html()->start_row();
 
-    html()->th( __( 'Min time before Booking ' ) );
+    html()->th( __( 'Minimum booking period' ) );
     html()->td( [
         // number
         html()->number( [
@@ -113,7 +104,7 @@ endforeach;
 
     html()->start_row();
 
-    html()->th( __( 'Max. booking period' ) );
+    html()->th( __( 'Maximum booking period' ) );
     html()->td( [
         // number
         html()->number( [
@@ -135,6 +126,20 @@ endforeach;
     ] );
 
     html()->end_row();
+
+    ?>
+	<tr>
+		<th scope="row"><label><?php _e( 'Make me look busy', 'groundhogg-calendar' ) ?></label></th>
+		<td>
+			<?php echo html()->number( [
+				'name'        => 'busy_slot',
+				'placeholder' => '3',
+				'value'       => $calendar->get_meta( 'busy_slot', true ) ? $calendar->get_meta( 'busy_slot', true ) : 0,
+			] ); ?>
+			<p class="description"><?php _e( 'Shows only a set number of available slots to make you look busier! Leave empty to show all available slots.', 'groundhogg-calendar' ) ?></p>
+		</td>
+	</tr>
+	<?php
 
     html()->end_form_table();
 
