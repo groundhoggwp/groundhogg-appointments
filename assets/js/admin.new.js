@@ -11,12 +11,6 @@
 
       self.initCalendar()
 
-      /* Submit button */
-      $(document).on('click', '#book_appointment', function (e) {
-        e.preventDefault()
-        self.submit()
-      })
-
       $(document).on('click', '.appointment-time', function (e) {
         e.preventDefault()
         self.selectAppointment(e.target)
@@ -26,8 +20,6 @@
         e.preventDefault()
         self.addAppointment()
       })
-
-      $('#spinner').hide()
 
       var calendarEl = document.getElementById('calendar')
 
@@ -54,11 +46,6 @@
         return
       }
 
-      if (!$('#appointmentname').val()) {
-        alert('Please enter appointment name.')
-        return
-      }
-
       if (!calendar.valueOf().bookingData.start_date) {
         alert('Please select an appointment.')
         return
@@ -69,33 +56,37 @@
         return
       }
 
+      $('.spinner').css('visibility', 'visible')
+      $('#btnalert').prop('disabled', true)
+
       adminAjaxRequest(
         {
           action: 'groundhogg_add_appointments',
           start_time: calendar.valueOf().bookingData.start_date,
           end_time: calendar.valueOf().bookingData.end_date,
-          contact_id: self.item.ID,
-          notes: $('#notes').val(),
+          contact_id: $('#contact-id').val(),
+          additional: $('#additional').val(),
           calendar_id: self.item.ID,
-          appointment_name: $('#appointmentname').val()
-
         },
         function callback (response) {
           // Handler
+
+          $('.spinner').hide()
+          $('#btnalert').prop('disabled', false)
 
           if (response.success) {
             self.fullCalendar.addEvent(response.data.appointment)
             alert(response.data.msg)
             calendar.clearData()
-            var url_string = window.location.href
-            var url = new URL(url_string)
-            var c = url.searchParams.get('contact')
-            if (c) {
-              location.replace(response.data.url)
-            }
+
           } else {
             alert(response.data)
           }
+        },
+        function (err) {
+          console.log(err)
+          $('.spinner').css('visibility', 'hidden')
+          $('#btnalert').prop('disabled', false)
         }
       )
     },
@@ -112,8 +103,8 @@
         changeYear: false,
         dateFormat: 'yy-mm-dd',
         dayNamesMin: self.day_names,
-        onSelect: function ( time, picker ){
-          self.refreshTimeSlots( time, picker )
+        onSelect: function (time, picker) {
+          self.refreshTimeSlots(time, picker)
         },
         beforeShowDay: function (date) {
           // console.debug(date)
@@ -140,19 +131,19 @@
     },
 
     clearData: function () {
-      $('#booking-form').trigger( 'reset' )
+      $('#booking-form').trigger('reset')
       calendar.bookingData.start_date = null
       calendar.bookingData.end_date = null
     },
 
-    refreshTimeSlots: function ( date, picker ) {
+    refreshTimeSlots: function (date, picker) {
 
       var self = this
 
       self.hideTimeSlots()
       self.removeTimeSlots()
 
-      console.log( date )
+      console.log(date)
 
       adminAjaxRequest(
         { action: 'groundhogg_get_appointments', date: date, calendar: self.item.ID },
