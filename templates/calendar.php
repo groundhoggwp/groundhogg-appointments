@@ -137,10 +137,8 @@ $bg_color = get_url_var( 'bgcolor' );
 
 	if ( current_user_can( 'edit_appointment' ) && $appointment ) {
 		$links[] = html()->e( 'a', [
-			'href' => admin_page_url( 'gh_calendar', [
-				'calendar'    => $calendar->get_id(),
-				'action'      => 'edit_appointment',
-				'appotinemtn' => $appointment->get_id()
+			'href' => admin_page_url( 'gh_appointments', [
+				'appointment' => $appointment->get_id()
 			] )
 		], __( 'Edit Appointment', 'groundhogg' ) );
 	}
