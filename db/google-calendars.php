@@ -55,7 +55,6 @@ class Google_Calendars extends DB {
 			'google_calendar_id' => '%s',
 			'google_account_id'  => '%d',
 			'connection_id'      => '%d',
-			'sync_status'        => '%s',
 			'last_synced'        => '%d',
 		);
 	}
@@ -74,7 +73,6 @@ class Google_Calendars extends DB {
 			'google_account_id'  => 0,
 			'connection_id'      => 0,
 			'last_synced'        => 0,
-			'sync_status'        => 'off',
 		);
 	}
 
@@ -93,7 +91,6 @@ class Google_Calendars extends DB {
         google_calendar_id varchar({$this->get_max_index_length()}) NOT NULL,
         google_account_id bigint(20) unsigned NOT NULL,
         connection_id bigint(20) unsigned NOT NULL,
-        sync_status varchar(20) NOT NULL,
         time_zone varchar({$this->get_max_index_length()}) NOT NULL,
         last_synced bigint(20),              
         PRIMARY KEY (ID),
