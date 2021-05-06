@@ -122,8 +122,8 @@ enqueue_groundhogg_modal();
 	html()->th( __( 'SMS Notification', 'groundhogg-calendar' ) );
 	html()->td( [
 		html()->checkbox( [
-			'name'    => 'sms_notification',
-			'id'      => 'sms_notification',
+			'name'    => 'enabled_sms_notifications',
+			'id'      => 'enabled_sms_notifications',
 			'checked' => $calendar->are_sms_notifications_enabled()
 		] ),
 		html()->description( __( 'Enable SMS reminders for appointments.', 'groundhogg-calendar' ) ),

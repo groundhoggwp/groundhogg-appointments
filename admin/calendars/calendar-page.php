@@ -2,37 +2,26 @@
 
 namespace GroundhoggBookingCalendar\Admin\Calendars;
 
-use Exception;
 use Groundhogg\Admin\Admin_Page;
-use Groundhogg\Base_Object;
-use Groundhogg\Email;
+use GroundhoggBookingCalendar\Calendar_Sync;
 use GroundhoggBookingCalendar\Classes\Email_Reminder;
 use GroundhoggBookingCalendar\Classes\Google_Calendar;
 use GroundhoggBookingCalendar\Classes\Google_Connection;
 use GroundhoggBookingCalendar\Classes\SMS_Reminder;
-use GroundhoggSMS\Classes\SMS;
 use WP_Error;
 use function Groundhogg\admin_page_url;
 use function Groundhogg\current_user_is;
-use function Groundhogg\do_replacements;
 use function Groundhogg\get_array_var;
 use function Groundhogg\get_contactdata;
 use function Groundhogg\get_db;
-use function Groundhogg\get_email_templates;
 use function Groundhogg\get_post_var;
 use function Groundhogg\get_request_var;
 use function Groundhogg\get_url_var;
-use function Groundhogg\groundhogg_url;
 use GroundhoggBookingCalendar\Classes\Appointment;
 use GroundhoggBookingCalendar\Classes\Calendar;
-use Groundhogg\Plugin;
 use function Groundhogg\is_replacement_code_format;
 use function Groundhogg\utils;
 use function Groundhogg\validate_mobile_number;
-use function GroundhoggBookingCalendar\google;
-use function GroundhoggBookingCalendar\google_calendar;
-use function GroundhoggBookingCalendar\in_between_inclusive;
-use function GroundhoggBookingCalendar\is_sms_plugin_active;
 use function GroundhoggBookingCalendar\set_calendar_default_settings;
 use function GroundhoggBookingCalendar\zoom;
 
@@ -60,10 +49,6 @@ class Calendar_Page extends Admin_Page {
 	protected function add_ajax_actions() {
 		add_action( 'wp_ajax_groundhogg_get_appointments', [ $this, 'get_appointments_ajax' ] );
 		add_action( 'wp_ajax_groundhogg_add_appointments', [ $this, 'add_appointment_ajax' ] );
-		add_action( 'wp_ajax_groundhogg_update_appointments', [ $this, 'update_appointment_ajax' ] );
-//        add_action( 'wp_ajax_groundhogg_verify_google_calendar', [ $this, 'verify_code_ajax' ] );
-
-
 	}
 
 	/**
@@ -104,13 +89,15 @@ class Calendar_Page extends Admin_Page {
 			wp_send_json_error();
 		}
 
-		$calendar = new Calendar( absint( get_request_var( 'calendar_id' ) ) );
+		$calendar = new Calendar( absint( get_post_var( 'calendar_id' ) ) );
+
 		if ( ! $calendar->exists() ) {
 			wp_send_json_error( __( 'Calendar not found!', 'groundhogg-calendar' ) );
 		}
 
-		$contact = get_contactdata( absint( get_request_var( 'contact_id' ) ) );
-		if ( ! $contact->exists() ) {
+		$contact = get_contactdata( absint( get_post_var( 'contact_id' ) ) );
+
+		if ( ! $contact || ! $contact->exists() ) {
 			wp_send_json_error( __( 'Contact not found!', 'groundhogg-calendar' ) );
 		}
 
@@ -121,12 +108,10 @@ class Calendar_Page extends Admin_Page {
 			wp_send_json_error( __( 'Please provide a valid date selection.', 'groundhogg-calendar' ) );
 		}
 
-		$appt_name  = sanitize_text_field( get_post_var( 'appointment_name' ) );
 		$additional = sanitize_textarea_field( get_post_var( 'additional' ) );
 
 		$appointment = $calendar->schedule_appointment( [
 			'contact_id' => $contact->get_id(),
-			'name'       => $appt_name,
 			'start_time' => absint( $start ),
 			'end_time'   => absint( $end ),
 			'additional' => $additional
@@ -146,30 +131,6 @@ class Calendar_Page extends Admin_Page {
 		];
 
 		wp_send_json_success( $response );
-	}
-
-	/**
-	 * process AJAX request to update an appointment.
-	 */
-	public function update_appointment_ajax() {
-		if ( ! current_user_can( 'edit_appointment' ) ) {
-			wp_send_json_error();
-		}
-
-		// Handle update appointment
-		$appointment = new Appointment( absint( get_request_var( 'id' ) ) );
-
-		$status = $appointment->reschedule( [
-			'start_time' => utils()->date_time->convert_to_utc_0( strtotime( sanitize_text_field( get_request_var( 'start_time' ) ) ) ),
-			'end_time'   => utils()->date_time->convert_to_utc_0( strtotime( sanitize_text_field( get_request_var( 'end_time' ) ) ) ),
-		] );
-
-		if ( ! $status ) {
-			wp_send_json_error( __( 'Something went wrong while updating appointment.', 'groundhogg-calendar' ) );
-		}
-
-		wp_send_json_success( [ 'msg' => __( 'Your appointment updated successfully!', 'groundhogg-calendar' ) ] );
-
 	}
 
 	public function get_slug() {
@@ -212,8 +173,8 @@ class Calendar_Page extends Admin_Page {
 
 			$calendar = new Calendar( absint( get_url_var( 'calendar' ) ) );
 
-			wp_enqueue_script( 'groundhogg-appointments-admin' );
-			wp_localize_script( 'groundhogg-appointments-admin', 'GroundhoggCalendar', [
+			wp_enqueue_script( 'groundhogg-calendar-admin' );
+			wp_localize_script( 'groundhogg-calendar-admin', 'GroundhoggCalendar', [
 				'calendar_id'    => absint( get_url_var( 'calendar' ) ),
 				'start_of_week'  => get_option( 'start_of_week' ),
 				'min_date'       => $calendar->get_min_booking_period( true ),
@@ -259,13 +220,6 @@ class Calendar_Page extends Admin_Page {
 		include dirname( __FILE__ ) . '/add.php';
 	}
 
-	public function edit_appointment() {
-		if ( ! current_user_can( 'view_appointment' ) ) {
-			$this->wp_die_no_access();
-		}
-		include dirname( __FILE__ ) . '/../appointments/edit.php';
-	}
-
 
 	public function process_delete() {
 		if ( ! current_user_can( 'delete_calendar' ) ) {
@@ -297,7 +251,7 @@ class Calendar_Page extends Admin_Page {
 		}
 
 		$name        = sanitize_text_field( get_post_var( 'name' ) );
-		$description = sanitize_textarea_field( get_post_var( 'description' ) );
+		$description = wp_kses_post( get_post_var( 'description' ) );
 
 		if ( ( ! $name ) || ( ! $description ) ) {
 			return new \WP_Error( 'no_data', __( 'Please enter name and description of calendar.', 'groundhogg-calendar' ) );
@@ -326,7 +280,6 @@ class Calendar_Page extends Admin_Page {
 		}
 
 		/* SET DEFAULTS */
-
 		set_calendar_default_settings( $calendar );
 
 		// update meta data to get set sms
@@ -342,100 +295,14 @@ class Calendar_Page extends Admin_Page {
 	 * @return bool|string|void|WP_Error
 	 */
 	public function process_google_sync() {
+
 		if ( ! current_user_can( 'edit_appointment' ) ) {
 			$this->wp_die_no_access();
 		}
-		$calendar = new Calendar( absint( get_request_var( 'calendar' ) ) );
 
-		$status = google_calendar()->sync( $calendar->get_id() );
-
-		if ( is_wp_error( $status ) ) {
-			return $status;
-		}
+		do_action( 'groundhogg/calendar/sync_with_google' );
 
 		$this->add_notice( 'success', __( 'Appointments synced successfully!', 'groundhogg-calendar' ), 'success' );
-
-		return admin_url( 'admin.php?page=gh_calendar&action=edit&calendar=' . $calendar->get_id() . '&tab=view' );
-
-	}
-
-	/**
-	 * Process update appointment request post by the edit_appointment page.
-	 *
-	 * @return bool|\WP_Error
-	 */
-	public function process_edit_appointment() {
-
-		if ( ! current_user_can( 'edit_appointment' ) ) {
-			$this->wp_die_no_access();
-		}
-
-		$appointment_id = absint( get_request_var( 'appointment' ) );
-		if ( ! $appointment_id ) {
-			return new \WP_Error( 'no_appointment', __( 'Appointment not found!', 'groundhogg-calendar' ) );
-		}
-
-		$appointment = new Appointment( $appointment_id );
-
-		$contact_id = absint( get_request_var( 'contact_id' ) );
-
-		if ( ! $contact_id ) {
-			return new \WP_Error( 'no_contact', __( 'Contact with this appointment not found!', 'groundhogg-calendar' ) );
-		}
-
-		if ( ! ( get_request_var( 'start_date' ) === get_request_var( 'end_date' ) ) ) {
-			return new \WP_Error( 'different_date', __( 'Start date and end date needs to be same.', 'groundhogg-calendar' ) );
-		}
-
-
-		// updates current appointment with the updated details and updates google appointment
-		$status = $appointment->reschedule( [
-			'contact_id' => $contact_id,
-			'name'       => sanitize_text_field( get_request_var( 'appointmentname' ) ),
-//			'start_time' => $start_time,
-//			'end_time'   => $end_time,
-			'notes'      => sanitize_textarea_field( get_request_var( 'notes' ) )
-		] );
-
-		if ( ! $status ) {
-			$this->add_notice( new \WP_Error( 'error', 'Something went wrong...' ) );
-		} else {
-			$this->add_notice( 'success', __( "Appointment updated!", 'groundhogg-calendar' ), 'success' );
-		}
-
-		return true;
-	}
-
-	/**
-	 *  Delete appointment from database and google calendar if connected.
-	 *
-	 * @return string|\WP_Error
-	 */
-	public function process_delete_appointment() {
-		if ( ! current_user_can( 'delete_appointment' ) ) {
-			$this->wp_die_no_access();
-		}
-
-		$appointment_id = get_request_var( 'appointment' );
-		if ( ! $appointment_id ) {
-			return new \WP_Error( 'no_appointment_id', __( 'Appointment ID not found', 'groundhogg-calendar' ) );
-		}
-
-		$appointment = new Appointment( $appointment_id );
-		if ( ! $appointment->exists() ) {
-			wp_die( __( "Appointment not found!", 'groundhogg-calendar' ) );
-		}
-
-		$calendar_id = $appointment->get_calendar_id();
-
-		$status = $appointment->delete();
-		if ( ! $status ) {
-			return new \WP_Error( 'delete_failed', __( 'Something went wrong while deleting appointment.', 'groundhogg-calendar' ) );
-		} else {
-			$this->add_notice( 'success', __( 'Appointment deleted!', 'groundhogg-calendar' ), 'success' );
-		}
-
-		return admin_url( 'admin.php?page=gh_calendar&calendar=' . $calendar_id . '&action=edit&tab=list' );
 	}
 
 	/**
@@ -473,8 +340,6 @@ class Calendar_Page extends Admin_Page {
 			case 'sms' :
 				$this->update_sms();
 				break;
-			case 'list':
-				break;
 			case 'integration':
 				$this->update_integration_settings();
 				break;
@@ -495,7 +360,7 @@ class Calendar_Page extends Admin_Page {
 		$calendar = new Calendar( get_url_var( 'calendar' ) );
 
 		$admin_notifications = [
-			'sms'                       => (bool) get_post_var( 'sms_notifications' ),
+			'sms'                       => (bool) get_post_var( 'admin_sms_notifications' ),
 			Email_Reminder::SCHEDULED   => (bool) get_post_var( 'scheduled_notification' ),
 			Email_Reminder::RESCHEDULED => (bool) get_post_var( 'rescheduled_notification' ),
 			Email_Reminder::CANCELLED   => (bool) get_post_var( 'cancelled_notification' ),
@@ -528,6 +393,9 @@ class Calendar_Page extends Admin_Page {
 		$calendar->update_meta( 'notification', sanitize_textarea_field( get_request_var( 'notification' ) ) );
 	}
 
+	/**
+	 * Udpate the Email reminders
+	 */
 	protected function update_emails() {
 		if ( ! current_user_can( 'edit_calendar' ) ) {
 			$this->wp_die_no_access();
@@ -576,7 +444,7 @@ class Calendar_Page extends Admin_Page {
 
 		$calendar = new Calendar( get_request_var( 'calendar' ) );
 
-		$calendar->update_meta( 'enable_sms_notifications', (bool) get_post_var( 'sms_notification' ) );
+		$calendar->update_meta( 'enable_sms_notifications', (bool) get_post_var( 'enabled_sms_notifications' ) );
 
 		$calendar->update_meta( 'sms_notifications', [
 			SMS_Reminder::SCHEDULED   => absint( get_request_var( SMS_Reminder::SCHEDULED ) ),
@@ -666,13 +534,13 @@ class Calendar_Page extends Admin_Page {
 	 */
 	protected function update_calendar_settings() {
 
-		$calendar_id = absint( get_request_var( 'calendar' ) );
+		$calendar_id = absint( get_url_var( 'calendar' ) );
 		$calendar    = new Calendar( $calendar_id );
 
 		$args = array(
-			'user_id'     => absint( get_request_var( 'owner_id', get_current_user_id() ) ),
-			'name'        => sanitize_text_field( get_request_var( 'name', $calendar->get_name() ) ),
-			'description' => sanitize_textarea_field( get_request_var( 'description' ) ),
+			'user_id'     => absint( get_post_var( 'owner_id', get_current_user_id() ) ),
+			'name'        => sanitize_text_field( get_post_var( 'name', $calendar->get_name() ) ),
+			'description' => wp_kses_post( get_post_var( 'description' ) ),
 		);
 
 		if ( ! $calendar->update( $args ) ) {
@@ -699,8 +567,7 @@ class Calendar_Page extends Admin_Page {
 		$calendar->update_meta( 'message', wp_kses_post( get_request_var( 'message' ) ) );
 
 		//save default note
-		$calendar->update_meta( 'default_note', sanitize_textarea_field( get_request_var( 'default_note' ) ) );
-		$calendar->update_meta( 'default_name', sanitize_text_field( get_request_var( 'default_name' ) ) );
+		$calendar->update_meta( 'additional_notes', wp_kses_post( get_request_var( 'additional_notes' ) ) );
 
 		// save thank you page
 		$calendar->update_meta( 'redirect_link_status', absint( get_request_var( 'redirect_link_status' ) ) );
@@ -717,25 +584,23 @@ class Calendar_Page extends Admin_Page {
 		$calendar_id = absint( get_request_var( 'calendar' ) );
 		$calendar    = new Calendar( $calendar_id );
 
-		// save gcal
-		$calendars_being_used = $calendar->get_google_calendar_list();
-		$google_calendar_list = wp_parse_id_list( get_post_var( 'google_calendar_list', [] ) );
-
-		// Turn of deselected calendars
-		$to_turn_off_sync = array_diff( $calendars_being_used, $google_calendar_list );
-
-		foreach ( $to_turn_off_sync as $google_calendar_id ) {
-			$gcal = new Google_Calendar( $google_calendar_id );
-			$gcal->disable_sync();
+		// Save Google Account ID for tokens
+		if ( $account_id = absint( get_post_var( 'google_account_id' ) ) ) {
+			$calendar->set_google_connection_id( $account_id );
 		}
 
-		// Turn on selected calendars
-		foreach ( $google_calendar_list as $google_calendar_id ) {
-			$gcal = new Google_Calendar( $google_calendar_id );
-			$gcal->enable_sync();
+		// Save Google Calendar ID which we add new events to
+		if ( $google_calendar_id = absint( get_post_var( 'google_calendar_id' ) ) ) {
+			$calendar->update_meta( 'google_calendar_id', $google_calendar_id );
 		}
 
+		// Don't turn off main calendar by mistake
+		$google_calendar_list   = wp_parse_id_list( get_post_var( 'google_calendar_list', [] ) );
+		$google_calendar_list[] = $calendar->get_local_google_calendar_id();
+		$google_calendar_list   = array_unique( $google_calendar_list );
 		$calendar->update_meta( 'google_calendar_list', $google_calendar_list );
+
+		// Google Appointment overrides
 		$calendar->update_meta( 'google_appointment_name', sanitize_text_field( get_request_var( 'google_appointment_name' ) ) );
 		$calendar->update_meta( 'google_appointment_description', sanitize_textarea_field( get_request_var( 'google_appointment_description' ) ) );
 
@@ -744,15 +609,6 @@ class Calendar_Page extends Admin_Page {
 			$calendar->update_meta( 'google_meet_enable', true );
 		} else {
 			$calendar->delete_meta( 'google_meet_enable' );
-		}
-
-		//save Google Account id
-		if ( $account_id = absint( get_post_var( 'google_account_id' ) ) ) {
-			$calendar->set_google_connection_id( $account_id );
-		}
-
-		if ( $google_calendar_id = absint( get_post_var( 'google_calendar_id' ) ) ) {
-			$calendar->update_meta( 'google_calendar_id', $google_calendar_id );
 		}
 
 		//save Zoom Account id
@@ -797,13 +653,22 @@ class Calendar_Page extends Admin_Page {
 		$connection = new Google_Connection();
 		$connection->create_from_auth( $auth_code );
 
+		if ( $connection->has_errors() ) {
+			return $connection->get_last_error();
+		}
+
 		$calendar->set_google_connection_id( $connection->get_id() );
-		$calendar->set_google_calendar_id( $connection->account_email );
+
+		$main_cal = new Google_Calendar( $connection->account_email, 'google_calendar_id' );
+
+		$calendar->set_google_calendar_id( $main_cal->get_id() );
 		$calendar->update_meta( 'google_calendar_list', [
-			$connection->account_email
+			$main_cal->get_id()
 		] );
 
-		$this->add_notice( 'success', __( 'Connection to Google calendar successfully completed!', 'groundhogg-calendar' ), 'success' );
+		Calendar_Sync::sync();
+
+		$this->add_notice( 'success', __( 'Connection to Google was successful!', 'groundhogg-calendar' ), 'success' );
 
 		return admin_page_url( 'gh_calendar', [
 			'action'   => 'edit',

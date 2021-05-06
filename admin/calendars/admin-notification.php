@@ -78,7 +78,7 @@ $calendar    = new Calendar( $calendar_id );
 		html()->th( __( 'Receive SMS Notifications', 'groundhogg-calendar' ) );
 		html()->td( [
 			html()->checkbox( [
-				'name'    => 'sms_notifications',
+				'name'    => 'admin_sms_notifications',
 				'label'   => __( 'Enabled', 'groundhogg' ),
 				'checked' => $calendar->is_admin_notification_enabled( 'sms' )
 			] ),

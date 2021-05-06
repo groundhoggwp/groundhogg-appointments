@@ -95,10 +95,11 @@ $connections = get_db( 'google_connections' )->query();
 
 						foreach ( $google_connection->get_calendars() as $google_calendar ) {
 							echo html()->checkbox( array(
-								'name'    => 'google_calendar_list[]',
-								'value'   => $google_calendar->get_id(),
-								'label'   => $google_calendar->name,
-								'checked' => in_array( $google_calendar->get_id(), $calendar->get_google_calendar_list() ) || $calendar->get_local_google_calendar_id() === $google_calendar->get_id(),
+								'name'     => 'google_calendar_list[]',
+								'value'    => $google_calendar->get_id(),
+								'label'    => $google_calendar->name,
+								'checked'  => in_array( $google_calendar->get_id(), $calendar->get_google_calendar_list() ) || $calendar->get_local_google_calendar_id() === $google_calendar->get_id(),
+								'disabled' => $calendar->get_local_google_calendar_id() === $google_calendar->get_id(),
 							) );
 							echo '<br/>';
 						}
@@ -133,22 +134,21 @@ $connections = get_db( 'google_connections' )->query();
 					?>
 
 					<p class="description"><?php _e( 'This will override the regular appointment name in your Google calendar. Leave empty if no change is required.', 'groundhogg-calendar' ); ?></p>
+					<p class="description"><?php _e( 'The original fomart for the name is <b>Contact Name and Owner Name</b>.', 'groundhogg-calendar' ); ?></p>
 				</td>
 			</tr>
 			<tr>
 				<th scope="row"><label><?php _e( 'Additional details for Google' ) ?></label></th>
 				<td>
 					<p><?php Plugin::$instance->replacements->show_replacements_dropdown(); ?></p>
-					<p><?php
-						echo html()->textarea( [
-							'name'        => 'google_appointment_description',
-							'value'       => $calendar->get_meta( 'google_appointment_description', true ),
-							'class'       => '',
-							'cols'        => 60,
-							'placeholder' => __( 'Additional details only visible in Google calendar...', 'groundhogg-calendar' ),
-						] );
-						?></p>
-
+					<div style="max-width: 700px">
+						<?php wp_editor( $calendar->get_meta( 'google_appointment_description' ), 'google_appointment_description', [
+							'editor_height' => 200,
+							'editor_width'  => 500,
+							'media_buttons' => false,
+							'quicktags'     => false,
+						] ); ?>
+					</div>
 					<p class="description"><?php _e( 'These details will be added to the regular appointment notes in your Google calendar.', 'groundhogg-calendar' ); ?></p>
 				</td>
 			</tr>

@@ -38,19 +38,6 @@ $calendar = new Calendar( get_url_var( 'calendar' ) );
 						echo html()->dropdown_contacts( $contact_details ); ?>
 						<p class="description"><?php _e( 'Please select client contact from contact list.', 'groundhogg-calendar' ) ?></p>
 					</div>
-					<div class="form-field term-calendar-name-wrap">
-						<label><?php _e( 'Appointment Name' ) ?></label>
-						<?php echo html()->input( [
-							'name'        => 'name',
-							'id'          => 'appointmentname',
-							'type'        => 'text',
-							'placeholder' => 'Appointment Name',
-							'value'       => $calendar->get_meta( 'default_name' ),
-						] ); ?>
-
-						<!--                                    <input name="name" id="appointmentname"type="text"  size="40" aria-required="true" placeholder="Appointment Name">-->
-						<p class="description"><?php _e( 'Give nice name for your appointment.', 'groundhogg-calendar' ) ?></p>
-					</div>
 					<div class="form-field term-calendar-description-wrap">
 						<label><?php _e( 'Any additional information?', 'groundhogg-calendar' ); ?></label>
 						<?php echo html()->textarea( [
@@ -58,7 +45,6 @@ $calendar = new Calendar( get_url_var( 'calendar' ) );
 							'id'          => 'additional',
 							'rows'        => 3,
 							'placeholder' => __( 'Any information that might be important.', 'groundhogg-calendar' ),
-//							'value'       => $calendar->get_meta( 'default_note' ),
 						] ); ?>
 						<p class="description"><?php _e( 'Additional information about appointment that might be useful for you or the guest.', 'groundhogg-calendar' ) ?></p>
 					</div>
@@ -66,9 +52,6 @@ $calendar = new Calendar( get_url_var( 'calendar' ) );
 						<div style="display: flex">
 							<div id="date-picker"></div>
 							<div class="time-slots">
-								<div style="text-align: center;" id="spinner">
-									<span class="spinner" style="float: none; visibility: visible"></span>
-								</div>
 								<div id="time-slots" class="select-time">
 									<div id="select_time"></div>
 								</div>
@@ -77,8 +60,9 @@ $calendar = new Calendar( get_url_var( 'calendar' ) );
 					</div>
 					<div id="appointment-errors" class="appointment-errors hidden"></div>
 					<div class="submit-wrap">
-						<input type="button" name="btndisplay" id="btnalert" value="Book appointment"
+						<input type="button" name="btndisplay" id="btnalert" value="<?php esc_attr_e( 'Book Appointment', 'groundhogg-calendar' ) ;?>"
 						       class="button button-primary"/>
+						<span class="spinner" style="float: none"></span>
 					</div>
 				</div>
 			</form>
