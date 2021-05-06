@@ -36,6 +36,24 @@ class Synced_Event extends Base_Object {
 		return get_db( 'synced_events' );
 	}
 
+	public function sync_all_details() {
+
+		$google_calendar = new Google_Calendar( $this->local_gcalendar_id );
+		$client          = $google_calendar->get_connection()->get_client();
+
+		$service = new Google_Service_Calendar( $client );
+
+		$event = $service->events->get( $this->google_calendar_id, $this->event_id );
+
+		$this->data = wp_parse_args( $this->data, [
+			'description'   => $event->getDescription(),
+			'summary'       => $event->getSummary(),
+			'location'      => $event->getLocation(),
+			'url'           => $event->getHtmlLink(),
+			'calendar_name' => $google_calendar->name
+		] );
+	}
+
 	public function get_dates_from_event( $event ) {
 		// The start time will either be a proper daytime or the beginning of a day, which is fine.
 		$start = strtotime( $event->getStart()->getDateTime() );
@@ -66,7 +84,7 @@ class Synced_Event extends Base_Object {
 
 		$args = wp_parse_args( $this->get_dates_from_event( $event ), [
 			'event_id'           => $event->getId(),
-			'summary'            => $event->getSummary(),
+			'summary'            => $event->getSummary() ?: '', // might be null
 			'status'             => $event->getStatus(),
 			'local_gcalendar_id' => $gcal->get_id(),
 			'google_calendar_id' => $gcal->google_calendar_id,
@@ -82,13 +100,11 @@ class Synced_Event extends Base_Object {
 
 		$times = $this->get_dates_from_event( $event );
 
-//		if ( $this->start_time !== $times['start_time'] || $this->end_time !== $times['end_time'] ) {
 		$this->update( wp_parse_args( $times, [
 			'summary'     => $event->getSummary(),
 			'status'      => $event->getStatus(),
 			'last_synced' => time()
 		] ) );
-//		}
 	}
 
 	public function get_id() {

@@ -47,17 +47,23 @@ class Google_Connection extends Base_Object {
 
 		$account_info = $this->get_account_info();
 
-		$data = wp_parse_args( $data, [
+		$data = array_merge( $data, [
 			'account_id'    => $account_info->id,
 			'account_email' => $account_info->email,
 		] );
 
-		if ( $this->get_db()->exists( [ 'account_id' => $account_info->id ] ) ) {
-			parent::__construct( $account_info->id, 'account_id' );
+		$obj = $this->get_from_db( 'account_email', $data[ 'account_email' ] );
 
-			$this->update( $data );
+		if ( $obj ) {
+			$this->setup_object( $obj );
+			$this->update( (array) $data );
 		} else {
-			parent::create( (array) $data );
+			$this->create( (array) $data );
+		}
+
+		if ( ! $this->exists() ){
+			$this->add_error( 'error', 'Could not setup object.' );
+			return;
 		}
 
 		$this->sync_calendars();
@@ -94,6 +100,10 @@ class Google_Connection extends Base_Object {
 	 * Setup the google client
 	 */
 	public function setup_client( $token = false ) {
+
+		if ( $this->client ){
+			return;
+		}
 
 		$client = new Google_Client();
 

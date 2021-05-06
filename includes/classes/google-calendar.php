@@ -52,31 +52,6 @@ class Google_Calendar extends Base_Object {
 	}
 
 	/**
-	 * @return bool
-	 */
-	public function is_sync_enabled() {
-		return $this->sync_status === 'on';
-	}
-
-	/**
-	 * Enable calendar sync
-	 */
-	public function enable_sync() {
-		$this->update( [
-			'sync_status' => 'on'
-		] );
-	}
-
-	/**
-	 * Disable calendar sync
-	 */
-	public function disable_sync() {
-		$this->update( [
-			'sync_status' => 'off'
-		] );
-	}
-
-	/**
 	 * Sync all of the events from the Google Calendar to the synced events table
 	 */
 	public function sync_events() {

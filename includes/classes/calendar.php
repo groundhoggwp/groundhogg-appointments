@@ -79,7 +79,7 @@ class Calendar extends Base_Object_With_Meta {
 	/**
 	 * The id of the calendar of which appointments are added to
 	 *
-	 * @return string
+	 * @return int
 	 */
 	public function get_local_google_calendar_id() {
 		return $this->get_meta( 'google_calendar_id', true );
@@ -104,9 +104,13 @@ class Calendar extends Base_Object_With_Meta {
 	 * @return array|mixed
 	 */
 	public function get_google_calendar_list() {
-		return $this->get_meta( 'google_calendar_list', true ) ?: [
-			$this->get_local_google_calendar_id()
-		];
+		$list = $this->get_meta( 'google_calendar_list', true ) ?: [];
+
+		if ( ! in_array( $this->get_local_google_calendar_id(), $list ) ) {
+			$list[] = $this->get_local_google_calendar_id();
+		}
+
+		return $list;
 	}
 
 	/**
@@ -985,7 +989,7 @@ class Calendar extends Base_Object_With_Meta {
 	 *
 	 * @return array|int
 	 */
-	public function get_email_notification( $which ) {
+	public function get_email_notification( $which = false ) {
 		$emails = $this->get_meta( 'email_notifications' );
 
 		if ( ! $which ) {
@@ -1002,7 +1006,7 @@ class Calendar extends Base_Object_With_Meta {
 	 *
 	 * @return mixed|int
 	 */
-	public function get_sms_notification( $which ) {
+	public function get_sms_notification( $which = false ) {
 		$sms = $this->get_meta( 'sms_notifications' );
 
 		if ( ! $which ) {

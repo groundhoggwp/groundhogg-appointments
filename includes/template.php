@@ -89,7 +89,6 @@ function template_success( $calendar, $appointment ) {
 		</p>
 	<?php
 	endif;
-
 }
 
 /**

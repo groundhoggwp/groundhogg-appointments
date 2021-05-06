@@ -9,6 +9,7 @@ use Groundhogg\Plugin;
 use \Google_Service_Calendar;
 use \Google_Service_Calendar_Event;
 use Groundhogg\Base_Object_With_Meta;
+use function Groundhogg\admin_page_url;
 use function Groundhogg\convert_to_local_time;
 use function Groundhogg\get_db;
 use function Groundhogg\utils;
@@ -23,6 +24,11 @@ use function Groundhogg\get_date_time_format;
 use function GroundhoggBookingCalendar\get_in_time_zone;
 
 class Appointment extends Base_Object_With_Meta {
+
+	/**
+	 * @var \WP_User
+	 */
+	private $owner;
 
 	protected function get_meta_db() {
 		return Plugin::$instance->dbs->get_db( 'appointmentmeta' );
@@ -49,15 +55,13 @@ class Appointment extends Base_Object_With_Meta {
 	 */
 	public function get_pretty_start_time( $zone = false ) {
 
-		$time = $this->get_start_time();
+		$time = $this->get_start_time( $zone === 'admin' );
 
 		if ( $zone ) {
 			$time_zone = $this->get_contact()->get_time_zone();
 
 			if ( $time_zone ) {
 				$time = get_in_time_zone( $time, $time_zone );
-			} else {
-				$time = convert_to_local_time( $time );
 			}
 		}
 
@@ -105,6 +109,18 @@ class Appointment extends Base_Object_With_Meta {
 		return absint( $this->calendar_id );
 	}
 
+	/**
+	 * @return false|\WP_User
+	 */
+	public function get_owner() {
+
+		if ( ! $this->owner ) {
+			$this->owner = get_userdata( $this->get_calendar()->get_user_id() );
+		}
+
+		return $this->owner;
+	}
+
 	protected $calendar = null;
 
 	/**
@@ -126,7 +142,7 @@ class Appointment extends Base_Object_With_Meta {
 	 * @return string
 	 */
 	public function get_name() {
-		return $this->name;
+		return sprintf( _x( '%s and %s %s', 'Appointment Name', 'groundhogg-calendar' ), $this->get_contact()->get_full_name(), $this->get_owner()->first_name, $this->get_owner()->last_name );
 	}
 
 	public function get_status() {
@@ -208,6 +224,7 @@ class Appointment extends Base_Object_With_Meta {
 	public function get_for_full_calendar() {
 		return [
 			'id'         => $this->uuid,
+			'local_id'   => $this->get_id(),
 			'title'      => $this->get_name(),
 			'start'      => (int) $this->get_start_time() * 1000,
 			'end'        => (int) $this->get_end_time() * 1000,
@@ -215,7 +232,7 @@ class Appointment extends Base_Object_With_Meta {
 			'editable'   => true,
 			'allDay'     => false,
 			'color'      => $this->get_status() === 'scheduled' ? '#28a745' : '#dc3545',
-			'url'        => admin_url( 'admin.php?page=gh_calendar&action=edit_appointment&appointment=' . $this->get_id() )
+			'classNames' => [ $this->is_cancelled() ? 'cancelled' : 'scheduled' ],
 		];
 
 	}
@@ -250,7 +267,6 @@ class Appointment extends Base_Object_With_Meta {
 		$args = wp_parse_args( $args, [
 			'contact_id'  => $this->get_contact_id(),
 			'calendar_id' => $this->get_calendar_id(),
-			'name'        => $this->get_name(),
 			'status'      => 'scheduled',
 			'start_time'  => $this->get_start_time(),
 			'end_time'    => $this->get_end_time(),
@@ -472,20 +488,27 @@ class Appointment extends Base_Object_With_Meta {
 	 *
 	 * @return string
 	 */
-	public function get_details() {
+	public function get_details( $with_links = true ) {
 
-		$description = do_replacements( $this->get_meta( 'notes' ), $this->get_contact() );
+		$description = $this->get_calendar()->get_description();
+
+		if ( $this->get_calendar()->get_meta( 'additional_notes' ) ) {
+			$description .= "\n\n<b>" .  __( 'Additional Instructions:', 'groundhogg-calendar' ) . "</b>\n" .
+			                do_replacements( $this->get_calendar()->get_meta( 'additional_notes' ), $this->get_contact() );
+		}
 
 		if ( $this->get_meta( 'additional' ) ) {
-			$description .= "\n\n" . $this->get_meta( 'additional' );
+			$description .= "\n\n<b>" . __( 'Guest Notes:', 'groundhogg-calendar' ) . "</b>\n" . $this->get_meta( 'additional' );
 		}
 
 		if ( $this->get_calendar()->is_zoom_enabled() ) {
 			$description .= "\n\n" . $this->get_zoom_meeting_details();
 		}
 
-		$description .= "\n\n" . __( 'Reschedule this appointment:', 'groundhogg-calendar' ) . ' ' . $this->reschedule_link();
-		$description .= "\n\n" . __( 'Cancel this appointment:', 'groundhogg-calendar' ) . ' ' . $this->manage_link();
+		if ( $with_links ) {
+			$description .= "\n\n" . __( 'Reschedule this appointment:', 'groundhogg-calendar' ) . ' ' . $this->reschedule_link();
+			$description .= "\n\n" . __( 'Cancel this appointment:', 'groundhogg-calendar' ) . ' ' . $this->manage_link();
+		}
 
 		return $description;
 	}
@@ -497,14 +520,21 @@ class Appointment extends Base_Object_With_Meta {
 	 */
 	public function get_google_description() {
 
-		$description = do_replacements( $this->get_calendar()->get_meta( 'default_note' ), $this->get_contact() );
+		$description = sprintf( __( 'Appointment Type: %s', 'groundhogg-calendar' ), $this->get_calendar()->get_name() );
 
-		if ( $this->get_meta( 'additional' ) ) {
-			$description .= "\n\n" . $this->get_meta( 'additional' );
+		$description .= "\n\n" . $this->get_calendar()->get_description();
+
+		if ( $this->get_calendar()->get_meta( 'additional_notes' ) ) {
+			$description .= "\n\n<b>" .  __( 'Additional Instructions:', 'groundhogg-calendar' ) . "</b>\n" .
+			                do_replacements( $this->get_calendar()->get_meta( 'additional_notes' ), $this->get_contact() );
 		}
 
 		if ( $this->get_calendar()->get_meta( 'google_appointment_description' ) ) {
 			$description .= "\n\n" . do_replacements( $this->get_calendar()->get_meta( 'google_appointment_description' ), $this->get_contact() );
+		}
+
+		if ( $this->get_meta( 'additional' ) ) {
+			$description .= "\n\<b>" . __( 'Guest Notes:', 'groundhogg-calendar' ) . "</b>\n" . $this->get_meta( 'additional' );
 		}
 
 		if ( $this->get_calendar()->is_zoom_enabled() ) {

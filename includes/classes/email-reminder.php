@@ -24,11 +24,21 @@ class Email_Reminder implements Event_Process {
 	 */
 	public $appointment;
 
-	const SCHEDULED = 'appointment_scheduled';
-	const RESCHEDULED = 'appointment_rescheduled';
-	const CANCELLED = 'appointment_cancelled';
+	/**
+	 * @deprecated use SCHEDULED instead
+	 */
+	public const BOOKED = 'appointment_booked';
 
-	const NOTIFICATION_TYPE = 5;
+	/**
+	 * @deprecated use SCHEDULED instead
+	 */
+	public const APPROVED = 'appointment_approved';
+
+	public const SCHEDULED = 'appointment_scheduled';
+	public const RESCHEDULED = 'appointment_rescheduled';
+	public const CANCELLED = 'appointment_cancelled';
+
+	public const NOTIFICATION_TYPE = 5;
 
 	/**
 	 * Reminder constructor.

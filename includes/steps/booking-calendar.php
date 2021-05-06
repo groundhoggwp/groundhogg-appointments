@@ -102,7 +102,8 @@ class Booking_Calendar extends Benchmark {
 	}
 
 	protected function can_complete_step() {
-		return absint( $this->get_data( 'calendar_id' ) ) === absint( $this->get_setting( 'calendar' ) ) && $this->get_data( 'action' ) === $this->get_setting( 'action' );
+		return absint( $this->get_data( 'calendar_id' ) ) === absint( $this->get_setting( 'calendar' ) )
+		       && $this->get_data( 'action' ) === $this->get_setting( 'action' );
 	}
 
 
@@ -112,6 +113,7 @@ class Booking_Calendar extends Benchmark {
 	 * @param $appointment Appointment
 	 */
 	public function setup( $appointment ) {
+
 		$appointment = is_int( $appointment ) ? new Appointment( $appointment ) : $appointment;
 
 		$this->add_data( 'calendar_id', $appointment->get_calendar_id() );

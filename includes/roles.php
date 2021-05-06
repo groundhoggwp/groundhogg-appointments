@@ -49,6 +49,19 @@ class Roles extends \Groundhogg\Roles {
 
 	public function get_sales_manager_caps() {
 		return [
+			'edit_calendar',
+			'view_calendar',
+
+			'view_appointment',
+			'add_appointment',
+			'delete_appointment',
+			'edit_appointment',
+		];
+
+	}
+
+	public function get_sales_rep_caps() {
+		return [
 			'view_own_calendar',
 			'edit_calendar',
 

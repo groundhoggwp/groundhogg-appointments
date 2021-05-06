@@ -4,6 +4,7 @@ namespace GroundhoggBookingCalendar;
 
 use Groundhogg\DB\Manager;
 use Groundhogg\Extension;
+use GroundhoggBookingCalendar\Admin\Appointments\Appointments_Page;
 use GroundhoggBookingCalendar\Admin\Cards\Appointment_Card;
 use GroundhoggBookingCalendar\DB\Appointment_Meta;
 use GroundhoggBookingCalendar\DB\Appointments;
@@ -89,7 +90,8 @@ class Plugin extends Extension {
 	}
 
 	public function register_admin_pages( $admin_menu ) {
-		$admin_menu->calendar = new Calendar_Page();
+		$admin_menu->calendar     = new Calendar_Page();
+		$admin_menu->appointments = new Appointments_Page();
 	}
 
 	/**
@@ -128,15 +130,18 @@ class Plugin extends Extension {
 
 		wp_register_script( 'fullcalendar-main', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'lib/fullcalendar/lib/main.min.js', [], GROUNDHOGG_BOOKING_CALENDAR_VERSION );
 		wp_register_script( 'jstz', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'js/jstz.min.js', [], GROUNDHOGG_BOOKING_CALENDAR_VERSION );
-		wp_register_script( 'groundhogg-appointments-admin', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'js/admin.new.js', [
+		wp_register_script( 'groundhogg-calendar-admin', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'js/admin.new.js', [
 			'jquery',
 			'fullcalendar-main',
 			'jquery-ui-datepicker',
 			'groundhogg-admin-functions',
 		], GROUNDHOGG_BOOKING_CALENDAR_VERSION, true );
 
-//		wp_register_script( 'fullcalendar-moment', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'lib/fullcalendar/lib/moment.min.js', [], GROUNDHOGG_BOOKING_CALENDAR_VERSION );
-
+		wp_register_script( 'groundhogg-appointments-admin', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'js/appointments.js', [
+			'jquery',
+			'fullcalendar-main',
+			'groundhogg-admin-functions',
+		], GROUNDHOGG_BOOKING_CALENDAR_VERSION, true );
 	}
 
 	public function register_frontend_scripts( $is_minified, $IS_MINIFIED ) {
@@ -152,6 +157,9 @@ class Plugin extends Extension {
 	public function register_admin_styles() {
 		wp_register_style( 'groundhogg-fullcalendar', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'lib/fullcalendar/lib/main.min.css', [], GROUNDHOGG_BOOKING_CALENDAR_VERSION );
 		wp_register_style( 'groundhogg-calender-admin', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'css/backend.css', [], GROUNDHOGG_BOOKING_CALENDAR_VERSION );
+		wp_register_style( 'groundhogg-appointments-admin', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'css/admin/appointments.css', [
+			'groundhogg-loader'
+		], GROUNDHOGG_BOOKING_CALENDAR_VERSION );
 	}
 
 	public function register_frontend_styles() {

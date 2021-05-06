@@ -3,8 +3,12 @@
 namespace GroundhoggBookingCalendar;
 
 use Groundhogg\Email;
+use GroundhoggBookingCalendar\Classes\Email_Reminder;
+use GroundhoggBookingCalendar\Classes\SMS_Reminder;
 use function Groundhogg\emergency_init_dbs;
+use function Groundhogg\get_array_var;
 use function Groundhogg\get_db;
+use function Groundhogg\get_post_var;
 use function Groundhogg\words_to_key;
 use function Groundhogg\get_email_templates;
 use GroundhoggBookingCalendar\Classes\Calendar;
@@ -28,159 +32,14 @@ class Updater extends \Groundhogg\Updater {
 	 */
 	protected function get_available_updates() {
 		return [
-			'2.0',
-			'2.0.3',
-			'2.1.2',
-			'2.2',
+			'2.5',
 		];
 	}
 
-	/**
-	 * Update to version 2.0
-	 */
-	public function version_2_0() {
-		//get google client id and secret
-		Plugin::$instance->settings->update_option( 'google_calendar_client_id', get_option( 'google_calendar_client_id' ) );
-		Plugin::$instance->settings->update_option( 'google_calendar_secret_key', get_option( 'google_calendar_secret_key' ) );
-
-		$calendars = get_db( 'calendars' )->query( [] );
-
-		foreach ( $calendars as $c ) {
-			$this->update_calendar( absint( $c->ID ) );
-		}
-
-		set_transient( 'groundhogg_upgrade_notice_booking_calendar', 1, WEEK_IN_SECONDS );
-
-		\GroundhoggBookingCalendar\Plugin::$instance->rewrites->add_rewrite_rules();
-
-		flush_rewrite_rules();
-	}
-
-	/**
-	 * Resync notice
-	 */
-	public function version_2_0_3() {
-		set_transient( 'groundhogg_upgrade_notice_booking_calendar', 1, WEEK_IN_SECONDS );
-	}
-
-	/**
-	 * Create all the emails and convert availability
-	 *
-	 * @param $id
-	 */
-	protected function update_calendar( $id ) {
-		$calendar = new Calendar( $id );
-
-		// max booking period in availability
-		$calendar->update_meta( 'max_booking_period_count', absint( 3 ) );
-		$calendar->update_meta( 'max_booking_period_type', sanitize_text_field( 'months' ) );
-
-		//min booking period in availability
-		$calendar->update_meta( 'min_booking_period_count', absint( 0 ) );
-		$calendar->update_meta( 'min_booking_period_type', sanitize_text_field( 'days' ) );
-
-		// Create default emails...
-		$templates = get_email_templates();
-		// Booked
-		$booked = new Email( [
-			'title'     => $templates['booked']['title'],
-			'subject'   => $templates['booked']['title'],
-			'content'   => $templates['booked']['content'],
-			'status'    => 'ready',
-			'from_user' => $calendar->get_user_id(),
-		] );
-
-		$approved = new Email( [
-			'title'     => $templates['approved']['title'],
-			'subject'   => $templates['approved']['title'],
-			'content'   => $templates['approved']['content'],
-			'status'    => 'ready',
-			'from_user' => $calendar->get_user_id(),
-		] );
-
-		$cancelled = new Email( [
-			'title'     => $templates['cancelled']['title'],
-			'subject'   => $templates['cancelled']['title'],
-			'content'   => $templates['cancelled']['content'],
-			'status'    => 'ready',
-			'from_user' => $calendar->get_user_id(),
-		] );
-
-		$rescheduled = new Email( [
-			'title'     => $templates['rescheduled']['title'],
-			'subject'   => $templates['rescheduled']['title'],
-			'content'   => $templates['rescheduled']['content'],
-			'status'    => 'ready',
-			'from_user' => $calendar->get_user_id(),
-		] );
-
-		$reminder = new Email( [
-			'title'     => $templates['reminder']['title'],
-			'subject'   => $templates['reminder']['title'],
-			'content'   => $templates['reminder']['content'],
-			'status'    => 'ready',
-			'from_user' => $calendar->get_user_id(),
-		] );
-
-		$calendar->update_meta( 'emails', [
-			'appointment_booked'      => $booked->get_id(),
-			'appointment_approved'    => $approved->get_id(),
-			'appointment_rescheduled' => $rescheduled->get_id(),
-			'appointment_cancelled'   => $cancelled->get_id(),
-		] );
-
-		// set one hour before reminder by default
-		$calendar->update_meta( 'reminders', [
-			[
-				'when'     => 'before',
-				'period'   => 'hours',
-				'number'   => 1,
-				'email_id' => $reminder->get_id()
-			]
-		] );
-
-		//update availability
-		$calendar->update_meta( 'rules', [] );
-		$dow          = $calendar->get_meta( 'dow' );
-		$days         = [ 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday' ];
-		$availability = [];
-		foreach ( $dow as $d ) {
-
-			$temp_rule          = [];
-			$temp_rule['day']   = $days[ $d ];
-			$temp_rule['start'] = $slot1_start = $calendar->get_meta( 'slot1_start_time', true );
-			$temp_rule['end']   = $slot1_end = $calendar->get_meta( 'slot1_end_time', true );
-			$availability[]     = $temp_rule;
-
-			if ( $calendar->get_meta( 'slot2_status', true ) ) {
-				$temp_rule          = [];
-				$temp_rule['day']   = $days[ $d ];
-				$temp_rule['start'] = $slot1_start = $calendar->get_meta( 'slot2_start_time', true );
-				$temp_rule['end']   = $slot1_end = $calendar->get_meta( 'slot2_end_time', true );
-				$availability[]     = $temp_rule;
-
-			}
-
-			if ( $calendar->get_meta( 'slot3_status', true ) ) {
-				$temp_rule          = [];
-				$temp_rule['day']   = $days[ $d ];
-				$temp_rule['start'] = $slot1_start = $calendar->get_meta( 'slot3_start_time', true );
-				$temp_rule['end']   = $slot1_end = $calendar->get_meta( 'slot3_end_time', true );
-				$availability[]     = $temp_rule;
-
-			}
-		}
-
-		$calendar->update_meta( 'rules', $availability );
-
-	}
-
-	public function version_2_1_2() {
-		\GroundhoggBookingCalendar\Plugin::$instance->roles->remove_roles_and_caps();
-		$sales_manager_role = get_role( 'sales_manager' );
-		$sales_manager_role->remove_cap( 'view_calendar' );
-		\GroundhoggBookingCalendar\Plugin::$instance->roles->add_roles();
-		\GroundhoggBookingCalendar\Plugin::$instance->roles->add_caps();
+	protected function get_update_descriptions() {
+		return [
+			'2.5' => __( 'Refactor appointment and calendar settings to new formats.' )
+		];
 	}
 
 	/**
@@ -188,8 +47,84 @@ class Updater extends \Groundhogg\Updater {
 	 *
 	 * Update all calendars with slugs
 	 */
-	public function version_2_2() {
+	public function version_2_5() {
+
 		install_tables();
+
+		global $wpdb;
+
+		// Update BOOKED/APPROVED booking actions to proper action
+		$stepmeta = get_db( 'stepmeta' );
+
+		$wpdb->query( sprintf( "UPDATE {$stepmeta->table_name} SET meta_value = '%s' 
+WHERE meta_key = 'action' AND meta_value IN ('%s', '%s');",
+			Email_Reminder::SCHEDULED,
+			Email_Reminder::APPROVED,
+			Email_Reminder::BOOKED ) );
+
+		$stepmeta->cache_set_last_changed();
+
+		// Migrate calendar meta keys to new names.
+		// $old => $new
+		$migrate_calendar_meta_keys = [
+			'emails'           => 'email_notifications',
+			'reminders'        => 'email_reminders',
+			'sms_notification' => 'enable_sms_notifications',
+			'sms'              => 'sms_notifications',
+		];
+
+		foreach ( $migrate_calendar_meta_keys as $old => $new ) {
+			get_db( 'calendarmeta' )->update( [ 'meta_key' => $old ], [ 'meta_key' => $new ] );
+		}
+
+		$calendars = get_db( 'calendars' )->query();
+
+		foreach ( $calendars as $calendar ) {
+
+			$calendar = new Calendar( $calendar );
+
+			// Migrate admin notifications
+			$enabled_admin_notifications = [
+				'sms'                       => (bool) $calendar->get_meta( 'sms_admin_notification' ),
+				Email_Reminder::SCHEDULED   => (bool) $calendar->get_meta( 'booked_admin' ),
+				Email_Reminder::RESCHEDULED => (bool) $calendar->get_meta( 'reschedule_admin' ),
+				Email_Reminder::CANCELLED   => (bool) $calendar->get_meta( 'cancelled_admin' ),
+			];
+
+			$calendar->update_meta( 'enabled_admin_notifications', $enabled_admin_notifications );
+
+			// Change booked -> scheduled in SMS notifications
+			// Remove Approved in SMS notifications
+
+			if ( is_sms_plugin_active() ) {
+				$sms_notifications = $calendar->get_sms_notification();
+
+				$booked = get_array_var( $sms_notifications, SMS_Reminder::BOOKED );
+
+				if ( $booked ) {
+					$sms_notifications[ SMS_Reminder::SCHEDULED ] = $booked;
+					unset( $sms_notifications[ SMS_Reminder::BOOKED ] );
+					unset( $sms_notifications[ SMS_Reminder::APPROVED ] );
+				}
+
+				$calendar->update_meta( 'sms_notifications', $sms_notifications );
+			}
+
+			// Change booked -> scheduled in Email notifications
+			// Remove Approved in Email notifications
+			$email_notifications = $calendar->get_email_notification();
+
+			$booked = get_array_var( $email_notifications, Email_Reminder::BOOKED );
+
+			if ( $booked ) {
+				$email_notifications[ Email_Reminder::SCHEDULED ] = $booked;
+				unset( $email_notifications[ Email_Reminder::BOOKED ] );
+				unset( $email_notifications[ Email_Reminder::APPROVED ] );
+			}
+
+			$calendar->update_meta( 'email_notifications', $email_notifications );
+		}
+
 	}
 
 }

@@ -108,6 +108,9 @@ class Shortcode extends Supports_Errors {
 	 */
 	public function create_appointment( $contact, $additional = '' ) {
 
+		$time_zone = get_array_var( $this->booking_data, 'time_zone' );
+		$contact->update_meta( 'time_zone', $time_zone );
+
 		$appointment = $this->calendar->schedule_appointment( [
 			'contact_id' => $contact->get_id(),
 			'start_time' => absint( get_array_var( $this->booking_data, 'start_time' ) ),
@@ -142,7 +145,7 @@ class Shortcode extends Supports_Errors {
 
 	}
 
-	public function cancel_appointment(){
+	public function cancel_appointment() {
 
 		$appointment_id = absint( get_array_var( $this->booking_data, 'reschedule' ) );
 

@@ -10,11 +10,14 @@ use Groundhogg\Event;
 use Groundhogg\Plugin;
 use GroundhoggBookingCalendar\Classes\Calendar;
 use GroundhoggBookingCalendar\Classes\SMS_Reminder;
+use GroundhoggBookingCalendar\Classes\Synced_Event;
 use GroundhoggBookingCalendar\Connections\Zoom;
 use GroundhoggSMS\Classes\SMS;
 use GroundhoggSMS\SMS_Services;
 use mysql_xdevapi\Exception;
 use function Groundhogg\admin_page_url;
+use function Groundhogg\array_map_keys;
+use function Groundhogg\array_map_to_class;
 use function Groundhogg\do_replacements;
 use function Groundhogg\emergency_init_dbs;
 use function Groundhogg\get_array_var;
@@ -27,9 +30,13 @@ use function Groundhogg\get_default_from_email;
 use function Groundhogg\get_default_from_name;
 use function Groundhogg\get_email_templates;
 use function Groundhogg\get_form_list;
+use function Groundhogg\get_object_ids;
+use function Groundhogg\get_request_query;
 use function Groundhogg\get_request_var;
+use function Groundhogg\get_url_var;
 use function Groundhogg\groundhogg_url;
 use function Groundhogg\is_option_enabled;
+use function Groundhogg\isset_not_empty;
 use function Groundhogg\key_to_words;
 use function Groundhogg\words_to_key;
 use function GroundhoggSMS\send_sms;
@@ -67,17 +74,6 @@ function install_tables() {
 	foreach ( $new_tables as $table ) {
 		get_db( $table )->create_table();
 	}
-}
-
-/**
- * Google stuff!
- *
- * @return Google
- */
-function google() {
-	_doing_it_wrong( 'google_calendar', 'Dont use this function', '2.2' );
-
-	return null;
 }
 
 /**
@@ -286,7 +282,7 @@ function send_sms_reminder_notification( $sms_id = 0, $appointment_id = 0, $time
 
 	$event = new Event( [
 		'time'       => $time,
-		'funnel_id'  => $appointment_id,
+		'funnel_id'  => $appointment->get_id(),
 		'step_id'    => $sms->get_id(),
 		'contact_id' => $appointment->get_contact_id(),
 		'event_type' => SMS_Reminder::NOTIFICATION_TYPE,
@@ -586,7 +582,6 @@ function get_default_availability() {
 	return $rules;
 }
 
-
 /**
  * Set the default settings for the calendar
  *
@@ -595,6 +590,9 @@ function get_default_availability() {
  * @param $minutes  int
  */
 function set_calendar_default_settings( $calendar, $hours = 1, $minutes = 0 ) {
+
+	$calendar->update_meta( 'default_name', __( '{first} {last} and {calendar_owner_first_name} {calendar_owner_last_name}', 'groundhogg-calendar' ) );
+	$calendar->update_meta( 'default_description', __( '{first} {last} and {calendar_owner_first_name} {calendar_owner_last_name}', 'groundhogg-calendar' ) );
 
 	// max booking period in availability
 	$calendar->update_meta( 'max_booking_period_count', 1 );
@@ -679,4 +677,73 @@ function set_calendar_default_settings( $calendar, $hours = 1, $minutes = 0 ) {
 		] );
 	}
 
+	$admin_notifications = [
+		'sms'                       => is_sms_plugin_active(),
+		Email_Reminder::SCHEDULED   => true,
+		Email_Reminder::RESCHEDULED => true,
+		Email_Reminder::CANCELLED   => true,
+	];
+
+	$calendar->update_meta( 'enabled_admin_notifications', $admin_notifications );
+
+}
+
+/**
+ * Gets all events for the full calendar list in the appointments page
+ *
+ * @return array
+ */
+function get_all_events_for_full_calendar() {
+
+	$local_query  = get_request_query();
+	$synced_query = [];
+
+	// Only show appointments the calendar owner can see.
+	if ( current_user_can( 'view_own_calendar' ) ) {
+
+		$owned_calendars = get_db( 'calendars' )->query( [
+			'user_id' => get_current_user_id()
+		] );
+
+		array_map_to_class( $owned_calendars, Calendar::class );
+
+		// Filter by including appointments whose parent calendar is owned by the current user
+		if ( isset_not_empty( $local_query, 'calendar_id' ) ){
+			$local_query['calendar_id'] = array_intersect( $local_query['calendar_id'], get_object_ids( $owned_calendars ) );
+		} else {
+			$local_query['calendar_id'] = get_object_ids( $owned_calendars );
+		}
+
+		// Can only see synced events from calendars linked to their own calendar
+		$connected_calendars = array_reduce( $owned_calendars, function ( $carry, $calendar ){
+			return array_unique( array_merge( $carry, $calendar->get_google_calendar_list() ) );
+		}, [] );
+
+		$synced_query[ 'local_gcalendar_id' ] = $connected_calendars;
+	}
+
+	$local_query = array_filter( $local_query );
+	$synced_query = array_filter( $synced_query );
+
+	$local_appointments = get_db( 'appointments' )->query( $local_query );
+
+	$local_events = array_map_keys( array_map( function ( $event ) {
+		$event = new Appointment( $event );
+
+		return $event->get_for_full_calendar();
+	}, $local_appointments ), function ( $i, $event ) {
+		return $event['id'];
+	} );
+
+	$google_events = get_db( 'synced_events' )->query( $synced_query );
+
+	$google_events = array_map_keys( array_map( function ( $event ) {
+		$event = new Synced_Event( $event );
+
+		return $event->get_for_full_calendar();
+	}, $google_events ), function ( $i, $event ) {
+		return $event['id'];
+	} );
+
+	return array_values( array_merge( $google_events, $local_events ) );
 }
