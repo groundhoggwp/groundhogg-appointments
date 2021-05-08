@@ -68,11 +68,9 @@ $emails['reminder'] = [
 	'subject' => __( 'You have an upcoming appointment!', 'groundhogg-calendar' ),
 	'content' => __( 'Hi {first},
 
-Your appointment has been cancelled.
+Your appointment with {calendar_owner_first_name} {calendar_owner_last_name} is in {time_to_appointment}!
 
-If you want you can reschedule for another slot in the future.
-
-Reschedule: {calender_link}
+If you need to make changes to this appointment: {appointment_actions}
 
 Best,
 {calendar_owner_signature}', 'groundhogg-calendar' ),
