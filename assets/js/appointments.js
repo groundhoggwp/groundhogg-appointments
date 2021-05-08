@@ -1,7 +1,5 @@
 (function ($, appointments) {
   $.extend(appointments, {
-    date: null,
-    bookingData: null,
     init: function () {
 
       var self = this
@@ -19,6 +17,7 @@
         initialView: 'listWeek',
         events: appointments.events,
         eventClick: function ( info ){
+          self.appointment = info.event.extendedProps.appointment
           $appointment.append( appointments.spinner );
           adminAjaxRequest(
             { action: 'gh_fetch_appointment', appointment: info.event.id },
@@ -27,12 +26,33 @@
                 $appointment.html(response.data.html);
               }
             },
+            function ( error ){
+              console.log(error)
+            }
           )
         }
 
       })
 
       self.fullCalendar.render()
+
+      $(document).on( 'click', '#add-meeting-notes', function (){
+        $appointment.append( appointments.spinner );
+        var notes = $( '#admin_notes' ).val();
+
+        adminAjaxRequest(
+          { action: 'gh_update_appointment_admin_notes', appointment: self.appointment.data.uuid, admin_notes: notes },
+          function callback (response) {
+            if ( response.success ){
+              $appointment.children().last().remove()
+            }
+          },
+          function ( error ){
+            console.log(error)
+          }
+        )
+
+      } )
     },
   })
 

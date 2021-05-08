@@ -42,8 +42,8 @@ class Plugin extends Extension {
 	 * @return void
 	 */
 	public function includes() {
-		include dirname( __FILE__ ) . '/functions.php';
-		include dirname( __FILE__ ) . '/template.php';
+		include __DIR__ . '/functions.php';
+		include __DIR__ . '/template.php';
 	}
 
 	/**

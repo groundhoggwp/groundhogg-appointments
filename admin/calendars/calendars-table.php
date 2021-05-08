@@ -2,6 +2,7 @@
 
 namespace GroundhoggBookingCalendar\Admin\Calendars;
 
+use function Groundhogg\action_url;
 use function Groundhogg\admin_page_url;
 use function Groundhogg\current_user_is;
 use function Groundhogg\get_db;
@@ -114,17 +115,16 @@ class Calendars_Table extends WP_List_Table {
 		], __( 'Edit' ) );
 
 		$actions['list'] = html()->e( 'a', [
-			'href' => admin_page_url( 'gh_calendar', [
-				'calendar' => $calendar->get_id(),
-				'action'   => 'edit',
-				'tab'      => 'list'
-			] )
+			'href' => admin_page_url( 'gh_appointments', [
+				'calendar_id' => $calendar->get_id(),
+				] )
 		], __( 'Appointments', 'groundhogg-calendar' ) );
 
 		$actions['delete'] = html()->e( 'a', [
-			'href' => admin_page_url( 'gh_calendar', [
+			'href' =>  admin_page_url( 'gh_calendar', [
 				'calendar' => $calendar->get_id(),
-				'action'   => 'delete',
+				'action'   => 'edit',
+				'tab'      => 'delete'
 			] )
 		], __( 'Delete' ) );
 

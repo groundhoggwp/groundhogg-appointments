@@ -87,6 +87,18 @@ class Replacements {
 				'description' => __( 'Links to allow cancelling or re-scheduling appointments.', 'groundhogg-calendar' ),
 			],
 			[
+				'name'        => __( 'Appointment Reschedule Link', 'groundhogg-calendar' ),
+				'code'        => 'appointment_reschedule_link',
+				'callback'    => array( $this, 'appointment_reschedule_link' ),
+				'description' => __( 'Link to re-scheduling the appointment.', 'groundhogg-calendar' ),
+			],
+			[
+				'name'        => __( 'Appointment Cancel Link', 'groundhogg-calendar' ),
+				'code'        => 'appointment_cancel_link',
+				'callback'    => array( $this, 'appointment_cancel_link' ),
+				'description' => __( 'Link to cancel the appointment.', 'groundhogg-calendar' ),
+			],
+			[
 				'name'        => __( 'Appointment Notes', 'groundhogg-calendar' ),
 				'code'        => 'appointment_notes',
 				'callback'    => array( $this, 'appointment_notes' ),
@@ -185,7 +197,7 @@ class Replacements {
 		$this->appointment = $appointment;
 	}
 
-	public function time_to_appointment(){
+	public function time_to_appointment() {
 		if ( ! $this->get_appointment() ) {
 			return false;
 		}
@@ -288,11 +300,11 @@ class Replacements {
 		return wpautop( $this->get_appointment()->get_details() );
 	}
 
-	public function cancellation_reason(){
+	public function cancellation_reason() {
 
 	}
 
-	public function reschedule_reason(){
+	public function reschedule_reason() {
 
 	}
 
@@ -317,6 +329,35 @@ class Replacements {
 		return implode( ' | ', $actions );
 	}
 
+	/**
+	 * Insert appointment management links.
+	 *
+	 * @param int $contact_id
+	 *
+	 * @return bool|string
+	 */
+	public function appointment_reschedule_link( $contact_id = 0 ) {
+		if ( ! $this->get_appointment() ) {
+			return false;
+		}
+
+		return html()->e( 'a', [ 'href' => $this->get_appointment()->manage_link( 'reschedule' ) ], __( 'Reschedule', 'groundhogg-calendar' ) );
+	}
+
+	/**
+	 * Insert appointment management links.
+	 *
+	 * @param int $contact_id
+	 *
+	 * @return bool|string
+	 */
+	public function appointment_cancel_link( $contact_id = 0 ) {
+		if ( ! $this->get_appointment() ) {
+			return false;
+		}
+
+		return html()->e( 'a', [ 'href' => $this->get_appointment()->manage_link( 'cancel' ) ], __( 'Cancel', 'groundhogg-calendar' ) );
+	}
 
 	/**
 	 * fetch Zoom meting description from zoom
@@ -443,7 +484,7 @@ class Replacements {
 	 *
 	 * @return false|int|mixed|string
 	 */
-	public function calendar_owner_signature(){
+	public function calendar_owner_signature() {
 		if ( ! $this->get_appointment() ) {
 			return false;
 		}
@@ -465,7 +506,7 @@ class Replacements {
 	 *
 	 * @return false|string|void
 	 */
-	public function calender_link(){
+	public function calender_link() {
 		if ( ! $this->get_appointment() ) {
 			return false;
 		}

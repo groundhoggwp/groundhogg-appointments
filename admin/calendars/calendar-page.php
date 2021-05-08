@@ -23,6 +23,7 @@ use function Groundhogg\is_replacement_code_format;
 use function Groundhogg\utils;
 use function Groundhogg\validate_mobile_number;
 use function GroundhoggBookingCalendar\set_calendar_default_settings;
+use function GroundhoggBookingCalendar\validate_calendar_slug;
 use function GroundhoggBookingCalendar\zoom;
 
 
@@ -196,7 +197,7 @@ class Calendar_Page extends Admin_Page {
 
 	public function view() {
 		if ( ! class_exists( 'Calendars_Table' ) ) {
-			include dirname( __FILE__ ) . '/calendars-table.php';
+			include __DIR__ . '/calendars-table.php';
 		}
 
 		$calendars_table = new Calendars_Table();
@@ -209,7 +210,7 @@ class Calendar_Page extends Admin_Page {
 		if ( ! current_user_can( 'edit_calendar' ) ) {
 			$this->wp_die_no_access();
 		}
-		include dirname( __FILE__ ) . '/edit.php';
+		include __DIR__ . '/edit.php';
 	}
 
 	public function add() {
@@ -217,16 +218,18 @@ class Calendar_Page extends Admin_Page {
 			$this->wp_die_no_access();
 		}
 
-		include dirname( __FILE__ ) . '/add.php';
+		include __DIR__ . '/add.php';
 	}
 
 
 	public function process_delete() {
+
 		if ( ! current_user_can( 'delete_calendar' ) ) {
 			$this->wp_die_no_access();
 		}
 
-		$calendar = new Calendar( get_request_var( 'calendar' ) );
+		$calendar = new Calendar( get_url_var( 'calendar' ) );
+
 		if ( ! $calendar->exists() ) {
 			return new \WP_Error( 'failed', __( 'Operation failed Calendar not Found.', 'groundhogg-calendar' ) );
 		}
@@ -257,22 +260,12 @@ class Calendar_Page extends Admin_Page {
 			return new \WP_Error( 'no_data', __( 'Please enter name and description of calendar.', 'groundhogg-calendar' ) );
 		}
 
-		$slug     = sanitize_title( $name );
-		$new_slug = $slug;
-		$count    = 1;
-
-		while ( get_db( 'calendars' )->exists( [ 'slug' => $new_slug ] ) ) {
-			$new_slug = sprintf( "%s-%d", $slug, $count );
-			$count ++;
-		}
-
 		$owner_id = absint( get_request_var( 'owner_id', get_current_user_id() ) );
 
 		$calendar = new Calendar( [
 			'user_id'     => $owner_id,
 			'name'        => $name,
 			'description' => $description,
-			'slug'        => $new_slug
 		] );
 
 		if ( ! $calendar->exists() ) {
@@ -540,6 +533,7 @@ class Calendar_Page extends Admin_Page {
 		$args = array(
 			'user_id'     => absint( get_post_var( 'owner_id', get_current_user_id() ) ),
 			'name'        => sanitize_text_field( get_post_var( 'name', $calendar->get_name() ) ),
+			'slug'        => validate_calendar_slug( get_post_var( 'slug', $calendar->get_slug() ), $calendar->get_id() ),
 			'description' => wp_kses_post( get_post_var( 'description' ) ),
 		);
 

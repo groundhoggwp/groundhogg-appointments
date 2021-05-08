@@ -40,6 +40,7 @@
     word-wrap: break-word;
 }
 
+p.instructions,
 .appointment-title,
 .calendar-identity{
     padding: 0 20px;

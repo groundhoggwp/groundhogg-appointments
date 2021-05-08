@@ -121,6 +121,9 @@ class Synced_Event extends Base_Object {
 			'editable' => false,
 			'allDay'   => ( $this->end_time - $this->start_time ) % DAY_IN_SECONDS === 0,
 			'color'    => '#0073aa',
+			'extendedProps' => [
+				'appointment' => $this,
+			]
 		];
 	}
 }

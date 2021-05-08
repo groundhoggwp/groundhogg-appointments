@@ -31,6 +31,17 @@ if ( $calendar == null ) {
 				<p class="description"><?php _e( 'A name of a calendar.', 'groundhogg-calendar' ) ?>.</p>
 			</td>
 		</tr>
+		<tr>
+			<th scope="row"><label><?php _e( 'URL Slug' ) ?></label></th>
+			<td>
+				<?php echo html()->input( [
+					'name'        => 'slug',
+					'placeholder' => sanitize_title( $calendar->get_name() ),
+					'value'       => $calendar->slug
+				] ); ?>
+				<p class="description"><?php _e( 'The public URL of the calendar.', 'groundhogg-calendar' ) ?>.</p>
+			</td>
+		</tr>
 		<tr class="form-field term-contact-wrap">
 			<th scope="row"><label><?php _e( 'Calendar Owner' ) ?></label></th>
 			<td>

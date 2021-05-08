@@ -591,6 +591,8 @@ function get_default_availability() {
  */
 function set_calendar_default_settings( $calendar, $hours = 1, $minutes = 0 ) {
 
+	$calendar->generate_slug();
+
 	$calendar->update_meta( 'default_name', __( '{first} {last} and {calendar_owner_first_name} {calendar_owner_last_name}', 'groundhogg-calendar' ) );
 	$calendar->update_meta( 'default_description', __( '{first} {last} and {calendar_owner_first_name} {calendar_owner_last_name}', 'groundhogg-calendar' ) );
 
@@ -708,21 +710,21 @@ function get_all_events_for_full_calendar() {
 		array_map_to_class( $owned_calendars, Calendar::class );
 
 		// Filter by including appointments whose parent calendar is owned by the current user
-		if ( isset_not_empty( $local_query, 'calendar_id' ) ){
+		if ( isset_not_empty( $local_query, 'calendar_id' ) ) {
 			$local_query['calendar_id'] = array_intersect( $local_query['calendar_id'], get_object_ids( $owned_calendars ) );
 		} else {
 			$local_query['calendar_id'] = get_object_ids( $owned_calendars );
 		}
 
 		// Can only see synced events from calendars linked to their own calendar
-		$connected_calendars = array_reduce( $owned_calendars, function ( $carry, $calendar ){
+		$connected_calendars = array_reduce( $owned_calendars, function ( $carry, $calendar ) {
 			return array_unique( array_merge( $carry, $calendar->get_google_calendar_list() ) );
 		}, [] );
 
-		$synced_query[ 'local_gcalendar_id' ] = $connected_calendars;
+		$synced_query['local_gcalendar_id'] = $connected_calendars;
 	}
 
-	$local_query = array_filter( $local_query );
+	$local_query  = array_filter( $local_query );
 	$synced_query = array_filter( $synced_query );
 
 	$local_appointments = get_db( 'appointments' )->query( $local_query );
@@ -746,4 +748,27 @@ function get_all_events_for_full_calendar() {
 	} );
 
 	return array_values( array_merge( $google_events, $local_events ) );
+}
+
+/**
+ * Generate a slug based on the calendar name
+ *
+ * return string
+ */
+function validate_calendar_slug( $slug, $id = false ) {
+
+	$slug = sanitize_title( $slug );
+
+	while ( $existing = get_db( 'calendars' )->get_by( 'slug', $slug ) ) {
+
+		// The existing slug is the one from the current calendar
+		if ( $id === absint( $existing->ID ) ) {
+			return $slug;
+		}
+
+		$slug_num = preg_match( '/-(\d+)$/', $slug, $matches ) ? absint( $matches[1] ) : 1;
+		$slug     = empty( $matches ) ? $slug . '-' . $slug_num : preg_replace( '/-(\d+)$/', '-' . ( $slug_num + 1 ), $slug );
+	}
+
+	return $slug;
 }

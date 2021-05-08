@@ -9,6 +9,7 @@ use function Groundhogg\emergency_init_dbs;
 use function Groundhogg\get_array_var;
 use function Groundhogg\get_db;
 use function Groundhogg\get_post_var;
+use function Groundhogg\install_custom_rewrites;
 use function Groundhogg\words_to_key;
 use function Groundhogg\get_email_templates;
 use GroundhoggBookingCalendar\Classes\Calendar;
@@ -51,6 +52,8 @@ class Updater extends \Groundhogg\Updater {
 
 		install_tables();
 
+		install_custom_rewrites();
+
 		global $wpdb;
 
 		// Update BOOKED/APPROVED booking actions to proper action
@@ -82,6 +85,8 @@ WHERE meta_key = 'action' AND meta_value IN ('%s', '%s');",
 		foreach ( $calendars as $calendar ) {
 
 			$calendar = new Calendar( $calendar );
+
+			$calendar->generate_slug();
 
 			// Migrate admin notifications
 			$enabled_admin_notifications = [

@@ -17,6 +17,7 @@ class Appointments_Page extends Admin_Page {
 
 	protected function add_ajax_actions() {
 		add_action( 'wp_ajax_gh_fetch_appointment', [ $this, 'ajax_fetch_appointment' ] );
+		add_action( 'wp_ajax_gh_update_appointment_admin_notes', [ $this, 'ajax_update_appointment_admin_notes' ] );
 	}
 
 	protected function add_additional_actions() {
@@ -42,8 +43,9 @@ class Appointments_Page extends Admin_Page {
 	public function scripts() {
 		wp_enqueue_script( 'groundhogg-appointments-admin' );
 		wp_localize_script( 'groundhogg-appointments-admin', 'GroundhoggAppointments', [
-			'events'  => get_all_events_for_full_calendar(),
-			'spinner' => '<div class="loader-overlay"></div><div class="loader-wrap"><span class="gh-loader"></span></div>'
+			'events'      => get_all_events_for_full_calendar(),
+			'spinner'     => '<div><div class="loader-overlay"></div><div class="loader-wrap"><span class="gh-loader"></span></div></div>',
+			'appointment' => new Appointment( get_url_var( 'appointment' ) )
 		] );
 		wp_enqueue_style( 'groundhogg-fullcalendar' );
 		wp_enqueue_style( 'groundhogg-calender-admin' );
@@ -66,7 +68,7 @@ class Appointments_Page extends Admin_Page {
 		if ( ! $appointment->exists() ) {
 			$appointment = new Synced_Event( $appointment_id, 'event_id' );
 
-			if ( ! $appointment->exists() ){
+			if ( ! $appointment->exists() ) {
 				wp_send_json_error();
 			}
 
@@ -82,7 +84,22 @@ class Appointments_Page extends Admin_Page {
 		wp_send_json_success( [ 'html' => $html, 'appointment' => $appointment ] );
 	}
 
-	public function process_sync_events(){
+	public function ajax_update_appointment_admin_notes() {
+		$appointment_id = get_post_var( 'appointment' );
+		$appointment    = new Appointment( $appointment_id, 'uuid' );
+
+		// Get from google?
+		if ( ! $appointment->exists() ) {
+			wp_send_json_error();
+		}
+
+		$notes = sanitize_text_field( get_post_var( 'admin_notes' ) );
+		$appointment->update_meta( 'admin_notes', $notes );
+
+		wp_send_json_success( [ 'appointment' => $appointment ] );
+	}
+
+	public function process_sync_events() {
 		Calendar_Sync::sync();
 
 		return false;
@@ -111,7 +128,7 @@ class Appointments_Page extends Admin_Page {
 				<?php if ( $appointment->exists() ): ?>
 					<?php include __DIR__ . '/view.php' ?>
 				<?php else: ?>
-					<p>
+					<p class="instructions">
 						<?php _e( 'Click on an appointment to bring up the details.', 'groundhogg-calendar' ); ?>
 					</p>
 				<?php endif; ?>

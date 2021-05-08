@@ -39,22 +39,23 @@ $calendar_owner = get_userdata( $appointment->get_calendar()->get_user_id() );
 			], sprintf( '%s (%s)', $appointment->get_contact()->get_full_name(), $appointment->get_contact()->get_email() ) ) ?></p>
 		<p><?php dashicon_e( 'calendar' ); ?> <b><?php _e( 'When' ) ?></b></p>
 		<p><abbr
-				class="<?php echo $appointment->is_cancelled() ? 'cancelled' : 'scheduled' ?>" title="<?php esc_attr_e( $appointment->get_pretty_start_time( 'admin' ) ); ?>"><?php printf( '%s, %s - %s',
+				class="<?php echo $appointment->is_cancelled() ? 'cancelled' : 'scheduled' ?>"
+				title="<?php esc_attr_e( $appointment->get_pretty_start_time( 'admin' ) ); ?>"><?php printf( '%s, %s - %s',
 					date_i18n( get_date_format(), $appointment->get_start_time( true ) ),
 					date_i18n( get_time_format(), $appointment->get_start_time( true ) ),
 					date_i18n( get_time_format(), $appointment->get_end_time( true ) ) ) ?></abbr></p>
 		<?php if ( ! $appointment->is_cancelled() ): ?>
-		<p><?php echo html()->e( 'a', [
-				'href'  => $appointment->manage_link( 'reschedule' ),
-				'class' => 'button'
-			], dashicon( 'update-alt' ) . __( 'Reschedule', 'groundhogg-calendar' ) );
+			<p><?php echo html()->e( 'a', [
+					'href'  => $appointment->manage_link( 'reschedule' ),
+					'class' => 'button'
+				], dashicon( 'update-alt' ) . __( 'Reschedule', 'groundhogg-calendar' ) );
 
-			echo html()->e( 'a', [
-				'href'  => $appointment->manage_link( 'cancel' ),
-				'class' => 'button danger'
-			], dashicon( 'trash' ) . __( 'Cancel', 'groundhogg-calendar' ) );
+				echo html()->e( 'a', [
+					'href'  => $appointment->manage_link( 'cancel' ),
+					'class' => 'button danger'
+				], dashicon( 'trash' ) . __( 'Cancel', 'groundhogg-calendar' ) );
 
-			?></p>
+				?></p>
 		<?php endif; ?>
 		<p><?php dashicon_e( 'text' ); ?> <b><?php _e( 'Details' ) ?></b></p>
 		<div class="details">
@@ -64,9 +65,13 @@ $calendar_owner = get_userdata( $appointment->get_calendar()->get_user_id() );
 		<p><?php _e( $appointment->get_contact()->get_time_zone() ); ?></p>
 		<p><b><?php _e( 'Add meeting notes' ) ?></b></p>
 		<p><?php echo html()->textarea( [
-				'name' => 'admin_notes',
-				'rows' => 2
-			] ) ?></p>
+				'name'  => 'admin_notes',
+				'id'    => 'admin_notes',
+				'rows'  => 2,
+				'value' => $appointment->get_meta( 'admin_notes' )
+			] ) ?>
+		</p>
+		<p class="description"><?php _e( 'Only visible to admins.', 'groundhogg-calendar' ); ?></p>
 		<p>
 			<?php html()->button( [
 				'type'  => 'button',

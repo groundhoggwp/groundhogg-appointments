@@ -223,16 +223,19 @@ class Appointment extends Base_Object_With_Meta {
 	 */
 	public function get_for_full_calendar() {
 		return [
-			'id'         => $this->uuid,
-			'local_id'   => $this->get_id(),
-			'title'      => $this->get_name(),
-			'start'      => (int) $this->get_start_time() * 1000,
-			'end'        => (int) $this->get_end_time() * 1000,
-			'constraint' => 'businessHours',
-			'editable'   => true,
-			'allDay'     => false,
-			'color'      => $this->get_status() === 'scheduled' ? '#28a745' : '#dc3545',
-			'classNames' => [ $this->is_cancelled() ? 'cancelled' : 'scheduled' ],
+			'id'            => $this->uuid,
+			'local_id'      => $this->get_id(),
+			'title'         => $this->get_name(),
+			'start'         => (int) $this->get_start_time() * 1000,
+			'end'           => (int) $this->get_end_time() * 1000,
+			'constraint'    => 'businessHours',
+			'editable'      => true,
+			'allDay'        => false,
+			'color'         => $this->get_status() === 'scheduled' ? '#28a745' : '#dc3545',
+			'classNames'    => [ $this->is_cancelled() ? 'cancelled' : 'scheduled' ],
+			'extendedProps' => [
+				'appointment' => $this,
+			]
 		];
 
 	}
@@ -493,7 +496,7 @@ class Appointment extends Base_Object_With_Meta {
 		$description = $this->get_calendar()->get_description();
 
 		if ( $this->get_calendar()->get_meta( 'additional_notes' ) ) {
-			$description .= "\n\n<b>" .  __( 'Additional Instructions:', 'groundhogg-calendar' ) . "</b>\n" .
+			$description .= "\n\n<b>" . __( 'Additional Instructions:', 'groundhogg-calendar' ) . "</b>\n" .
 			                do_replacements( $this->get_calendar()->get_meta( 'additional_notes' ), $this->get_contact() );
 		}
 
@@ -525,7 +528,7 @@ class Appointment extends Base_Object_With_Meta {
 		$description .= "\n\n" . $this->get_calendar()->get_description();
 
 		if ( $this->get_calendar()->get_meta( 'additional_notes' ) ) {
-			$description .= "\n\n<b>" .  __( 'Additional Instructions:', 'groundhogg-calendar' ) . "</b>\n" .
+			$description .= "\n\n<b>" . __( 'Additional Instructions:', 'groundhogg-calendar' ) . "</b>\n" .
 			                do_replacements( $this->get_calendar()->get_meta( 'additional_notes' ), $this->get_contact() );
 		}
 

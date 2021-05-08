@@ -126,13 +126,15 @@ class Appointments extends DB {
 	 * @return mixed
 	 */
 	public function calendar_deleted( $id ) {
-		$appointments = $this->query( [ 'calendar_id' => $id ] );
-		$result       = false;
-		foreach ( $appointments as $appointment ) {
-			$result = $this->delete( absint( $appointment->ID ) );
-		}
+		if ( is_numeric( $id ) ) {
+			$appointments = $this->query( [ 'calendar_id' => $id ] );
+			$result       = false;
+			foreach ( $appointments as $appointment ) {
+				$result = $this->delete( absint( $appointment->ID ) );
+			}
 
-		return $result;
+			return $result;
+		}
 	}
 
 	/**
@@ -143,13 +145,15 @@ class Appointments extends DB {
 	 * @return mixed
 	 */
 	public function contact_deleted( $id ) {
-		$appointments = $this->query( [ 'contact_id' => $id ] );
-		$result       = false;
-		foreach ( $appointments as $appointment ) {
-			$result = $this->delete( absint( $appointment->ID ) );
-		}
+		if ( is_numeric( $id ) ) {
+			$appointments = $this->query( [ 'contact_id' => $id ] );
+			$result       = false;
+			foreach ( $appointments as $appointment ) {
+				$result = $this->delete( absint( $appointment->ID ) );
+			}
 
-		return $result;
+			return $result;
+		}
 	}
 
 

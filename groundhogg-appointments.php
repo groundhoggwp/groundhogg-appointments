@@ -42,7 +42,7 @@ define( 'GROUNDHOGG_BOOKING_CALENDAR_REQUIRED_PHP_VERSION', '7.0' );
 define( 'GROUNDHOGG_BOOKING_CALENDAR_REQUIRED_CORE_VERSION', '2.2.alpha.1' );
 
 add_action( 'plugins_loaded', function (){
-    load_plugin_textdomain( GROUNDHOGG_BOOKING_CALENDAR_TEXT_DOMAIN, false, basename( dirname( __FILE__ ) ) . '/languages' );
+    load_plugin_textdomain( GROUNDHOGG_BOOKING_CALENDAR_TEXT_DOMAIN, false, basename( __DIR__ ) . '/languages' );
 } );
 
 define( 'GROUNDHOGG_BOOKING_CALENDAR_TEXT_DOMAIN', 'groundhogg-calendar' );

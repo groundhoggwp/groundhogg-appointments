@@ -17,6 +17,7 @@ use function Groundhogg\do_replacements;
 use function Groundhogg\isset_not_empty;
 use function GroundhoggBookingCalendar\get_default_availability;
 use function GroundhoggBookingCalendar\get_time_format;
+use function GroundhoggBookingCalendar\validate_calendar_slug;
 use function GroundhoggBookingCalendar\zoom;
 use function GroundhoggBookingCalendar\in_between;
 use function GroundhoggBookingCalendar\better_human_readable_duration;
@@ -48,6 +49,10 @@ class Calendar extends Base_Object_With_Meta {
 
 	public function get_name() {
 		return $this->name;
+	}
+
+	public function get_slug() {
+		return $this->slug;
 	}
 
 	public function get_description() {
@@ -142,6 +147,18 @@ class Calendar extends Base_Object_With_Meta {
 
 		return $appts;
 
+	}
+
+	/**
+	 * Generate a slug based on the calendar name
+	 */
+	public function generate_slug() {
+
+		$slug = validate_calendar_slug( $this->name, $this->get_id() );
+
+		$this->update( [
+			'slug' => $slug
+		] );
 	}
 
 	/**
@@ -633,19 +650,6 @@ class Calendar extends Base_Object_With_Meta {
 		}
 
 		return $available_slots;
-	}
-
-	/**
-	 * @return bool
-	 */
-	public function delete() {
-		$status = $this->get_db()->delete( $this->get_id() );
-
-		if ( ! $status ) {
-			return $status;
-		}
-
-		return true;
 	}
 
 	protected $google_appointments;

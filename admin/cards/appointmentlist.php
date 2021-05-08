@@ -1,169 +1,102 @@
 <?php
 
+use function Groundhogg\dashicon;
 use function Groundhogg\get_db;
 use function Groundhogg\admin_page_url;
-use Groundhogg\Plugin;
-use function Groundhogg\get_date_time_format;
 use GroundhoggBookingCalendar\Classes\Appointment;
-use GroundhoggBookingCalendar\Classes\Calendar;
+use function Groundhogg\html;
+use function GroundhoggBookingCalendar\get_date_format;
+use function GroundhoggBookingCalendar\get_time_format;
 
 /**
  * Display formatting examples for the new css design system for the sidebar info cards
  *
  * @var $contact \Groundhogg\Contact
  */
-// fetch upcoming appointments
-$where        = [
-	'relationship' => 'AND',
-	[ 'col' => 'start_time', 'val' => absint( time() ), 'compare' => '>' ],
-	[ 'col' => 'contact_id', 'val' => $contact->get_id(), 'compare' => '=' ],
-];
-$order        = 'start_time';
-$args         = array(
-	'where' => $where,
-	'order' => $order
-);
-$appointments = get_db( 'appointments' )->query( $args );
-// fetch past appointments
-$where             = [
-	'relationship' => 'AND',
-	[ 'col' => 'start_time', 'val' => absint( time() ), 'compare' => '<' ],
-	[ 'col' => 'contact_id', 'val' => $contact->get_id(), 'compare' => '=' ],
-];
-$order             = 'start_time';
-$args              = array(
-	'where'   => $where,
-	'order'   => 'desc',
-	'orderby' => 'end_time'
-);
-$past_appointments = get_db( 'appointments' )->query( $args );
+
+$appointments = get_db( 'appointments' )->query( [
+	'orderby' => 'start_time',
+	'order'   => 'desc'
+] );
 
 /**
  * @param $status
- *
- * @return string
+ * @param $start_time
+ * @param $end_time
  */
-function get_status( $status ) {
+function status_label( $status, $start_time, $end_time ) {
+
+	if ( $status !== 'cancelled' ){
+		if ( $start_time < time() && $end_time > time() ) {
+			$status = 'in_progress';
+		} else if ( $end_time < time() ) {
+			$status = 'past';
+		}
+	}
+
 	switch ( $status ):
 		case 'scheduled':
 			$color = 'green';
+			$label = __( 'Scheduled', 'groundhogg-calendar' );
 			break;
 		case 'cancelled':
 			$color = 'red';
+			$label = __( 'Cancelled', 'groundhogg-calendar' );
 			break;
-		case 'pending':
+		case 'past':
 		default:
+			$label = __( 'Finished', 'groundhogg-calendar' );
 			$color = 'orange';
 			break;
 	endswitch;
 	?>
-	<span class="<?php echo $color ?>"><?php echo ucfirst( $status ); ?></span>
+	<span class="<?php echo $color ?>"><?php echo $label; ?></span>
 	<?php
 }
 
-/**
- * @param $appointment
- *
- * @return string
- */
-function appointment_start_end( $appointment ) {
-	$start_time = date( get_date_time_format(), Plugin::$instance->utils->date_time->convert_to_local_time( $appointment->get_start_time() ) );
-	$end_time   = date( get_date_time_format(), Plugin::$instance->utils->date_time->convert_to_local_time( $appointment->get_end_time() ) );
-	echo sprintf( "<b>%s</b> To <b>%s</b>", $start_time, $end_time );
-}
-
-/**
- * @param $time
- *
- * @return string
- */
-function minutes( $time ) {
-	$time = explode( ':', $time );
-
-	return ( $time[0] * 60 ) + ( $time[1] ) + ( $time[2] / 60 ) . ' Minutes';
-}
 
 if ( empty( $appointments ) ):?>
-	<p><?php _e( 'No appointment yet.', 'groundhogg-calendar' ); ?></p>
+	<p><?php _e( 'No appointments yet.', 'groundhogg-calendar' ); ?></p>
 <?php else: ?>
-	<div class="appointment-section">
+
+	<?php foreach ( $appointments as $appointment ):
+		$appointment = new Appointment( $appointment );
+		?>
 		<div class="ic-section">
 			<div class="ic-section-header">
 				<div class="ic-section-header-content">
-					<span class="dashicons dashicons-list-view"></span>
-					<?php echo sprintf( "Upcoming Appointments (%s)", count( $appointments ) ); ?>
+					<div class="basic-details">
+						<a href="<?php echo esc_url( admin_page_url( 'gh_appointments', [
+							'appointment' => $appointment->get_id()
+						] ) ); ?> ">#<?php echo $appointment->get_id(); ?></a> <?php status_label( $appointment->get_status(), $appointment->get_start_time(), $appointment->get_end_time() ); ?>
+					</div>
 				</div>
 			</div>
 			<div class="ic-section-content">
-				<?php if ( ! empty( $appointments ) ): ?>
-					<?php foreach ( $appointments as $appointment ):
-						$appointment = new Appointment( $appointment->ID );
-						$calendar = new Calendar( $appointment->data['calendar_id'] );
-						?>
-						<div class="ic-section">
-							<div class="ic-section-header">
-								<div class="ic-section-header-content">
-									<div class="basic-details">
-										<a href="<?php echo esc_url( admin_page_url( 'gh_calendar', [
-											'action'      => 'edit_appointment',
-											'appointment' => $appointment->get_id()
-										] ) ); ?> ">#<?php echo $appointment->get_id(); ?> </a>
-										<?php get_status( $appointment->get_status() ); ?>
+				<ul class="info-list">
+					<li>
+						<abbr
+								class="<?php echo $appointment->is_cancelled() ? 'cancelled' : 'scheduled' ?>"
+								title="<?php esc_attr_e( $appointment->get_pretty_start_time( 'admin' ) ); ?>"><?php printf( '%s, %s - %s',
+									date_i18n( get_date_format(), $appointment->get_start_time( true ) ),
+									date_i18n( get_time_format(), $appointment->get_start_time( true ) ),
+									date_i18n( get_time_format(), $appointment->get_end_time( true ) ) ) ?></abbr>
+					</li>
+					<?php if ( ! $appointment->is_cancelled() ): ?>
+						<li style="margin-top: 10px"><?php echo html()->e( 'a', [
+								'href'  => $appointment->manage_link( 'reschedule' ),
+								'class' => 'no-underline'
+							], dashicon( 'update-alt' ) . __( 'Reschedule', 'groundhogg-calendar' ) );
+							echo ' | ';
+							echo html()->e( 'a', [
+								'href'  => $appointment->manage_link( 'cancel' ),
+								'class' => 'danger no-underline'
+							], dashicon( 'trash' ) . __( 'Cancel', 'groundhogg-calendar' ) );
 
-									</div>
-								</div>
-
-							</div>
-
-							<div class="ic-section-content">
-								<span><?php appointment_start_end( $appointment ); ?> </span>
-								<span><?php echo ucfirst( $appointment->get_name() ); ?></span>
-								<span><?php echo ucfirst( $calendar->data['name'] ); ?></span>
-							</div>
-						</div>
-					<?php endforeach; ?>
-				<?php
-				else: _e( 'There is no any upcoming appointment yet!!', 'groundhogg-calendar' ); endif; ?>
+							?></li>
+					<?php endif; ?>
+				</ul>
 			</div>
 		</div>
-		<div class="ic-section">
-			<div class="ic-section-header">
-				<div class="ic-section-header-content">
-					<span class="dashicons dashicons-list-view"></span>
-					<?php echo sprintf( "Past Appointments (%s)", count( $past_appointments ) ); ?>
-				</div>
-			</div>
-			<div class="ic-section-content">
-				<?php if ( ! empty( $past_appointments ) ): ?>
-					<?php foreach ( $past_appointments as $appointment ):
-						$appointment = new Appointment( $appointment->ID );
-						$calendar = new Calendar( $appointment->data['calendar_id'] );
-
-						?>
-						<div class="ic-section">
-							<div class="ic-section-header">
-								<div class="ic-section-header-content">
-									<div class="basic-details">
-										<a href="<?php echo esc_url( admin_page_url( 'gh_calendar', [
-											'action'      => 'edit_appointment',
-											'appointment' => $appointment->get_id()
-										] ) ); ?> ">#<?php echo $appointment->get_id(); ?> </a>
-										<?php get_status( $appointment->get_status() ); ?>
-
-									</div>
-								</div>
-
-							</div>
-							<div class="ic-section-content">
-								<span><?php appointment_start_end( $appointment ); ?> </span>
-								<span><?php echo ucfirst( $appointment->get_name() ); ?></span>
-								<span><?php echo ucfirst( $calendar->data['name'] ); ?></span>
-							</div>
-						</div>
-					<?php endforeach; ?>
-				<?php
-				else: _e( 'There is no any past appointment yet!!', 'groundhogg-calendar' ); endif; ?>
-			</div>
-		</div>
-	</div>
+	<?php endforeach; ?>
 <?php endif;
