@@ -119,6 +119,8 @@ class Appointments_Page extends Admin_Page {
 
 		$appointment = new Appointment( get_url_var( 'appointment' ) );
 
+		include __DIR__ . '/filters.php'
+
 		?>
 		<div class="columns">
 			<div id="calendar-wrap" class="postbox" style="">

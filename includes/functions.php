@@ -593,9 +593,6 @@ function set_calendar_default_settings( $calendar, $hours = 1, $minutes = 0 ) {
 
 	$calendar->generate_slug();
 
-	$calendar->update_meta( 'default_name', __( '{first} {last} and {calendar_owner_first_name} {calendar_owner_last_name}', 'groundhogg-calendar' ) );
-	$calendar->update_meta( 'default_description', __( '{first} {last} and {calendar_owner_first_name} {calendar_owner_last_name}', 'groundhogg-calendar' ) );
-
 	// max booking period in availability
 	$calendar->update_meta( 'max_booking_period_count', 1 );
 	$calendar->update_meta( 'max_booking_period_type', 'months' );
@@ -737,15 +734,18 @@ function get_all_events_for_full_calendar() {
 		return $event['id'];
 	} );
 
-	$google_events = get_db( 'synced_events' )->query( $synced_query );
+	$google_events = [];
 
-	$google_events = array_map_keys( array_map( function ( $event ) {
-		$event = new Synced_Event( $event );
+	if ( ! get_url_var( 'hide_synced_events' ) ) {
+		$google_events = get_db( 'synced_events' )->query( $synced_query );
+		$google_events = array_map_keys( array_map( function ( $event ) {
+			$event = new Synced_Event( $event );
 
-		return $event->get_for_full_calendar();
-	}, $google_events ), function ( $i, $event ) {
-		return $event['id'];
-	} );
+			return $event->get_for_full_calendar();
+		}, $google_events ), function ( $i, $event ) {
+			return $event['id'];
+		} );
+	}
 
 	return array_values( array_merge( $google_events, $local_events ) );
 }

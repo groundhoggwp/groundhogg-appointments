@@ -107,3 +107,15 @@ abbr.cancelled{
     text-decoration: line-through;
     color: rgb(220, 53, 69);
 }
+
+#quick-search {
+    padding: 10px;
+    background: #f9f9f9;
+    margin-top: 10px;
+    margin-bottom: 0;
+}
+
+#quick-search .filters{
+    display: flex;
+    justify-content: space-between;
+}

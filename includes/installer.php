@@ -20,7 +20,7 @@ class Installer extends \Groundhogg\Installer {
 			$c15 = new Calendar( [
 				'user_id'     => get_current_user_id(),
 				'name'        => __( '15 Minutes', 'groundhogg-calendar' ),
-				'description' => __( 'Lets chat for 15 minutes.', 'groundhogg-calendar' ),
+				'description' => __( "Let's chat for 15 minutes.", 'groundhogg-calendar' ),
 				'slug'        => '15-minutes'
 			] );
 
@@ -29,7 +29,7 @@ class Installer extends \Groundhogg\Installer {
 			$c30 = new Calendar( [
 				'user_id'     => get_current_user_id(),
 				'name'        => __( '30 Minutes', 'groundhogg-calendar' ),
-				'description' => __( 'Lets chat for 30 minutes.', 'groundhogg-calendar' ),
+				'description' => __( "Let's chat for 30 minutes.", 'groundhogg-calendar' ),
 				'slug'        => '30-minutes'
 			] );
 
@@ -38,7 +38,7 @@ class Installer extends \Groundhogg\Installer {
 			$c60 = new Calendar( [
 				'user_id'     => get_current_user_id(),
 				'name'        => __( '1 Hour', 'groundhogg-calendar' ),
-				'description' => __( 'Lets chat for 1 hour.', 'groundhogg-calendar' ),
+				'description' => __( "Let's chat for 1 hour.", 'groundhogg-calendar' ),
 				'slug'        => '1-hour'
 			] );
 

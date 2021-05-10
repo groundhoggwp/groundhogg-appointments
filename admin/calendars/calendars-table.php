@@ -225,10 +225,8 @@ class Calendars_Table extends WP_List_Table {
 		] );
 
 		return html()->e( 'a', [
-			'href' => admin_page_url( 'gh_calendar', [
-				'calendar' => $calendar->get_id(),
-				'action'   => 'edit',
-				'tab'      => 'list'
+			'href' => admin_page_url( 'gh_appointments', [
+				'calendar_id' => $calendar->get_id(),
 			] )
 		], $count ?: '0', false );
 	}
