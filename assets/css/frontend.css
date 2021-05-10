@@ -80,13 +80,13 @@ p#credit img {
     margin: 80px auto;
 }
 
-label {
+#calendar-form label {
     font-size: 16px;
     line-height: 2em;
     color: #404040;
 }
 
-.gh-input {
+#calendar-form .gh-input {
     -webkit-backface-visibility: hidden;
     background: #fff;
     border: solid 1px #ccc;
@@ -99,7 +99,7 @@ label {
     font-size: 16px;
 }
 
-.gh-input:focus {
+#calendar-form .gh-input:focus {
     border: solid 2px #00b0ff;
     padding: 10px;
 }
