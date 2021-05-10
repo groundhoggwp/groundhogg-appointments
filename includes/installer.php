@@ -5,6 +5,7 @@ namespace GroundhoggBookingCalendar;
 use Groundhogg\Base_Object;
 use GroundhoggBookingCalendar\Classes\Calendar;
 use function Groundhogg\get_db;
+use function Groundhogg\install_custom_rewrites;
 use function Groundhogg\words_to_key;
 
 class Installer extends \Groundhogg\Installer {
@@ -44,6 +45,8 @@ class Installer extends \Groundhogg\Installer {
 
 			set_calendar_default_settings( $c60, 1, 0 );
 		}
+
+		install_custom_rewrites();
 	}
 
 	protected function deactivate() {
