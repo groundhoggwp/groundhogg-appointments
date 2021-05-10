@@ -15,8 +15,8 @@ if ( $calendar == null ) {
 	wp_die( __( 'Calendar not found.', 'groundhogg-calendar' ) );
 }
 ?>
-<form name="" id="" method="post" action="">
-	<?php wp_nonce_field(); ?>
+<form method="post">
+	<?php wp_nonce_field( 'edit' ); ?>
 	<h3><?php _e( 'Calendar Settings', 'groundhogg-calendar' ) ?></h3>
 	<table class="form-table">
 		<tbody>
@@ -184,5 +184,5 @@ if ( $calendar == null ) {
 			'quicktags'     => false,
 		] ); ?>
 	</div>
-	<?php submit_button( __( 'Update Calendar' ), 'primary', 'update' ); ?>
+	<?php submit_button()?>
 </form>
