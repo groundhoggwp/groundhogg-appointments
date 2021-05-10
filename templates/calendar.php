@@ -132,7 +132,7 @@ $bg_color = get_url_var( 'bgcolor' );
 	];
 
 	if ( current_user_can( 'edit_calendar' ) ) {
-		$links[] = html()->e( 'a', [ 'href' => admin_page_url( 'gh_calendar', [ 'calendar' => $calendar->get_id() ] ) ], __( 'Edit Calendar', 'groundhogg' ) );
+		$links[] = html()->e( 'a', [ 'href' => admin_page_url( 'gh_calendar', [ 'calendar' => $calendar->get_id(), 'action' => 'edit' ] ) ], __( 'Edit Calendar', 'groundhogg' ) );
 	}
 
 	if ( current_user_can( 'edit_appointment' ) && $appointment ) {
