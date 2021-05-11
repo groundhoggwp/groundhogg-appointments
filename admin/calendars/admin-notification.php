@@ -117,6 +117,7 @@ $calendar    = new Calendar( $calendar_id );
 	html()->start_row();
 	html()->th( __( 'Subject', 'groundhogg-calendar' ) );
 	html()->td( [
+		html()->wrap( html()->replacements_dropdown(), 'p' ),
 		html()->input( [
 			'name'  => 'subject',
 			'value' => $calendar->get_meta( 'subject' ) ? $calendar->get_meta( 'subject' ) : "{full_name}",

@@ -201,32 +201,7 @@ class Calendar_Page extends Admin_Page {
 	 * enqueue editor scripts for full calendar
 	 */
 	public function scripts() {
-
 		wp_enqueue_style( 'groundhogg-admin' );
-
-		if ( $this->get_current_action() === 'edit' && get_url_var( 'tab', 'view' ) === 'view' ) {
-
-			$calendar = new Calendar( absint( get_url_var( 'calendar' ) ) );
-
-			wp_enqueue_script( 'groundhogg-calendar-admin' );
-			wp_localize_script( 'groundhogg-calendar-admin', 'GroundhoggCalendar', [
-				'calendar_id'    => absint( get_url_var( 'calendar' ) ),
-				'start_of_week'  => get_option( 'start_of_week' ),
-				'min_date'       => $calendar->get_min_booking_period( true ),
-				'max_date'       => $calendar->get_max_booking_period( true ),
-				'disabled_days'  => $calendar->get_dates_no_slots(),
-				'business_hours' => $calendar->get_business_hours(),
-				'events'         => $calendar->get_events_for_full_calendar(),
-				'tab'            => get_url_var( 'tab', 'view' ),
-				'action'         => $this->get_current_action(),
-				'item'           => $calendar
-			] );
-		}
-
-		// STYLES
-		wp_enqueue_style( 'groundhogg-fullcalendar' );
-		wp_enqueue_style( 'groundhogg-calender-admin' );
-		wp_enqueue_style( 'jquery-ui' );
 	}
 
 	public function view() {

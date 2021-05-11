@@ -1072,14 +1072,11 @@ class Calendar extends Base_Object_With_Meta {
 		$args = wp_parse_args( $args, [
 			'contact_id'  => 0,
 			'calendar_id' => $this->get_id(),
-			'name'        => $this->get_meta( 'default_name' ),
 			'status'      => 'scheduled',
 			'start_time'  => time(),
 			'end_time'    => time() + $this->get_appointment_length( true ),
 			'additional'  => '',
 		] );
-
-		$args['name'] = do_replacements( $args['name'], $args['contact_id'] );
 
 		$args = apply_filters( 'groundhogg/calendar/schedule_appointment', $args, $this );
 

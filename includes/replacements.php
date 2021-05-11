@@ -147,11 +147,18 @@ class Replacements {
 				'description' => __( 'Signature of calendar owner.', 'groundhogg-calendar' ),
 			],
 			[
+				'name'        => __( 'Calendar Name', 'groundhogg-calendar' ),
+				'code'        => 'calender_name',
+				'callback'    => array( $this, 'calender_name' ),
+				'description' => __( 'The name of the calendar.', 'groundhogg-calendar' ),
+			],
+			[
 				'name'        => __( 'Calendar Link', 'groundhogg-calendar' ),
 				'code'        => 'calender_link',
 				'callback'    => array( $this, 'calender_link' ),
 				'description' => __( 'Links to the booking calendar.', 'groundhogg-calendar' ),
 			],
+
 		];
 	}
 
@@ -512,6 +519,19 @@ class Replacements {
 		}
 
 		return managed_page_url( sprintf( 'calendar/%s/', $this->get_appointment()->get_calendar()->slug ) );
+	}
+
+	/**
+	 * Retrieve the calendar link
+	 *
+	 * @return false|string|void
+	 */
+	public function calender_name() {
+		if ( ! $this->get_appointment() ) {
+			return false;
+		}
+
+		return $this->get_appointment()->get_calendar()->get_name();
 	}
 
 }

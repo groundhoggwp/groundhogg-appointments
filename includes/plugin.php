@@ -130,9 +130,8 @@ class Plugin extends Extension {
 
 		wp_register_script( 'fullcalendar-main', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'lib/fullcalendar/lib/main.min.js', [], GROUNDHOGG_BOOKING_CALENDAR_VERSION );
 		wp_register_script( 'jstz', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'js/jstz.min.js', [], GROUNDHOGG_BOOKING_CALENDAR_VERSION );
-		wp_register_script( 'groundhogg-calendar-admin', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'js/admin.new.js', [
+		wp_register_script( 'groundhogg-new-appointment-admin', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'js/new-appointment.js', [
 			'jquery',
-			'fullcalendar-main',
 			'jquery-ui-datepicker',
 			'groundhogg-admin-functions',
 		], GROUNDHOGG_BOOKING_CALENDAR_VERSION, true );
@@ -157,6 +156,9 @@ class Plugin extends Extension {
 	public function register_admin_styles() {
 		wp_register_style( 'groundhogg-fullcalendar', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'lib/fullcalendar/lib/main.min.css', [], GROUNDHOGG_BOOKING_CALENDAR_VERSION );
 		wp_register_style( 'groundhogg-calender-admin', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'css/backend.css', [], GROUNDHOGG_BOOKING_CALENDAR_VERSION );
+		wp_register_style( 'groundhogg-new-appointment-admin', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'css/admin/new-appointment.css', [
+			'groundhogg-loader'
+		], GROUNDHOGG_BOOKING_CALENDAR_VERSION );
 		wp_register_style( 'groundhogg-appointments-admin', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'css/admin/appointments.css', [
 			'groundhogg-loader'
 		], GROUNDHOGG_BOOKING_CALENDAR_VERSION );
