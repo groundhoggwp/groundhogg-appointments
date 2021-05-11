@@ -39,7 +39,7 @@ define( 'GROUNDHOGG_BOOKING_CALENDAR_ZOOM_BASE_URL','https://api.zoom.us/v2/' );
 
 define( 'GROUNDHOGG_BOOKING_CALENDAR_REQUIRED_WP_VERSION', '4.9' );
 define( 'GROUNDHOGG_BOOKING_CALENDAR_REQUIRED_PHP_VERSION', '7.0' );
-define( 'GROUNDHOGG_BOOKING_CALENDAR_REQUIRED_CORE_VERSION', '2.2.alpha.1' );
+define( 'GROUNDHOGG_BOOKING_CALENDAR_REQUIRED_CORE_VERSION', '2.4.6' );
 
 add_action( 'plugins_loaded', function (){
     load_plugin_textdomain( GROUNDHOGG_BOOKING_CALENDAR_TEXT_DOMAIN, false, basename( __DIR__ ) . '/languages' );
