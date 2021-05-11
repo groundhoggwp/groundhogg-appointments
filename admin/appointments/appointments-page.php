@@ -69,6 +69,7 @@ class Appointments_Page extends Admin_Page {
 			case 'add':
 
 				$object = [
+					'date'     => Ymd_His(),
 					'datepicker' => [
 						'start_of_week' => get_option( 'start_of_week' ),
 						'day_names'     => [
@@ -94,7 +95,6 @@ class Appointments_Page extends Admin_Page {
 							'business_hours' => $calendar->get_business_hours(),
 						],
 						'calendar' => $calendar,
-						'date'     => Ymd_His(),
 					] );
 				}
 
