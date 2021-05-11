@@ -184,11 +184,23 @@ class Calendar_Page extends Admin_Page {
 					'action' => __( 'View', 'groundhogg-calendar' ),
 					'target' => '_self',
 				];
+
+				$actions[] = [
+					'link'   => admin_page_url( 'gh_appointments', [ 'calendar_id' => $calendar_id ] ),
+					'action' => __( 'All Appointments', 'groundhogg-calendar' ),
+					'target' => '_self',
+				];
+
+				$actions[] = [
+					'link'   => admin_page_url( 'gh_appointments', [ 'action' => 'add', 'calendar_id' => $calendar_id ] ),
+					'action' => __( 'New Appointment', 'groundhogg-calendar' ),
+					'target' => '_self',
+				];
 			}
 
 			$actions[] = [
 				'link'   => $this->admin_url( [ 'action' => 'add' ] ),
-				'action' => __( 'Add New', 'groundhogg' ),
+				'action' => __( 'New Calendar', 'groundhogg' ),
 				'target' => '_self',
 			];
 
