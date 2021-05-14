@@ -3,6 +3,7 @@
 namespace GroundhoggBookingCalendar;
 
 use Groundhogg\Email;
+use GroundhoggBookingCalendar\Classes\Appointment;
 use GroundhoggBookingCalendar\Classes\Email_Reminder;
 use GroundhoggBookingCalendar\Classes\SMS_Reminder;
 use function Groundhogg\emergency_init_dbs;
@@ -34,12 +35,20 @@ class Updater extends \Groundhogg\Updater {
 	protected function get_available_updates() {
 		return [
 			'2.5',
+			'2.5.1',
+		];
+	}
+
+	protected function get_automatic_updates() {
+		return [
+			'2.5.1'
 		];
 	}
 
 	protected function get_update_descriptions() {
 		return [
-			'2.5' => __( 'Refactor appointment and calendar settings to new formats.' )
+			'2.5'   => __( 'Refactor appointment and calendar settings to new formats.' ),
+			'2.5.1' => __( 'Update status of previous appointments.' )
 		];
 	}
 
@@ -130,6 +139,14 @@ WHERE meta_key = 'action' AND meta_value IN ('%s', '%s');",
 			$calendar->update_meta( 'email_notifications', $email_notifications );
 		}
 
+	}
+
+	public function version_2_5_1() {
+		get_db( 'appointments' )->update( [
+			'status' => 'approved'
+		], [
+			'status' => 'scheduled'
+		] );
 	}
 
 }
