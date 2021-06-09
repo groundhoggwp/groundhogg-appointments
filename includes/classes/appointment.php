@@ -379,6 +379,12 @@ class Appointment extends Base_Object_With_Meta {
 			'duration'   => $this->get_calendar()->get_appointment_length( true ) / MINUTE_IN_SECONDS,
 		];
 
+		$settings = apply_filters( 'groundhogg/appointments/zoom_settings', [] );
+
+		if ( ! empty( $settings ) ) {
+			$details['settings'] = $settings;
+		}
+
 		$response = zoom()->request( $this->get_calendar()->get_zoom_account_id(), 'users/me/meetings', $details );
 
 		if ( is_wp_error( $response ) ) {
@@ -418,6 +424,12 @@ class Appointment extends Base_Object_With_Meta {
 			'start_time' => date( 'Y-m-d\TH:i:s', $this->get_start_time() ) . 'Z',
 			'duration'   => $this->get_calendar()->get_appointment_length( true ) / MINUTE_IN_SECONDS,
 		];
+
+		$settings = apply_filters( 'groundhogg/appointments/zoom_settings', [] );
+
+		if ( ! empty( $settings ) ) {
+			$details['settings'] = $settings;
+		}
 
 		zoom()->request( $this->get_calendar()->get_zoom_access_token( true ), 'meetings/' . $this->get_zoom_meeting_id(), $details, 'PATCH' );
 
@@ -579,6 +591,13 @@ class Appointment extends Base_Object_With_Meta {
 	}
 
 	/**
+	 * @return string
+	 */
+	public function get_location() {
+		return do_replacements( $this->get_calendar()->get_meta( 'appointment_location' ) ?: '', $this->get_contact() );
+	}
+
+	/**
 	 * @return array
 	 */
 	protected function get_google_event_format() {
@@ -587,7 +606,7 @@ class Appointment extends Base_Object_With_Meta {
 			'summary'     => $this->get_google_summary(),
 			'status'      => $this->is_cancelled() ? 'cancelled' : 'confirmed',
 			'description' => $this->get_google_description(),
-			'location'    => $this->get_calendar()->is_zoom_enabled() ? $this->get_meta( 'zoom_join_url' ) : false,
+			'location'    => $this->get_calendar()->is_zoom_enabled() ? $this->get_meta( 'zoom_join_url' ) : $this->get_location(),
 			'start'       => [
 				'dateTime' => date( DATE_RFC3339, $this->get_start_time() ),
 				'timeZone' => 'UTC'

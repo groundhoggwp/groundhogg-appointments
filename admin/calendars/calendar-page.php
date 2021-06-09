@@ -594,6 +594,9 @@ class Calendar_Page extends Admin_Page {
 		$this->add_notice( 'success', _x( 'Settings updated.', 'notice', 'groundhogg-calendar' ), 'success' );
 	}
 
+	/**
+	 * Update the Google & Zoom integration settings.
+	 */
 	public function update_integration_settings() {
 
 		$calendar_id = absint( get_request_var( 'calendar' ) );
@@ -618,6 +621,9 @@ class Calendar_Page extends Admin_Page {
 		// Google Appointment overrides
 		$calendar->update_meta( 'google_appointment_name', sanitize_text_field( get_request_var( 'google_appointment_name' ) ) );
 		$calendar->update_meta( 'google_appointment_description', sanitize_textarea_field( get_request_var( 'google_appointment_description' ) ) );
+
+		// Save appointment location
+		$calendar->update_meta( 'appointment_location', sanitize_text_field( get_request_var( 'appointment_location' ) ) );
 
 		// Google Meet Setting
 		if ( get_request_var( 'google_meet_enable' ) ) {

@@ -148,7 +148,8 @@
             }
 
           } else {
-            $form.before(response.data.html)
+            alert( 'Something went wrong...' )
+            console.log( response )
           }
 
           postSizing()

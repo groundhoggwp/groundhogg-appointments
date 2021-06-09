@@ -15,8 +15,9 @@ use function GroundhoggBookingCalendar\get_time_format;
  */
 
 $appointments = get_db( 'appointments' )->query( [
-	'orderby' => 'start_time',
-	'order'   => 'desc'
+	'orderby'    => 'start_time',
+	'order'      => 'desc',
+	'contact_id' => $contact->get_id(),
 ] );
 
 /**
@@ -26,7 +27,7 @@ $appointments = get_db( 'appointments' )->query( [
  */
 function status_label( $status, $start_time, $end_time ) {
 
-	if ( $status !== 'cancelled' ){
+	if ( $status !== 'cancelled' ) {
 		if ( $start_time < time() && $end_time > time() ) {
 			$status = 'in_progress';
 		} else if ( $end_time < time() ) {
@@ -76,11 +77,11 @@ if ( empty( $appointments ) ):?>
 				<ul class="info-list">
 					<li>
 						<abbr
-								class="<?php echo $appointment->is_cancelled() ? 'cancelled' : 'scheduled' ?>"
-								title="<?php esc_attr_e( $appointment->get_pretty_start_time( 'admin' ) ); ?>"><?php printf( '%s, %s - %s',
-									date_i18n( get_date_format(), $appointment->get_start_time( true ) ),
-									date_i18n( get_time_format(), $appointment->get_start_time( true ) ),
-									date_i18n( get_time_format(), $appointment->get_end_time( true ) ) ) ?></abbr>
+							class="<?php echo $appointment->is_cancelled() ? 'cancelled' : 'scheduled' ?>"
+							title="<?php esc_attr_e( $appointment->get_pretty_start_time( 'admin' ) ); ?>"><?php printf( '%s, %s - %s',
+								date_i18n( get_date_format(), $appointment->get_start_time( true ) ),
+								date_i18n( get_time_format(), $appointment->get_start_time( true ) ),
+								date_i18n( get_time_format(), $appointment->get_end_time( true ) ) ) ?></abbr>
 					</li>
 					<?php if ( ! $appointment->is_cancelled() ): ?>
 						<li style="margin-top: 10px"><?php echo html()->e( 'a', [

@@ -152,6 +152,17 @@ $connections = get_db( 'google_connections' )->query();
 					<p class="description"><?php _e( 'These details will be added to the regular appointment notes in your Google calendar.', 'groundhogg-calendar' ); ?></p>
 				</td>
 			</tr>
+			<tr>
+				<th scope="row"><label><?php _e( 'Location', 'groundhogg-calendar' ) ?></label></th>
+				<td>
+					<?php echo html()->input( [
+						'name'        => 'appointment_location',
+						'value'       => $calendar->get_meta( 'appointment_location' ),
+						'placeholder' => '{business_address}'
+					] ) ?>
+					<p class="description"><?php _e( 'Provide a location for the appointment. This will be overridden by the Zoom meeting URL if the Zoom integration is enabled.', 'groundhogg-calendar' ) ?></p>
+				</td>
+			</tr>
 		<?php endif; ?>
 		</tbody>
 	</table>
