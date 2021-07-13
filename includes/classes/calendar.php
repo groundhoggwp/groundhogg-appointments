@@ -469,7 +469,7 @@ class Calendar extends Base_Object_With_Meta {
 		$slots = array_filter( $slots, [ $this, 'slot_is_available' ] );
 
 		if ( ! current_user_can( 'edit_appointment' ) ) {
-			$slots = $this->make_me_look_busy( $slots, strtotime( $date ) );
+			$slots = $this->make_me_look_busy( $slots, $date );
 		}
 
 		return array_values( $this->get_slots_name( $slots, $timezone ) );
@@ -901,41 +901,23 @@ class Calendar extends Base_Object_With_Meta {
 	 * @return array
 	 */
 	protected function make_me_look_busy( $slots, $date ) {
-		$no_of_slots = absint( $this->get_meta( 'busy_slot', true ) );
-		if ( ! $no_of_slots ) {
+		$num_slots = absint( $this->get_meta( 'busy_slot', true ) );
+
+		if ( ! $num_slots || $num_slots >= count( $slots ) ) {
 			return $slots;
 		}
-
-		if ( $no_of_slots >= count( $slots ) ) {
-			return $slots;
-		}
-
 
 		$busy_slots = [];
-		$this->shuffle_appointments( $slots, $date );
-		for ( $i = 0; $i < $no_of_slots; $i ++ ) {
-			$busy_slots[] = $slots[ $i ];
+
+		mt_srand( strtotime( $date ) );
+
+		for ($i=0; $i < $num_slots; $i++) {
+			$slot = mt_rand( 0, count( $slots )-1 );
+			$busy_slots = array_merge( $busy_slots, array_splice( $slots, $slot, 1 ) );
 		}
 
 		return $this->sort_slots( $busy_slots );
 	}
-
-	/**
-	 * shuffle array to get random appointment from appointment list.
-	 *
-	 * @param $items
-	 * @param $seed
-	 */
-	public function shuffle_appointments( &$items, $seed ) {
-		@mt_srand( $seed );
-		for ( $i = count( $items ) - 1; $i > 0; $i -- ) {
-			$j           = @mt_rand( 0, $i );
-			$tmp         = $items[ $i ];
-			$items[ $i ] = $items[ $j ];
-			$items[ $j ] = $tmp;
-		}
-	}
-
 
 	/**
 	 * Returns day number based on day name
