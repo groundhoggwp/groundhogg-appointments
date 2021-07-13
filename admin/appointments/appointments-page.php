@@ -3,7 +3,6 @@
 namespace GroundhoggBookingCalendar\Admin\Appointments;
 
 use Groundhogg\Admin\Admin_Page;
-use Groundhogg\Base_Object;
 use GroundhoggBookingCalendar\Calendar_Sync;
 use GroundhoggBookingCalendar\Classes\Appointment;
 use GroundhoggBookingCalendar\Classes\Calendar;
@@ -12,7 +11,6 @@ use function Groundhogg\action_url;
 use function Groundhogg\admin_page_url;
 use function Groundhogg\array_map_keys;
 use function Groundhogg\array_map_with_keys;
-use function Groundhogg\get_array_var;
 use function Groundhogg\get_db;
 use function Groundhogg\get_post_var;
 use function Groundhogg\get_request_var;
@@ -20,7 +18,6 @@ use function Groundhogg\get_url_var;
 use function Groundhogg\html;
 use function Groundhogg\Ymd_His;
 use function GroundhoggBookingCalendar\get_all_events_for_full_calendar;
-use function GroundhoggBookingCalendar\get_date_format;
 
 class Appointments_Page extends Admin_Page {
 
@@ -133,6 +130,12 @@ class Appointments_Page extends Admin_Page {
 
 			if ( ! $appointment->exists() ) {
 				wp_send_json_error();
+			}
+
+			$appointment->sync_all_details();
+
+			if ( $appointment->has_errors() ){
+				wp_send_json_error( $appointment->get_last_error() );
 			}
 
 			include __DIR__ . '/synced.php';

@@ -41,8 +41,11 @@ class Synced_Event extends Base_Object {
 		$google_calendar = new Google_Calendar( $this->local_gcalendar_id );
 		$client          = $google_calendar->get_connection()->get_client();
 
-		if ( $google_calendar->get_connection()->has_errors() ){
-			wp_send_json_error( $google_calendar->get_connection()->get_errors() );
+		if ( $google_calendar->get_connection()->has_errors() ) {
+			foreach ( $google_calendar->get_connection()->get_errors() as $error ) {
+				$this->add_error( $error );
+			}
+			return;
 		}
 
 		$service = new Google_Service_Calendar( $client );
@@ -118,13 +121,13 @@ class Synced_Event extends Base_Object {
 	public function get_for_full_calendar() {
 
 		return [
-			'id'       => $this->event_id,
-			'title'    => $this->summary,
-			'start'    => $this->start_time * 1000,
-			'end'      => $this->end_time * 1000,
-			'editable' => false,
-			'allDay'   => ( $this->end_time - $this->start_time ) % DAY_IN_SECONDS === 0,
-			'color'    => '#0073aa',
+			'id'            => $this->event_id,
+			'title'         => $this->summary,
+			'start'         => $this->start_time * 1000,
+			'end'           => $this->end_time * 1000,
+			'editable'      => false,
+			'allDay'        => ( $this->end_time - $this->start_time ) % DAY_IN_SECONDS === 0,
+			'color'         => '#0073aa',
 			'extendedProps' => [
 				'appointment' => $this,
 			]

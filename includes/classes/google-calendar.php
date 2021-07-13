@@ -60,6 +60,11 @@ class Google_Calendar extends Base_Object {
 
 		$client = $this->get_connection()->get_client();
 
+		// Errors setting up the Client
+		if ( $this->get_connection()->has_errors() ) {
+			return;
+		}
+
 		$service = new Google_Service_Calendar( $client );
 
 		//check for the calendar

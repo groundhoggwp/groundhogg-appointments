@@ -17,8 +17,6 @@ use function GroundhoggBookingCalendar\get_time_format;
  * @var $appointment Synced_Event
  */
 
-$appointment->sync_all_details();
-
 ?>
 <div class="appointment">
 	<h2 class="appointment-title"><?php _e( $appointment->summary ); ?></h2>

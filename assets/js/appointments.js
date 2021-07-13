@@ -24,6 +24,9 @@
             function callback (response) {
               if ( response.success ){
                 $appointment.html(response.data.html);
+              } else {
+                console.log( response.data )
+                $appointment.html(`<p>Something went wrong fetching the appointment details.</p>`);
               }
             },
             function ( error ){
