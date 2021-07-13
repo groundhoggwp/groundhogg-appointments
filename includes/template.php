@@ -9,6 +9,7 @@ use function Groundhogg\array_to_css;
 use function Groundhogg\do_replacements;
 use function Groundhogg\get_array_var;
 use function Groundhogg\get_current_contact;
+use function Groundhogg\get_default_field_label;
 use function Groundhogg\get_post_var;
 use function Groundhogg\get_request_var;
 use function Groundhogg\html;
@@ -429,7 +430,7 @@ function default_form() {
 							<div class="gh-form-field">
 								<p>
 									<?php echo html()->checkbox( [
-										'label' => sprintf( _x( "I agree to %s's storage and processing of my personal data.", 'form_default', 'groundhogg' ), get_bloginfo() ),
+										'label' => get_default_field_label( 'gdpr_consent' ),
 										'name'  => 'gdpr_consent',
 										'id'    => 'gdpr_consent',
 										'class' => 'gh-gdpr',
@@ -439,7 +440,7 @@ function default_form() {
 								</p>
 								<p>
 									<?php echo html()->checkbox( [
-										'label' => sprintf( _x( "I agree to receive marketing offers and updates from %s.", 'form_default', 'groundhogg' ), get_bloginfo() ),
+										'label' => get_default_field_label( 'marketing_consent' ),
 										'name'  => 'marketing_consent',
 										'id'    => 'marketing_consent',
 										'class' => 'gh-gdpr',

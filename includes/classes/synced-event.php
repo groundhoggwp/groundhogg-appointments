@@ -41,6 +41,10 @@ class Synced_Event extends Base_Object {
 		$google_calendar = new Google_Calendar( $this->local_gcalendar_id );
 		$client          = $google_calendar->get_connection()->get_client();
 
+		if ( $google_calendar->get_connection()->has_errors() ){
+			wp_send_json_error( $google_calendar->get_connection()->get_errors() );
+		}
+
 		$service = new Google_Service_Calendar( $client );
 
 		$event = $service->events->get( $this->google_calendar_id, $this->event_id );

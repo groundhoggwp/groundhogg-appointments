@@ -30,7 +30,7 @@ class Google_Connection extends Base_Object {
 		] );
 
 		if ( is_wp_error( $response ) ) {
-			$this->add_error( $response );
+			$this->add_error( $response, $this );
 
 			return;
 		}
@@ -38,7 +38,7 @@ class Google_Connection extends Base_Object {
 		$data = (array) get_array_var( $response, 'token' );
 
 		if ( ! $data ) {
-			$this->add_error( new \WP_Error( 'failed', 'invalid token' ) );
+			$this->add_error( new \WP_Error( 'failed', 'invalid token', $this ) );
 
 			return;
 		}
@@ -52,7 +52,7 @@ class Google_Connection extends Base_Object {
 			'account_email' => $account_info->email,
 		] );
 
-		$obj = $this->get_from_db( 'account_email', $data[ 'account_email' ] );
+		$obj = $this->get_from_db( 'account_email', $data['account_email'] );
 
 		if ( $obj ) {
 			$this->setup_object( $obj );
@@ -61,8 +61,9 @@ class Google_Connection extends Base_Object {
 			$this->create( (array) $data );
 		}
 
-		if ( ! $this->exists() ){
-			$this->add_error( 'error', 'Could not setup object.' );
+		if ( ! $this->exists() ) {
+			$this->add_error( 'error', 'Could not setup object.', $this );
+
 			return;
 		}
 
@@ -80,7 +81,7 @@ class Google_Connection extends Base_Object {
 		] );
 
 		if ( is_wp_error( $response ) ) {
-			$this->add_error( $response );
+			$this->add_error( $response, $this );
 
 			return;
 		}
@@ -88,7 +89,7 @@ class Google_Connection extends Base_Object {
 		$data = (array) get_array_var( $response, 'token' );
 
 		if ( ! $data || ! isset_not_empty( $data, 'access_token' ) ) {
-			$this->add_error( new \WP_Error( 'failed', 'invalid token' ) );
+			$this->add_error( new \WP_Error( 'failed', 'invalid token', $this ) );
 
 			return;
 		}
@@ -101,7 +102,7 @@ class Google_Connection extends Base_Object {
 	 */
 	public function setup_client( $token = false ) {
 
-		if ( $this->client ){
+		if ( $this->client ) {
 			return;
 		}
 
@@ -117,11 +118,10 @@ class Google_Connection extends Base_Object {
 
 			$this->refresh();
 
-			if ( $this->has_errors() ) {
-				return;
+			if ( ! $this->has_errors() ) {
+				$client->setAccessToken( $this->data );
 			}
 
-			$client->setAccessToken( $this->data );
 		}
 
 		$this->client = $client;
@@ -145,7 +145,14 @@ class Google_Connection extends Base_Object {
 	 */
 	public function sync_calendars() {
 
-		$service      = new Google_Service_Calendar( $this->get_client() );
+		$client = $this->get_client();
+
+		// Errors setting up the Client
+		if ( $this->has_errors() ) {
+			return;
+		}
+
+		$service      = new Google_Service_Calendar( $client );
 		$calendarList = $service->calendarList->listCalendarList();
 
 		do {
