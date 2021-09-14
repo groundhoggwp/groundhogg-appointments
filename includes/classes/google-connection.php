@@ -2,6 +2,7 @@
 
 namespace GroundhoggBookingCalendar\Classes;
 
+use Google\Service\Exception;
 use Google_Client;
 use Google_Service_Calendar;
 use Google_Service_Oauth2;
@@ -153,7 +154,13 @@ class Google_Connection extends Base_Object {
 		}
 
 		$service      = new Google_Service_Calendar( $client );
-		$calendarList = $service->calendarList->listCalendarList();
+
+		try {
+			$calendarList = $service->calendarList->listCalendarList();
+		} catch ( Exception $e ){
+			$this->add_error( $e->getCode(), $e->getMessage() );
+			return;
+		}
 
 		do {
 

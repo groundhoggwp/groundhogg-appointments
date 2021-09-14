@@ -2,6 +2,7 @@
 
 namespace GroundhoggBookingCalendar\Classes;
 
+use Google\Service\Exception;
 use Google_Service_Calendar;
 use Groundhogg\Base_Object;
 use Groundhogg\DB\DB;
@@ -78,7 +79,12 @@ class Google_Calendar extends Base_Object {
 
 		do {
 
-			$events = $service->events->listEvents( $this->google_calendar_id, $optParams );
+			try {
+				$events = $service->events->listEvents( $this->google_calendar_id, $optParams );
+			} catch ( Exception $e ){
+				$this->add_error( $e->getCode(), $e->getMessage() );
+				return;
+			}
 
 			foreach ( $events->getItems() as $event ) {
 
