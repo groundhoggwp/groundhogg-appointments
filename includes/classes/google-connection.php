@@ -153,6 +153,10 @@ class Google_Connection extends Base_Object {
 			return;
 		}
 
+		if ( ! is_a( $client, 'Google_Client' ) ){
+			return;
+		}
+
 		$service      = new Google_Service_Calendar( $client );
 
 		try {
