@@ -36,12 +36,14 @@ class Updater extends \Groundhogg\Updater {
 		return [
 			'2.5',
 			'2.5.1',
+			'2.5.4',
 		];
 	}
 
 	protected function get_automatic_updates() {
 		return [
-			'2.5.1'
+			'2.5.1',
+			'2.5.4'
 		];
 	}
 
