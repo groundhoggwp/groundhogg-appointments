@@ -63,6 +63,7 @@ class Google_Connections extends DB {
 			'refresh_token' => '%s',
 			'created'       => '%d',
 			'expires_in'    => '%d',
+			'status'        => '%s',
 			'added_by'      => '%d',
 		);
 	}
@@ -82,6 +83,7 @@ class Google_Connections extends DB {
 			'refresh_token' => '',
 			'created'       => 0,
 			'expires_in'    => 0,
+			'status'        => 'active',
 			'added_by'      => get_current_user_id(),
 		);
 	}
@@ -103,6 +105,7 @@ class Google_Connections extends DB {
         access_token mediumtext NOT NULL,
         refresh_token mediumtext NOT NULL,
         expires_in bigint(20) unsigned NOT NULL,
+        status varchar(20) NOT NULL,
         created bigint(20) unsigned NOT NULL,                
         added_by bigint(20) unsigned NOT NULL,                
         PRIMARY KEY (ID)

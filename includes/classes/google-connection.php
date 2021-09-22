@@ -91,9 +91,14 @@ class Google_Connection extends Base_Object {
 
 		if ( ! $data || ! isset_not_empty( $data, 'access_token' ) ) {
 			$this->add_error( new \WP_Error( 'failed', 'invalid token', $this ) );
+			$this->update( [
+				'status' => 'inactive'
+			] );
 
 			return;
 		}
+
+		$data['status'] = 'active';
 
 		$this->update( $data );
 	}
@@ -153,16 +158,26 @@ class Google_Connection extends Base_Object {
 			return;
 		}
 
-		if ( ! is_a( $client, 'Google_Client' ) ){
+		if ( ! is_a( $client, 'Google_Client' ) ) {
 			return;
 		}
 
-		$service      = new Google_Service_Calendar( $client );
+		$service = new Google_Service_Calendar( $client );
 
 		try {
 			$calendarList = $service->calendarList->listCalendarList();
-		} catch ( Exception $e ){
+		} catch ( Exception $e ) {
 			$this->add_error( $e->getCode(), $e->getMessage() );
+
+			switch ( $e->getCode() ) {
+				case 'code_invalid':
+				case 'invalid_grant':
+					$this->update( [
+						'status' => 'inactive'
+					] );
+					break;
+			}
+
 			return;
 		}
 

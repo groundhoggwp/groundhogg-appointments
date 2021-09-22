@@ -18,7 +18,7 @@ class Calendar_Sync {
 
 	}
 
-	public static function sync(){
+	public static function sync() {
 		do_action( 'groundhogg/calendar/sync_with_google' );
 	}
 
@@ -55,9 +55,11 @@ class Calendar_Sync {
 	 * Sync all the events for calendars with sync enabled
 	 */
 	function google_sync() {
-		$connections = get_db( 'google_connections' )->query();
+		$connections = get_db( 'google_connections' )->query( [
+			'status' => 'active'
+		] );
 
-		foreach ( $connections as $connection ){
+		foreach ( $connections as $connection ) {
 			$connection = new Google_Connection( $connection->ID );
 			$connection->sync_calendars();
 		}
@@ -66,7 +68,7 @@ class Calendar_Sync {
 
 		$calendars = get_db( 'calendars' )->query();
 		array_map_to_class( $calendars, Calendar::class );
-		$gcal_ids_to_sync = array_reduce( $calendars, function ( $carry, $calendar ){
+		$gcal_ids_to_sync = array_reduce( $calendars, function ( $carry, $calendar ) {
 			/**
 			 * @var $calendar Calendar
 			 */

@@ -48,7 +48,8 @@ class Updater extends \Groundhogg\Updater {
 	protected function get_update_descriptions() {
 		return [
 			'2.5'   => __( 'Refactor appointment and calendar settings to new formats.' ),
-			'2.5.1' => __( 'Update status of previous appointments.' )
+			'2.5.1' => __( 'Update status of previous appointments.' ),
+			'2.5.4' => __( 'Keep track of Google calendar connection status.' ),
 		];
 	}
 
@@ -146,6 +147,17 @@ WHERE meta_key = 'action' AND meta_value IN ('%s', '%s');",
 			'status' => 'approved'
 		], [
 			'status' => 'scheduled'
+		] );
+	}
+
+	public function version_2_5_4(){
+		// Add status col
+		get_db( 'google_connections' )->create_table();
+		// Update
+		get_db( 'google_connections' )->update( [
+			'status' => ''
+		], [
+			'status' => 'active'
 		] );
 	}
 

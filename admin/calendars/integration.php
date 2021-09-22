@@ -47,7 +47,7 @@ $connections = get_db( 'google_connections' )->query();
 							'options'     => array_map_with_keys( array_map_keys( $connections, function ( $i, $v ) {
 								return $v->ID;
 							} ), function ( $v, $i ) {
-								return $v->account_email;
+								return sprintf( '%s (%s)', $v->account_email, $v->status === 'active' ? __( 'Active' ) : __( 'Inactive' ) );
 							} ),
 							'name'        => 'google_account_id',
 							'selected'    => $calendar->get_google_connection_id(),

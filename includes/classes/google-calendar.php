@@ -83,6 +83,15 @@ class Google_Calendar extends Base_Object {
 				$events = $service->events->listEvents( $this->google_calendar_id, $optParams );
 			} catch ( Exception $e ){
 				$this->add_error( $e->getCode(), $e->getMessage() );
+
+				switch ( $e->getCode() ) {
+					case 'code_invalid':
+					case 'invalid_grant':
+						$this->update( [
+							'status' => 'inactive'
+						] );
+						break;
+				}
 				return;
 			}
 
