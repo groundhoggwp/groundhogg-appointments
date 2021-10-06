@@ -2,13 +2,16 @@
 
 namespace GroundhoggBookingCalendar;
 
+use Groundhogg\Supports_Errors;
+use Groundhogg\Utils\Limits;
 use GroundhoggBookingCalendar\Classes\Calendar;
 use GroundhoggBookingCalendar\Classes\Google_Calendar;
 use GroundhoggBookingCalendar\Classes\Google_Connection;
 use function Groundhogg\array_map_to_class;
 use function Groundhogg\get_db;
+use function Groundhogg\notices;
 
-class Calendar_Sync {
+class Calendar_Sync extends Supports_Errors {
 
 	public function __construct() {
 
@@ -55,6 +58,10 @@ class Calendar_Sync {
 	 * Sync all the events for calendars with sync enabled
 	 */
 	function google_sync() {
+
+		Limits::raise_memory_limit();
+		Limits::raise_time_limit();
+
 		$connections = get_db( 'google_connections' )->query( [
 			'status' => 'active'
 		] );
@@ -62,6 +69,12 @@ class Calendar_Sync {
 		foreach ( $connections as $connection ) {
 			$connection = new Google_Connection( $connection->ID );
 			$connection->sync_calendars();
+
+			if ( $connection->has_errors() ){
+				foreach ( $connection->get_errors() as $error ){
+					$this->add_error( $error );
+				}
+			}
 		}
 
 		get_db( 'synced_events' )->delete_old_events();
@@ -83,6 +96,18 @@ class Calendar_Sync {
 			$gcal = new Google_Calendar( $gcal );
 
 			$gcal->sync_events();
+
+			if ( $gcal->has_errors() ){
+				foreach ( $gcal->get_errors() as $error ){
+					$this->add_error( $error );
+				}
+			}
+		}
+
+		if ( is_admin() && $this->has_errors() && current_user_can( 'edit_calendars' ) ){
+			foreach ( $this->get_errors() as $error ){
+				notices()->add( $error );
+			}
 		}
 	}
 
