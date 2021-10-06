@@ -683,8 +683,8 @@ function set_calendar_default_settings( $calendar, $hours = 1, $minutes = 0 ) {
 		Email_Reminder::CANCELLED   => true,
 	];
 
+	// Simplify code
 	$calendar->update_meta( 'enabled_admin_notifications', $admin_notifications );
-
 }
 
 /**
@@ -708,8 +708,7 @@ function get_all_events_for_full_calendar() {
 
 		// Filter by including appointments whose parent calendar is owned by the current user
 		if ( isset_not_empty( $local_query, 'calendar_id' ) ) {
-			$local_query['calendar_id'] = is_array( $local_query['calendar_id'] ) ? wp_parse_id_list( $local_query['calendar_id'] ) : [ absint( $local_query['calendar_id'] ) ];
-			$local_query['calendar_id'] = array_intersect( $local_query['calendar_id'], get_object_ids( $owned_calendars ) );
+			$local_query['calendar_id'] = array_intersect( wp_parse_id_list( $local_query['calendar_id'] ), get_object_ids( $owned_calendars ) );
 		} else {
 			$local_query['calendar_id'] = get_object_ids( $owned_calendars );
 		}
