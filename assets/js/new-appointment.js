@@ -2,7 +2,6 @@
   $.extend(calendar, {
     from: '',
     to: '',
-    contact: 0,
     init: function () {
 
       var self = this

@@ -12,6 +12,9 @@ use function GroundhoggBookingCalendar\get_max_booking_period;
 
 class Google_Calendar extends Base_Object {
 
+	/**
+	 * @var Google_Connection
+	 */
 	protected $connection;
 
 	public function __construct( $identifier_or_args = 0, $field = null, $connection = null ) {
@@ -62,7 +65,12 @@ class Google_Calendar extends Base_Object {
 		$client = $this->get_connection()->get_client();
 
 		// Errors setting up the Client
-		if ( $this->get_connection()->has_errors() ) {
+		if ( $this->connection->has_errors() ) {
+
+			foreach ( $this->connection->get_errors() as $error ) {
+				$this->add_error( $error );
+			}
+
 			return;
 		}
 
@@ -81,7 +89,7 @@ class Google_Calendar extends Base_Object {
 
 			try {
 				$events = $service->events->listEvents( $this->google_calendar_id, $optParams );
-			} catch ( Exception $e ){
+			} catch ( Exception $e ) {
 				$this->add_error( $e->getCode(), $e->getMessage() );
 
 				switch ( $e->getCode() ) {
@@ -92,6 +100,7 @@ class Google_Calendar extends Base_Object {
 						] );
 						break;
 				}
+
 				return;
 			}
 

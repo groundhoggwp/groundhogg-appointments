@@ -11,6 +11,7 @@ use function Groundhogg\action_url;
 use function Groundhogg\admin_page_url;
 use function Groundhogg\array_map_keys;
 use function Groundhogg\array_map_with_keys;
+use function Groundhogg\get_array_var;
 use function Groundhogg\get_db;
 use function Groundhogg\get_post_var;
 use function Groundhogg\get_request_var;
@@ -93,6 +94,12 @@ class Appointments_Page extends Admin_Page {
 						],
 						'calendar' => $calendar,
 					] );
+				}
+
+				if ( $contact_id = get_url_var( 'contact' ) ) {
+					$object = wp_parse_args( $object, [
+						'contact_id' => $contact_id
+					]);
 				}
 
 				wp_enqueue_script( 'groundhogg-new-appointment-admin' );
@@ -360,6 +367,7 @@ class Appointments_Page extends Admin_Page {
 				<p>
 					<?php echo html()->dropdown_contacts( [
 						'id' => 'contact-id',
+						'selected' => [ absint( get_url_var( 'contact' ) ) ]
 					] ); ?>
 				</p>
 				<p>

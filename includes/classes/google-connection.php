@@ -105,6 +105,8 @@ class Google_Connection extends Base_Object {
 
 	/**
 	 * Setup the google client
+	 *
+	 * @throws \InvalidArgumentException
 	 */
 	public function setup_client( $token = false ) {
 
@@ -112,22 +114,30 @@ class Google_Connection extends Base_Object {
 			return;
 		}
 
-		$client = new Google_Client();
+		try {
 
-		$guzzleClient = new \GuzzleHttp\Client( array( 'curl' => array( CURLOPT_SSL_VERIFYPEER => false ) ) );
+			$client = new Google_Client();
 
-		$client->setHttpClient( $guzzleClient );
+			$guzzleClient = new \GuzzleHttp\Client( array( 'curl' => array( CURLOPT_SSL_VERIFYPEER => false ) ) );
 
-		$client->setAccessToken( $token ?: $this->data );
+			$client->setHttpClient( $guzzleClient );
 
-		if ( $client->isAccessTokenExpired() && $client->getRefreshToken() ) {
+			$client->setAccessToken( $token ?: $this->data );
 
-			$this->refresh();
+			if ( $client->isAccessTokenExpired() && $client->getRefreshToken() ) {
 
-			if ( ! $this->has_errors() ) {
-				$client->setAccessToken( $this->data );
+				$this->refresh();
+
+				if ( ! $this->has_errors() ) {
+					$client->setAccessToken( $this->data );
+				}
+
 			}
 
+		} catch ( \Exception $e ) {
+			$this->add_error( $e->getCode(), $e->getMessage() );
+
+			return;
 		}
 
 		$this->client = $client;

@@ -55,6 +55,11 @@ function status_label( $status, $start_time, $end_time ) {
 	<?php
 }
 
+?><p><a class="button button-secondary" href="<?php echo esc_url( admin_page_url( 'gh_appointments', [
+		'action'  => 'add',
+		'contact' => $contact->get_id()
+	] ) ) ?>"><?php _e( 'New Appointment', 'groundhogg-calendar' ) ?></a></p><?php
+
 
 if ( empty( $appointments ) ):?>
 	<p><?php _e( 'No appointments yet.', 'groundhogg-calendar' ); ?></p>
