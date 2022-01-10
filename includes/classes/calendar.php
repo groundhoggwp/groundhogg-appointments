@@ -1068,7 +1068,7 @@ class Calendar extends Base_Object_With_Meta {
 			return false;
 		}
 
-		$appointment->update_meta( 'additional', $appointment['additional'] );
+		$appointment->update_meta( 'additional', $args['additional'] );
 
 		$appointment->schedule();
 
