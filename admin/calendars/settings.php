@@ -51,6 +51,15 @@ if ( $calendar == null ) {
 				<p class="description"><?php _e( 'Select owner for whom you are creating the calendar.', 'groundhogg-calendar' ) ?></p>
 			</td>
 		</tr>
+        <tr class="form-field term-contact-wrap">
+            <th scope="row"><label for="timezone"><?php _e( 'Timezone' ) ?></label></th>
+            <td>
+                <select id="timezone" name="timezone">
+		            <?php echo wp_timezone_choice( $calendar->get_meta('timezone') ?: wp_timezone_string(), get_user_locale() ); ?>
+                </select>
+                <p class="description"><?php _e( 'Select owner for whom you are creating the calendar.', 'groundhogg-calendar' ) ?></p>
+            </td>
+        </tr>
 		<tr>
 			<th scope="row"><label><?php _e( 'Description/Instructions', 'groundhogg-calendar' ); ?></label></th>
 			<td>

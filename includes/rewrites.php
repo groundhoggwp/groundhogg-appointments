@@ -68,6 +68,7 @@ class Rewrites extends Abstract_Rewrites {
 		$page           = get_query_var( 'subpage' );
 		$calendar_id    = get_query_var( 'calendar_id' );
 		$appointment_id = get_query_var( 'appointment_id' );
+		$action         = get_query_var( 'action' );
 
 		if ( $appointment_id ) {
 
@@ -80,6 +81,13 @@ class Rewrites extends Abstract_Rewrites {
 			$calendar = $appointment->get_calendar();
 
 			set_query_var( 'appointment', $appointment );
+
+			if ( $action === 'ics' ){
+				header('Content-Type: text/calendar; charset=utf-8');
+				header('Content-Disposition: attachment; filename=invite.ics');
+				echo $appointment->get_ics_file()->to_string();
+				die();
+			}
 
 		} else {
 

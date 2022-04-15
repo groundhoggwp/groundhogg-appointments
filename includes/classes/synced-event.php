@@ -118,6 +118,26 @@ class Synced_Event extends Base_Object {
 		return $this->event_id;
 	}
 
+	/**
+	 * Conflicts if the start and end period intersect with the given time range
+	 *
+	 * @param $start
+	 * @param $end
+	 *
+	 * @return bool
+	 */
+	public function conflicts( $start, $end ) {
+		return
+			// given start is in between start and end
+			( $this->start_time <= $start && $this->end_time > $start ) ||
+			// given end is in between start and end
+			( $this->start_time <= $end && $this->end_time > $end ) ||
+			// the given start and end time are within the slot
+			( $this->start_time >= $start && $this->end_time <= $end ) ||
+			// the slot is within the given time
+			( $this->start_time <= $start && $this->end_time >= $end );
+	}
+
 	public function get_for_full_calendar() {
 
 		return [

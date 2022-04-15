@@ -1,496 +1,413 @@
-* {
-    font-family: Helvetica, sans-serif;
-    box-sizing: border-box;
+html {
+  margin-top: 60px;
 }
 
-a {
-    line-height: 1;
+body * {
+  font-family: Helvetica, sans-serif;
+}
+
+#change-date {
+  display: none;
+}
+
+#calendar {
+  position: relative;
+  display: inline-block;
+  max-height: 600px;
+  min-height: 550px;
+}
+#calendar > div {
+  height: 100%;
+}
+#calendar a {
+  line-height: 1;
+}
+#calendar ul.appointment-details {
+  list-style: none;
+  padding-left: 0;
+}
+#calendar ul.appointment-details li {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font-size: 16px;
+}
+#calendar ul.appointment-details li *:last-child {
+  padding: 5px 10px;
+}
+#calendar ul.appointment-details li > svg {
+  color: #102640;
+  width: 20px;
+  height: 20px;
+}
+#calendar .calendar-details {
+  width: 400px;
+  border-right: 1px solid rgba(16, 38, 64, 0.05);
+}
+#calendar .calendar-details ul.appointment-details {
+  padding-left: 20px;
+}
+#calendar .calendar-details h4.owner-name {
+  font-size: 18px;
+  color: rgba(16, 38, 64, 0.5);
+  padding-left: 20px;
+  margin-bottom: 0;
+  margin-top: 60px;
+}
+#calendar .calendar-details h1.calendar-name {
+  font-size: 28px;
+  margin-top: 5px;
+  padding-left: 20px;
+}
+#calendar .calendar-details .description {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+#calendar .calendar-details .description .description-inner {
+  padding-left: 20px;
+  font-size: 16px;
+  overflow: auto;
+  flex: 1 1 100px;
+}
+#calendar .timezone-modal {
+  position: relative;
+}
+#calendar .timezone-modal .gh-panel {
+  position: absolute;
+  bottom: 0;
+  left: 10px;
+  right: 10px;
+}
+#calendar .timezone-modal .gh-panel .tz-list {
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  height: 200px;
+}
+#calendar .timezone-modal .gh-panel .tz-list ul {
+  flex: 1 1 100px;
+  list-style: none;
+  padding: 0;
+}
+#calendar .timezone-modal .gh-panel .tz-list ul li {
+  padding: 0 5px;
+}
+#calendar .timezone-modal .gh-panel .tz-list ul li button {
+  font-size: 14px;
+  width: 100%;
+  text-align: left;
+}
+#calendar .booking {
+  display: flex;
+  flex-direction: column;
+}
+#calendar #date-picker {
+  height: 100%;
+}
+#calendar #date-picker .date-picker {
+  padding-right: 20px;
+}
+#calendar #date-picker #prev-month svg, #calendar #date-picker #next-month svg {
+  height: 15px;
+  width: 15px;
+}
+#calendar #date-picker .display-date {
+  font-size: 16px;
+  color: rgba(16, 38, 64, 0.5);
+}
+#calendar #date-picker .date-picker-header .display-date {
+  padding-left: 10px;
+}
+#calendar #date-picker #time-slots {
+  overflow: auto;
+  width: 220px;
+  padding: 20px 20px 20px 0;
+  flex: 1 1 100px;
+}
+#calendar #date-picker #time-slots button {
+  width: 100%;
+  padding: 15px 0;
+}
+#calendar #date-picker #time-slots .time-slot-wrap {
+  overflow: hidden;
+  white-space: nowrap;
+}
+#calendar #date-picker #time-slots .time-slot-wrap .slot-wrap {
+  margin-bottom: 10px;
+}
+#calendar #date-picker #time-slots .time-selected {
+  text-align: center;
+  width: 100%;
+  display: inline-block;
+  padding: 15px 0;
+  background: #102640;
+  color: #fff;
+  border-radius: 5px;
+  font-size: 16px;
+}
+#calendar #date-picker .gh-calendar {
+  height: 100%;
+}
+#calendar #date-picker table.gh-calendar-table {
+  margin: 10px 0 20px 0;
+  border-collapse: collapse;
+}
+#calendar #date-picker table.gh-calendar-table th {
+  text-transform: uppercase;
+  font-weight: 500;
+  color: #0c5460;
+  font-size: 14px;
+}
+#calendar #date-picker table.gh-calendar-table td {
+  text-align: center;
+  padding: 5px;
+  box-sizing: content-box;
+  width: 45px;
+  height: 45px;
+}
+#calendar #date-picker table.gh-calendar-table td.disabled {
+  opacity: 0.3;
+}
+#calendar #date-picker table.gh-calendar-table td button {
+  height: 100%;
+  width: 100%;
+}
+#calendar #date-picker table.gh-calendar-table td button.secondary {
+  background: rgba(0, 117, 255, 0.07);
+  border: none;
+}
+#calendar #date-picker table.gh-calendar-table td button.secondary:hover {
+  background: rgba(0, 117, 255, 0.1);
+}
+#calendar .confirmed {
+  padding: 60px 60px 20px 60px;
+  overflow: auto;
+  height: 100%;
+}
+#calendar .confirmed > h2 {
+  margin-top: 60px;
+}
+#calendar .confirmed .success-message {
+  padding: 10px 60px;
+  margin: 20px -60px;
+  background: rgba(158, 206, 56, 0.25);
+}
+#calendar .confirmed .success-message a {
+  text-decoration: underline;
+}
+
+.gh-input {
+  -webkit-backface-visibility: hidden;
+  background: #fff;
+  border: solid 1px rgba(16, 38, 64, 0.3);
+  box-sizing: border-box;
+  outline: none;
+  padding: 10px 12px;
+  -webkit-appearance: none;
+  outline-offset: 0;
+  border-radius: 5px;
+  font-size: 14px;
+}
+.gh-input:focus {
+  box-shadow: 0 0 0 2px #0075ff;
+  border: 1px solid transparent;
+}
+.gh-input#search-timezones {
+  width: 100%;
+}
+
+#details-form {
+  margin-right: 100px;
+  width: 300px;
+}
+#details-form label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #404040;
+}
+#details-form #change-selection {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+#details-form #confirm-booking {
+  margin-top: 60px;
+  margin-bottom: 20px;
 }
 
 p {
-    line-height: 1.6em;
-    /*letter-spacing: 1px;*/
-    font-size: 16px;
-    color: #404040;
-}
-
-body.groundhogg-calendar-body {
-    background-color: #f7f7f7;
-    /*padding: 0 20px 30px 20px;*/
-    max-width: 850px;
-    margin: 50px auto;
-    /*margin: 0;*/
+  line-height: 1.6em;
+  /*letter-spacing: 1px;*/
+  font-size: 16px;
+  color: #404040;
 }
 
 body.groundhogg-calendar-body.framed {
-    background-color: #FFFFFF;
-    padding: 20px 0;
-    margin: 0 auto;
+  background-color: #FFFFFF;
+  margin: 0 auto;
 }
 
-#main{
-    position: relative;
+#main {
+  position: relative;
+  display: flex;
+  justify-content: center;
 }
 
 #calendar-view {
-    display: flex;
-    flex-direction: row;
+  display: flex;
+  flex-direction: row;
 }
 
 .groundhogg-calendar {
-    display: flex;
-    flex-grow: 1;
-    border: 1px solid rgba(77, 80, 85, 0.1);
-    border-radius: 8px;
-    box-shadow: 0 1px 8px 0 rgba(0, 0, 0, 0.08);
-    background: #FFFFFF;
+  display: flex;
+  flex-grow: 1;
+  border: 1px solid rgba(77, 80, 85, 0.1);
+  border-radius: 8px;
+  box-shadow: 0 1px 8px 0 rgba(0, 0, 0, 0.08);
+  background: #FFFFFF;
 }
 
 p#credit,
 #extralinks {
-    color: #555d66;
-    text-align: center;
-    margin-top: 20px;
+  color: #555d66;
+  text-align: center;
+  margin-top: 20px;
 }
 
 #extralinks a {
-    text-decoration: none;
+  text-decoration: none;
 }
 
 p#credit img {
-    vertical-align: middle;
+  vertical-align: middle;
 }
 
 .hidden {
-    display: none;
+  display: none;
 }
 
 #time-slots-inner {
-    overflow-y: auto;
-    max-height: 500px;
-    scroll-padding-right: 10px;
-    scroll-snap-type: y;
+  overflow-y: auto;
+  max-height: 500px;
+  scroll-padding-right: 10px;
+  scroll-snap-type: y;
 }
 
 #logo-wrap {
-    border-bottom: 1px solid #e5e5e5;
+  border-bottom: 1px solid rgba(16, 38, 64, 0.05);
+  display: flex;
+  justify-content: center;
+  padding: 40px 0;
 }
 
 #logo {
-    margin: 80px auto;
-}
-
-#calendar-form label {
-    font-size: 16px;
-    line-height: 2em;
-    color: #404040;
-}
-
-#calendar-form .gh-input {
-    -webkit-backface-visibility: hidden;
-    background: #fff;
-    border: solid 1px #ccc;
-    box-sizing: border-box;
-    outline: none;
-    padding: 11px;
-    -webkit-appearance: none;
-    outline-offset: 0;
-    border-radius: 0;
-    font-size: 16px;
-}
-
-#calendar-form .gh-input:focus {
-    border: solid 2px #00b0ff;
-    padding: 10px;
-}
-
-.confirm-button {
-    -webkit-border-radius: 4px;
-    -moz-border-radius: 4px;
-    border-radius: 4px;
-    color: #ffffff;
-    font-size: 16px;
-    background: #00b0ff;
-    padding: 15px 20px 15px 20px;
-    text-decoration: none;
-    border: none;
-    /*text-transform: uppercase;*/
-    /*font-weight: 600;*/
-    cursor: pointer;
-    display: inline-block;
-}
-
-.confirm-button:hover {
-    background: #067ac2;
-    text-decoration: none;
+  width: 60%;
+  box-sizing: border-box;
 }
 
 .avatar {
-    margin: -45px 0 0 20px;
-    border-radius: 50%;
-    border: 5px solid #fff;
-    box-shadow: 0 1px 8px 0 rgba(0, 0, 0, 0.15);
+  position: absolute;
+  transform: translateY(-50%);
+  left: 20px;
+  border-radius: 50%;
+}
+
+.avatar-wrap {
+  position: relative;
 }
 
 .no-logo .avatar {
-    margin: 20px 0 0 20px;
+  margin: 20px 0 0 20px;
 }
 
-#time-slots-inner .appointment-time {
-    padding: 12px;
-    font-size: 18px;
-    color: #00b0ff;
-    margin-bottom: 15px;
+@media only screen and (max-width: 1000px) {
+  #calendar {
+    height: auto;
+    max-height: max-content;
+  }
+  #calendar #date-picker .gh-calendar.display-flex {
+    flex-direction: column;
+  }
+  #calendar #date-picker .display-date {
+    padding-left: 0;
+  }
+  #calendar #date-picker #time-slots {
     width: 100%;
     box-sizing: border-box;
-    background-color: #fff;
-    border-color: #00b0ff;
-    border-style: solid;
-    border-width: 1px;
-    border-radius: 3px;
-    cursor: pointer;
-    font-weight: 600;
-    /*box-shadow: 0 1px 1px #15435a;*/
+    flex-basis: 300px;
+  }
+  #calendar #date-picker #time-slots .time-slot-wrap {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 0px 10px;
+    grid-template-areas: ". ." ". .";
+  }
 }
-
-#time-slots-inner .appointment-time.selected,
-#time-slots-inner .appointment-time:hover {
-    border-color: #00b0ff;
-    padding: 11px;
-    border-width: 2px;
-}
-
-#appointment-errors {
-    margin-top: 10px;
-}
-
-.confirmed-details,
-.former-time {
-    margin: 10px -20px 0 -20px;
-    padding: 20px;
-    background-color: rgba(30, 160, 212, 0.18);
-}
-
-.confirmed-details.details {
-    background-color: #dff0d8;
-}
-
-.confirmed-details.details div {
-    color: #3c763d;
-}
-
-.former-time h4 {
-    margin-top: 0;
-    color: #999;
-}
-
-.appointment-success {
-    background-color: #dff0d8;
-    border-color: #d0e9c6;
-    color: #3c763d;
-    padding: .75rem 1.25rem;
-    margin-bottom: 1rem;
-    margin-top: 1rem;
-    border: 1px solid transparent;
-    border-radius: .25rem;
-}
-
-p.time-slot-select-text {
-    margin: 1em 0 1em 0;
-}
-
-hr.time-slot-divider {
-    margin: 1em 0 1em 0;
-}
-
-.spinner {
-    background: url(images/load.gif) no-repeat;
-    background-size: 30px 30px;
-    display: inline-block;
-    visibility: hidden;
-    float: right;
-    vertical-align: middle;
-    opacity: .7;
-    filter: alpha(opacity=70);
-    width: 30px;
-    height: 30px;
-    margin: 4px 10px 0;
-}
-
-.calendar-form-wrapper .details-form input[type="text"],
-.calendar-form-wrapper .details-form input[type="email"] {
-    width: 100%;
-    display: block;
-    padding: 7px;
-}
-
-.loader-overlay {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(255, 255, 255, 0.51);
-    z-index: 9999;
-    cursor: pointer;
-}
-
-.loader-wrap {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 99999;
-}
-
-.loader-wrap p {
-    margin: 0;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    -ms-transform: translate(-50%, -50%);
-    transform: translate(-50%, -50%);
-}
-
-#calendar-details {
-    /*float: left;*/
-    /*padding: 20px;*/
-    flex-shrink: 0;
-    width: 350px;
-    /*margin-right: -300px;*/
-}
-
-#calendar-cancel,
-#calendar-date-picker,
-#calendar-form {
-    /*float: right;*/
-    /*width: calc( 100% - 320px );*/
-    flex-grow: 1;
-    /*padding: 0 20px 20px 0;*/
-    border-left: 1px solid #e5e5e5;
-}
-
-#calendar-cancel,
-.text-details {
-    padding: 0 20px;
-}
-
-.details div {
-    font-size: 16px;
-    color: #999;
-    font-weight: 600;
-    margin: 10px 0;
-    line-height: 1.1em;
-}
-
-h4.owner-name {
-    color: #999;
-    margin-bottom: 10px;
-}
-
-h1,
-h2,
-h3,
-h4,
-h5,
-p {
-    color: #404040;
-}
-
-h1.calendar-name {
-    margin-top: 0;
-}
-
-.description {
-    margin-top: 20px;
-    color: #404040;
-}
-
-.clock-icon:before {
-    content: "\1F551";
-}
-
-.date-icon:before {
-    content: "\1F4C6";
-}
-
-.world-icon:before {
-    content: "\1F310";
-}
-
-.time-slot-select-text {
-    font-size: 16px;
-    font-weight: 500;
-}
-
-#calendar-form,
-#calendar-time-slots {
-    display: none;
-}
-
-#date-picker {
-    padding: 10px 20px 20px 20px
-}
-
-/* SLOTS VIEW */
-
-.view-slots #calendar-time-slots {
-    display: block;
-    padding: 20px;
-}
-
-.view-slots .date-picker-wrap {
-    display: none
-}
-
-/* FORM VIEW */
-
-.view-form #calendar-date-picker {
-    display: none;
-}
-
-.view-form #calendar-form {
-    display: block;
-    padding: 20px;
-}
-
-.back-button {
-    display: block;
-    height: 50px;
-    width: 50px;
-    border: 2px solid #e5e5e5;
-    border-radius: 100%;
-    position: relative;
-    cursor: pointer;
-    margin-bottom: 10px;
-}
-
-.back-button:hover {
-    transition: 0.4s;
-    border-color: #00b0ff;
-}
-
-.back-button:hover .back-arrow-icon:before {
-    transition: 0.4s;
-    color: #00b0ff;
-}
-
-.back-button .back-arrow-icon {
-    /*transform: scaleX( -1 );*/
-    position: absolute;
-    left: 17px;
-    top: 17px;
-}
-
-.back-arrow-icon:before {
-    font-size: 16px;
-    vertical-align: middle;
+@media only screen and (max-width: 750px) {
+  #logo-wrap {
     display: flex;
-    font-weight: bold;
-    z-index: 999;
-    color: #cccccc;
-    /*content: "\279C";*/
-    content: "\2794";
-    line-height: 1;
-    transform: scaleX(-1) scale(2);
+    justify-content: center;
+  }
+  #logo-wrap #logo {
+    width: 70%;
+    margin: 10px auto;
+  }
+
+  body {
+    margin: 0;
+  }
+
+  html {
+    margin-top: 0 !important;
+  }
+
+  #calendar {
+    width: 100%;
+  }
+  #calendar #change-date {
+    display: flex;
+    margin: 0 auto 10px 20px;
+  }
+  #calendar > .display-flex {
+    flex-direction: column;
+    gap: 0;
+  }
+  #calendar #change-selection {
+    margin-top: 0;
+  }
+  #calendar .calendar-details {
+    border-right: none;
+    width: 100%;
+    border-bottom: 1px solid rgba(16, 38, 64, 0.05);
+  }
+  #calendar #date-picker .date-picker {
+    padding-left: 10px;
+  }
+  #calendar #date-picker .gh-calendar.date-selected .date-picker {
+    display: none;
+  }
+  #calendar #date-picker .display-date,
+#calendar #date-picker #time-slots {
+    padding-left: 20px;
+  }
+  #calendar #date-picker .display-date .time-slot-wrap,
+#calendar #date-picker #time-slots .time-slot-wrap {
+    display: flex;
+    flex-direction: column;
+  }
+  #calendar .confirmed .display-flex {
+    flex-direction: column;
+  }
+  #calendar #details-form {
+    width: 100%;
+    margin: auto;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+  #calendar .booking > p {
+    padding-left: 20px;
+  }
 }
 
-@media only screen and (max-width: 850px) {
-
-    .avatar {
-        margin-left: 0;
-    }
-
-    .groundhogg-calendar {
-        flex-direction: column;
-        /*width: 100vw;*/
-    }
-
-    #calendar-details {
-        width: 100%;
-        margin: 0;
-        text-align: center;
-    }
-
-    #calendar-details p {
-        text-align: left;
-    }
-
-    #calendar-time-slots,
-    #calendar-date-picker .date-picker-wrap {
-        max-width: 450px;
-        margin: auto;
-        min-height: 300px;
-    }
-
-    #calendar-form {
-        min-height: 300px;
-    }
-
-    .back-arrow-icon:before {
-        font-size: 16px;
-    }
-
-    #calendar-date-picker,
-    #calendar-form {
-        width: 100%;
-        border-top: 1px solid #e5e5e5;
-        border-left: none;
-    }
-
-    #date-picker {
-        padding: 0;
-        margin: 20px 0;
-    }
-
-    #calendar-date-picker {
-        /*padding: 10px 10px 30px 10px;*/
-    }
-
-    #date-picker {
-        max-width: 100%;
-    }
-
-    .view-form #calendar-form,
-    .view-slots #calendar-date-picker {
-        /*padding-left: 100px;*/
-    }
-
-    .gh-calendar-form .gh-form-row {
-        white-space: normal;
-    }
-
-    .gh-calendar-form .gh-form-column.col-1-of-1 {
-        width: 100%;
-    }
-
-    .gh-calendar-form .gh-form-column.col-1-of-2 {
-        width: 100%;
-    }
-
-    .gh-calendar-form .gh-form-column.col-1-of-3 {
-        width: 100%;
-    }
-
-    .gh-calendar-form .gh-form-column.col-1-of-4 {
-        width: 100%;
-    }
-
-    .gh-calendar-form .gh-form-column.col-2-of-3 {
-        width: 100%;
-    }
-
-    .gh-calendar-form .gh-form-column.col-3-of-4 {
-        width: 100%;
-    }
-
-    .gh-calendar-form .gh-form-column {
-        padding-right: 0;
-    }
-
-}
+/*# sourceMappingURL=frontend.css.map */

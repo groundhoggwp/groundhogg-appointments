@@ -35,7 +35,7 @@ function template_cancel( $appointment ) {
 	}
 
 	?>
-	<h4><?php _e( 'Cancel Appointment', 'groundhogg-calendar' ); ?></h4>
+    <h4><?php _e( 'Cancel Appointment', 'groundhogg-calendar' ); ?></h4>
 	<?php
 
 	cancellation_form();
@@ -55,12 +55,12 @@ function template_success( $calendar, $appointment ) {
 
 	if ( ! $appointment->is_cancelled() ):
 		?>
-		<h4><?php _e( 'Confirmed', 'groundhogg-calendar' ); ?></h4>
-		<p><?php printf( __( 'You are scheduled with %s %s.' ), $user->first_name, $user->last_name ) ?></p>
-		<div class="success-message">
+        <h4><?php _e( 'Confirmed', 'groundhogg-calendar' ); ?></h4>
+        <p><?php printf( __( 'You are scheduled with %s %s.' ), $user->first_name, $user->last_name ) ?></p>
+        <div class="success-message">
 			<?php echo wpautop( do_replacements( $calendar->get_meta( 'message' ), $appointment->get_contact() ) ); ?>
-		</div>
-		<div class="confirmed-details details">
+        </div>
+        <div class="confirmed-details details">
 			<?php
 			// Convert to the visitors time zone.
 			$start_time = get_in_time_zone( $appointment->get_start_time(), $time_zone );
@@ -68,17 +68,17 @@ function template_success( $calendar, $appointment ) {
 
 			$time_string = sprintf( '%s - %s, %s', date_i18n( get_time_format(), $start_time ), date_i18n( get_time_format(), $end_time ), date_i18n( get_date_format(), $start_time ) );
 			?>
-			<div class="details-slot"><span class="date-icon"></span> <?php esc_html_e( $time_string ); ?></div>
-			<div class="details-zone"><span
-					class="world-icon"></span> <?php esc_html_e( str_replace( '_', ' ', $time_zone ) ); ?></div>
-		</div>
-		<p><?php printf( __( 'A calendar invitation has been send to %s', 'groundhogg-calendar' ), $appointment->get_contact()->get_email() ); ?></p>
+            <div class="details-slot"><span class="date-icon"></span> <?php esc_html_e( $time_string ); ?></div>
+            <div class="details-zone"><span
+                        class="world-icon"></span> <?php esc_html_e( str_replace( '_', ' ', $time_zone ) ); ?></div>
+        </div>
+        <p><?php printf( __( 'A calendar invitation has been send to %s', 'groundhogg-calendar' ), $appointment->get_contact()->get_email() ); ?></p>
 	<?php
 	else:
 		?>
-		<h4><?php _e( 'Cancelled', 'groundhogg-calendar' ); ?></h4>
-		<p><?php printf( __( 'Your appointment with %s %s is cancelled.' ), $user->first_name, $user->last_name ) ?></p>
-		<p>
+        <h4><?php _e( 'Cancelled', 'groundhogg-calendar' ); ?></h4>
+        <p><?php printf( __( 'Your appointment with %s %s is cancelled.' ), $user->first_name, $user->last_name ) ?></p>
+        <p>
 			<?php
 
 			echo html()->e( 'a', [
@@ -87,10 +87,11 @@ function template_success( $calendar, $appointment ) {
 			], __( 'Reschedule?', 'groundhogg-calendar' ) );
 
 			?>
-		</p>
+        </p>
 	<?php
 	endif;
 }
+
 
 /**
  * Output the calendar details
@@ -98,17 +99,17 @@ function template_success( $calendar, $appointment ) {
  * @param $calendar Calendar
  */
 function template_details( $calendar ) {
+
 	if ( ! $calendar || ! $calendar->exists() ) {
-		return;
+		return '';
 	}
 
-	$user         = get_userdata( $calendar->get_user_id() );
-	$booking_data = get_post_var( 'booking_data', [] );
-	$time_zone    = get_array_var( $booking_data, 'time_zone' );
+    ob_start();
 
+	$user         = get_userdata( $calendar->get_user_id() );
 	if ( has_custom_logo() ) :
 
-		$image = wp_get_attachment_image_src( get_theme_mod( 'custom_logo' ), 'full' );
+		$image = wp_get_attachment_image_src( get_theme_mod( 'custom_logo' ) );
 		$width    = 280;
 
 		// Resize image
@@ -126,70 +127,21 @@ function template_details( $calendar ) {
 			'width'                   => absint( $image[1] ) . 'px',
 		];
 		?>
-		<div id="logo-wrap" class="logo-wrap">
-			<div id="logo" class="logo" style="<?php echo array_to_css( $style_atts ) ?>"></div>
-		</div>
+        <div id="logo-wrap" class="logo-wrap">
+            <div id="logo" class="logo"></div>
+        </div>
 		<?php echo get_avatar( $user->ID, 80 ); ?>
 	<?php else: ?>
-		<div class="no-logo">
+        <div class="no-logo">
 			<?php echo get_avatar( $user->ID, 80 ); ?>
-		</div>
+        </div>
 	<?php endif; ?>
-	<div class="text-details">
-		<h4 class="owner-name"><?php esc_html_e( $user->first_name . ' ' . $user->last_name ); ?></h4>
-		<h1 class="calendar-name"><?php esc_html_e( $calendar->get_name() ); ?></h1>
-		<div class="details">
-			<?php $appt_length_formatted = $calendar->get_appointment_length_formatted(); ?>
-			<div class="details-length"><span class="clock-icon"></span> <?php esc_html_e( $appt_length_formatted ); ?>
-			</div><?php
-
-			if ( ! empty( $booking_data ) ):
-
-				$start_time = absint( get_array_var( $booking_data, 'start_time' ) );
-				$end_time = absint( get_array_var( $booking_data, 'end_time' ) );
-
-				// Convert to the visitors time zone.
-				$start_time = get_in_time_zone( $start_time, $time_zone );
-				$end_time   = get_in_time_zone( $end_time, $time_zone );
-
-				//compared the length of the start and end time instead of comparing the individual value
-				if ( ( $start_time > 0 && $end_time > 0 ) && strlen( $start_time ) >= 10 && strlen( $end_time ) >= 10 ):
-
-					$time_string = sprintf( '%s - %s, %s', date_i18n( get_time_format(), $start_time ), date_i18n( get_time_format(), $end_time ), date_i18n( get_date_format(), $start_time ) );
-					?>
-					<div class="details-slot"><span class="date-icon"></span> <?php esc_html_e( $time_string ); ?></div>
-				<?php
-
-				endif; ?>
-				<div class="details-zone"><span
-				class="world-icon"></span> <?php esc_html_e( str_replace( '_', ' ', $time_zone ) ); ?></div><?php
-			endif;
-
-			?>
-		</div>
-		<?php if ( isset_not_empty( $booking_data, 'reschedule' ) ):
-
-			$appointment = new Appointment( $booking_data['reschedule'] );
-
-			// Convert to the visitors time zone.
-			$start_time = get_in_time_zone( $appointment->get_start_time(), $time_zone );
-			$end_time   = get_in_time_zone( $appointment->get_end_time(), $time_zone );
-
-			$time_string = sprintf( '%s - %s, %s', date_i18n( get_time_format(), $start_time ), date_i18n( get_time_format(), $end_time ), date_i18n( get_date_format(), $start_time ) );
-			?>
-			<div class="former-time details">
-				<h4><?php _e( 'Former Time', 'groundhogg-calendar' ); ?></h4>
-				<div class="details-slot"><span class="date-icon"></span> <?php esc_html_e( $time_string ); ?></div>
-			</div>
-		<?php endif; ?>
-		<div class="description">
-			<?php echo wpautop( $calendar->get_description() ) ?>
-		</div>
-	</div>
+    <h4 class="owner-name"><?php esc_html_e( $user->first_name . ' ' . $user->last_name ); ?></h4>
+    <h1 class="calendar-name"><?php esc_html_e( $calendar->get_name() ); ?></h1>
 	<?php
-}
 
-add_action( 'groundhogg/calendar/template/details', __NAMESPACE__ . '\template_details' );
+    return ob_get_clean();
+}
 
 /**
  * Display the booking calendar html
@@ -198,12 +150,12 @@ add_action( 'groundhogg/calendar/template/details', __NAMESPACE__ . '\template_d
  */
 function template_date_picker( $calendar ) {
 	?>
-	<div class="date-picker-wrap">
-		<div id="date-picker"></div>
-	</div>
-	<div id="calendar-time-slots">
+    <div class="date-picker-wrap">
+        <div id="date-picker"></div>
+    </div>
+    <div id="calendar-time-slots">
 		<?php do_action( 'groundhogg/calendar/template/time_slots', $calendar ); ?>
-	</div>
+    </div>
 	<?php
 }
 
@@ -232,18 +184,18 @@ function template_time_slots( $calendar ) {
 	$date_string = date_i18n( get_date_format(), strtotime( $date ) );
 
 	?>
-	<div class="back-button">
-		<span class="back-arrow-icon"></span>
-	</div>
-	<p class="time-slot-select-text"><?php esc_html_e( strtoupper( $date_string ) ); ?></p>
-	<div id="time-slots-inner">
+    <div class="back-button">
+        <span class="back-arrow-icon"></span>
+    </div>
+    <p class="time-slot-select-text"><?php esc_html_e( strtoupper( $date_string ) ); ?></p>
+    <div id="time-slots-inner">
 		<?php
 
 		$slots = $calendar->get_appointment_slots( $date, $time_zone );
 
 		if ( empty( $slots ) ):
 			?><p
-			class="gh-message-wrapper gh-form-errors-wrapper"><?php _e( 'Sorry, No time slots are available on this date.', 'groundhogg-calendar' ); ?></p><?php
+                class="gh-message-wrapper gh-form-errors-wrapper"><?php _e( 'Sorry, No time slots are available on this date.', 'groundhogg-calendar' ); ?></p><?php
 		else:
 			foreach ( $slots as $i => $slot ):
 
@@ -262,7 +214,7 @@ function template_time_slots( $calendar ) {
 		endif;
 
 		?>
-	</div>
+    </div>
 	<?php
 }
 
@@ -282,12 +234,12 @@ function template_form( $calendar ) {
 	$booking_data = get_post_var( 'booking_data', [] );
 
 	?>
-	<div class="back-button">
-		<span class="back-arrow-icon"></span>
-	</div>
+    <div class="back-button">
+        <span class="back-arrow-icon"></span>
+    </div>
 
 	<?php if ( ! isset_not_empty( $booking_data, 'reschedule' ) ): ?>
-		<h3><?php _e( 'Enter Details', 'groundhogg-calendar' ); ?></h3>
+        <h3><?php _e( 'Enter Details', 'groundhogg-calendar' ); ?></h3>
 		<?php
 		if ( $calendar->has_linked_form() ) {
 
@@ -300,7 +252,7 @@ function template_form( $calendar ) {
 		}
 		?>
 	<?php else: ?>
-		<h3><?php _e( 'Confirm Change', 'groundhogg-calendar' ); ?></h3>
+        <h3><?php _e( 'Confirm Change', 'groundhogg-calendar' ); ?></h3>
 		<?php reschedule_form(); ?>
 	<?php endif;
 }
@@ -315,13 +267,13 @@ function default_form() {
 	$contact = get_current_contact();
 
 	?>
-	<div class="gh-form-wrapper">
-		<form class="gh-form details-form" method="post" target="_parent">
-			<div class="gh-form">
-				<div class="gh-form-row clearfix">
-					<div class="gh-form-column col-1-of-2">
-						<div class="gh-form-field">
-							<label class="gh-input-label">
+    <div class="gh-form-wrapper">
+        <form class="gh-form details-form" method="post" target="_parent">
+            <div class="gh-form">
+                <div class="gh-form-row clearfix">
+                    <div class="gh-form-column col-1-of-2">
+                        <div class="gh-form-field">
+                            <label class="gh-input-label">
 								<?php
 
 								_e( 'First *', 'groundhogg-calendar' );
@@ -336,12 +288,12 @@ function default_form() {
 									'value'       => $contact ? $contact->get_first_name() : '',
 								] );
 								?>
-							</label>
-						</div>
-					</div>
-					<div class="gh-form-column col-1-of-2">
-						<div class="gh-form-field">
-							<label class="gh-input-label">
+                            </label>
+                        </div>
+                    </div>
+                    <div class="gh-form-column col-1-of-2">
+                        <div class="gh-form-field">
+                            <label class="gh-input-label">
 								<?php
 
 								_e( 'Last *', 'groundhogg-calendar' );
@@ -356,14 +308,14 @@ function default_form() {
 									'value'       => $contact ? $contact->get_last_name() : '',
 								] );
 								?>
-							</label>
-						</div>
-					</div>
-				</div>
-				<div class="gh-form-row clearfix">
-					<div class="gh-form-column col-1-of-1">
-						<div class="gh-form-field">
-							<label class="gh-input-label">
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="gh-form-row clearfix">
+                    <div class="gh-form-column col-1-of-1">
+                        <div class="gh-form-field">
+                            <label class="gh-input-label">
 								<?php
 
 								_e( 'Email *', 'groundhogg-calendar' );
@@ -378,14 +330,14 @@ function default_form() {
 									'value'       => $contact ? $contact->get_email() : '',
 								] );
 								?>
-							</label>
-						</div>
-					</div>
-				</div>
-				<div class="gh-form-row clearfix">
-					<div class="gh-form-column col-1-of-1">
-						<div class="gh-form-field">
-							<label class="gh-input-label">
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="gh-form-row clearfix">
+                    <div class="gh-form-column col-1-of-1">
+                        <div class="gh-form-field">
+                            <label class="gh-input-label">
 								<?php
 
 								_e( 'Phone *', 'groundhogg-calendar' );
@@ -400,14 +352,14 @@ function default_form() {
 									'value'       => $contact ? $contact->get_phone_number() : '',
 								] );
 								?>
-							</label>
-						</div>
-					</div>
-				</div>
-				<div class="gh-form-row clearfix">
-					<div class="gh-form-column col-1-of-1">
-						<div class="gh-form-field">
-							<label class="gh-input-label">
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="gh-form-row clearfix">
+                    <div class="gh-form-column col-1-of-1">
+                        <div class="gh-form-field">
+                            <label class="gh-input-label">
 								<?php
 
 								_e( 'Please share anything that will help prepare for our meeting.', 'groundhogg-calendar' );
@@ -420,15 +372,15 @@ function default_form() {
 									'rows'     => 2,
 								] );
 								?>
-							</label>
-						</div>
-					</div>
-				</div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
 				<?php if ( is_option_enabled( 'gh_enable_gdpr' ) ) : ?>
-					<div class="gh-form-row clearfix">
-						<div class="gh-form-column col-1-of-1">
-							<div class="gh-form-field">
-								<p>
+                    <div class="gh-form-row clearfix">
+                        <div class="gh-form-column col-1-of-1">
+                            <div class="gh-form-field">
+                                <p>
 									<?php echo html()->checkbox( [
 										'label' => get_default_field_label( 'gdpr_consent' ),
 										'name'  => 'gdpr_consent',
@@ -437,8 +389,8 @@ function default_form() {
 										'value' => 'yes',
 										'title' => _x( 'I Consent', 'form_default', 'groundhogg' ),
 									] ) ?>
-								</p>
-								<p>
+                                </p>
+                                <p>
 									<?php echo html()->checkbox( [
 										'label' => get_default_field_label( 'marketing_consent' ),
 										'name'  => 'marketing_consent',
@@ -447,14 +399,14 @@ function default_form() {
 										'value' => 'yes',
 										'title' => _x( 'I Consent', 'form_default', 'groundhogg' ),
 									] ) ?>
-								</p>
-							</div>
-						</div>
-					</div>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
 				<?php endif; ?>
-				<div class="gh-form-row clearfix">
-					<div class="gh-form-column col-1-of-1">
-						<div class="gh-form-field">
+                <div class="gh-form-row clearfix">
+                    <div class="gh-form-column col-1-of-1">
+                        <div class="gh-form-field">
 							<?php
 							$book_text = apply_filters( 'groundhogg/calendar/shortcode/confirm_text', __( 'Book Appointment', 'groundhogg-calendar' ) );
 							echo html()->input( [
@@ -464,24 +416,24 @@ function default_form() {
 								'id'    => 'book_appointment',
 								'value' => $book_text
 							] ); ?>
-						</div>
-					</div>
-				</div>
-			</div>
-		</form>
-	</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
 	<?php
 }
 
 function cancellation_form() {
 	?>
-	<div class="gh-form-wrapper">
-		<form class="gh-form details-form" method="post" target="_parent">
-			<div class="gh-form">
-				<div class="gh-form-row clearfix">
-					<div class="gh-form-column col-1-of-1">
-						<div class="gh-form-field">
-							<label class="gh-input-label">
+    <div class="gh-form-wrapper">
+        <form class="gh-form details-form" method="post" target="_parent">
+            <div class="gh-form">
+                <div class="gh-form-row clearfix">
+                    <div class="gh-form-column col-1-of-1">
+                        <div class="gh-form-field">
+                            <label class="gh-input-label">
 								<?php
 
 								_e( 'Reason for cancelling?', 'groundhogg-calendar' );
@@ -494,13 +446,13 @@ function cancellation_form() {
 									'rows'     => 2,
 								] );
 								?>
-							</label>
-						</div>
-					</div>
-				</div>
-				<div class="gh-form-row clearfix">
-					<div class="gh-form-column col-1-of-1">
-						<div class="gh-form-field">
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="gh-form-row clearfix">
+                    <div class="gh-form-column col-1-of-1">
+                        <div class="gh-form-field">
 							<?php
 							$cancel = __( 'Cancel', 'groundhogg-calendar' );
 							echo html()->input( [
@@ -510,24 +462,24 @@ function cancellation_form() {
 								'class' => 'confirm-button',
 								'value' => $cancel
 							] ); ?>
-						</div>
-					</div>
-				</div>
-			</div>
-		</form>
-	</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
 	<?php
 }
 
 function reschedule_form() {
 	?>
-	<div class="gh-form-wrapper">
-		<form class="gh-form details-form" method="post" target="_parent">
-			<div class="gh-form">
-				<div class="gh-form-row clearfix">
-					<div class="gh-form-column col-1-of-1">
-						<div class="gh-form-field">
-							<label class="gh-input-label">
+    <div class="gh-form-wrapper">
+        <form class="gh-form details-form" method="post" target="_parent">
+            <div class="gh-form">
+                <div class="gh-form-row clearfix">
+                    <div class="gh-form-column col-1-of-1">
+                        <div class="gh-form-field">
+                            <label class="gh-input-label">
 								<?php
 
 								_e( 'Reason for rescheduling?', 'groundhogg-calendar' );
@@ -540,13 +492,13 @@ function reschedule_form() {
 									'rows'     => 2,
 								] );
 								?>
-							</label>
-						</div>
-					</div>
-				</div>
-				<div class="gh-form-row clearfix">
-					<div class="gh-form-column col-1-of-1">
-						<div class="gh-form-field">
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="gh-form-row clearfix">
+                    <div class="gh-form-column col-1-of-1">
+                        <div class="gh-form-field">
 							<?php
 							echo html()->input( [
 								'type'  => 'submit',
@@ -555,11 +507,11 @@ function reschedule_form() {
 								'class' => 'confirm-button',
 								'value' => __( 'Reschedule', 'groundhogg-calendar' )
 							] ); ?>
-						</div>
-					</div>
-				</div>
-			</div>
-		</form>
-	</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
 	<?php
 }

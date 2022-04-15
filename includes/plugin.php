@@ -6,6 +6,7 @@ use Groundhogg\DB\Manager;
 use Groundhogg\Extension;
 use GroundhoggBookingCalendar\Admin\Appointments\Appointments_Page;
 use GroundhoggBookingCalendar\Admin\Cards\Appointment_Card;
+use GroundhoggBookingCalendar\Api\Calendar_Api;
 use GroundhoggBookingCalendar\DB\Appointment_Meta;
 use GroundhoggBookingCalendar\DB\Appointments;
 use GroundhoggBookingCalendar\DB\Calendar_Meta;
@@ -103,6 +104,10 @@ class Plugin extends Extension {
 		$manager->add_step( new Booking_Calendar() );
 	}
 
+	public function register_v4_apis( $api_manager ) {
+		$api_manager->calendar_api = new Calendar_Api();
+	}
+
 	/**
 	 * Register the new DB.
 	 *
@@ -140,35 +145,41 @@ class Plugin extends Extension {
 			'jquery',
 			'fullcalendar-main',
 			'groundhogg-admin-functions',
+			'groundhogg-admin-components',
+			'groundhogg-admin-element',
+			'groundhogg-admin-notes',
 		], GROUNDHOGG_BOOKING_CALENDAR_VERSION, true );
 	}
 
 	public function register_frontend_scripts( $is_minified, $IS_MINIFIED ) {
 		wp_register_script( 'jstz', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'js/jstz.min.js', [], GROUNDHOGG_BOOKING_CALENDAR_VERSION );
-		wp_register_script( 'groundhogg-appointments-frontend', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'js/frontend.js', [
+		wp_register_script( 'groundhogg-calendar', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'js/calendar.js', [
 			'jstz',
 			'jquery',
-			'jquery-ui-datepicker',
-			'groundhogg-frontend'
+			'groundhogg-frontend',
+			'wp-i18n',
 		], GROUNDHOGG_BOOKING_CALENDAR_VERSION );
 	}
 
 	public function register_admin_styles() {
+
 		wp_register_style( 'groundhogg-fullcalendar', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'lib/fullcalendar/lib/main.min.css', [], GROUNDHOGG_BOOKING_CALENDAR_VERSION );
 		wp_register_style( 'groundhogg-calender-admin', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'css/backend.css', [], GROUNDHOGG_BOOKING_CALENDAR_VERSION );
 		wp_register_style( 'groundhogg-new-appointment-admin', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'css/admin/new-appointment.css', [
 			'groundhogg-loader'
 		], GROUNDHOGG_BOOKING_CALENDAR_VERSION );
 		wp_register_style( 'groundhogg-appointments-admin', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'css/admin/appointments.css', [
-			'groundhogg-loader'
+			'groundhogg-loader',
+			'groundhogg-admin-element',
 		], GROUNDHOGG_BOOKING_CALENDAR_VERSION );
 	}
 
 	public function register_frontend_styles() {
+		wp_register_style( 'groundhogg-admin-element', GROUNDHOGG_ASSETS_URL . 'css/admin/elements.css', [], GROUNDHOGG_VERSION );
+
 		wp_register_style( 'jquery-ui', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'css/jquery-ui.min.css', [], GROUNDHOGG_BOOKING_CALENDAR_VERSION );
 		wp_register_style( 'gh-jquery-ui-datepicker', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'css/calendar.css', [ 'jquery-ui' ], GROUNDHOGG_BOOKING_CALENDAR_VERSION );
 		wp_register_style( 'groundhogg-calendar-frontend', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'css/frontend.css', [
-			'gh-jquery-ui-datepicker',
 			'groundhogg-form',
 			'groundhogg-loader'
 		], GROUNDHOGG_BOOKING_CALENDAR_VERSION );

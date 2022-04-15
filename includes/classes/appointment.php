@@ -9,8 +9,7 @@ use Groundhogg\Plugin;
 use \Google_Service_Calendar;
 use \Google_Service_Calendar_Event;
 use Groundhogg\Base_Object_With_Meta;
-use function Groundhogg\admin_page_url;
-use function Groundhogg\convert_to_local_time;
+use GroundhoggBookingCalendar\ICS;
 use function Groundhogg\get_db;
 use function Groundhogg\utils;
 use function Groundhogg\encrypt;
@@ -18,7 +17,10 @@ use function Groundhogg\do_replacements;
 use function Groundhogg\get_contactdata;
 use function Groundhogg\managed_page_url;
 use function Groundhogg\Ymd_His;
+use function Groundhogg\minify_html;
 use function GroundhoggBookingCalendar\generate_uuid;
+use function GroundhoggBookingCalendar\get_date_format;
+use function GroundhoggBookingCalendar\get_time_format;
 use function GroundhoggBookingCalendar\zoom;
 use function Groundhogg\get_date_time_format;
 use function GroundhoggBookingCalendar\get_in_time_zone;
@@ -238,6 +240,24 @@ class Appointment extends Base_Object_With_Meta {
 			]
 		];
 
+	}
+
+	public function get_as_array() {
+
+		$startSateTime = new \DateTime( 'now', wp_timezone() );
+		$endDateTime   = new \DateTime( 'now', wp_timezone() );
+		$startSateTime->setTimestamp( $this->get_start_time() );
+		$endDateTime->setTimestamp( $this->get_end_time() );
+
+		return array_merge( parent::get_as_array(), [
+			'contact' => $this->get_contact(),
+			'i18n'    => [
+				'dateFrom' => $startSateTime->format( get_date_format() ),
+				'dateTo'   => $endDateTime->format( get_date_format() ),
+				'from'     => $startSateTime->format( get_time_format() ),
+				'to'       => $endDateTime->format( get_time_format() ),
+			]
+		] );
 	}
 
 	/**
@@ -512,8 +532,8 @@ class Appointment extends Base_Object_With_Meta {
 			                do_replacements( $this->get_calendar()->get_meta( 'additional_notes' ), $this->get_contact() );
 		}
 
-		if ( $this->get_meta( 'additional' ) ) {
-			$description .= "\n\n<b>" . __( 'Guest Notes:', 'groundhogg-calendar' ) . "</b>\n" . $this->get_meta( 'additional' );
+		if ( $this->get_meta( 'notes' ) ) {
+			$description .= "\n\n<b>" . __( 'Guest Notes:', 'groundhogg-calendar' ) . "</b>\n" . $this->get_meta( 'notes' );
 		}
 
 		if ( $this->get_calendar()->is_zoom_enabled() ) {
@@ -535,31 +555,29 @@ class Appointment extends Base_Object_With_Meta {
 	 */
 	public function get_google_description() {
 
-		$description = sprintf( __( 'Appointment Type: %s', 'groundhogg-calendar' ), $this->get_calendar()->get_name() );
+		ob_start();
 
-		$description .= "\n\n" . $this->get_calendar()->get_description();
+		?>
+        <p><?php _e( sprintf( __( 'Appointment Type: %s', 'groundhogg-calendar' ), $this->get_calendar()->get_name() ) ) ?></p>
+		<?php echo wpautop( $this->get_calendar()->get_description() ) ?>
+		<?php if ( $this->get_calendar()->get_meta( 'additional_notes' ) ) : ?>
+            <p><b><?php _e( 'Additional Instructions:', 'groundhogg-calendar' ) ?></b></p>
+			<?php echo wpautop( do_replacements( $this->get_calendar()->get_meta( 'additional_notes' ), $this->get_contact() ) ) ?>
+		<?php endif; ?>
+		<?php if ( $this->get_calendar()->get_meta( 'google_appointment_description' ) ) : ?>
+			<?php echo wpautop( do_replacements( $this->get_calendar()->get_meta( 'google_appointment_description' ), $this->get_contact() ) ) ?>
+		<?php endif; ?>
+		<?php if ( $this->get_meta( 'notes' ) ) : ?>
+			<?php echo wpautop( $this->get_meta( 'notes' ) ) ?>
+		<?php endif; ?>
+		<?php if ( $this->get_calendar()->is_zoom_enabled() ) : ?>
+			<?php echo wpautop( $this->get_zoom_meeting_details() ) ?>
+		<?php endif; ?>
+        <p><a href="<?php echo $this->reschedule_link() ?>"><?php _e( 'Reschedule', 'groundhogg-calendar' ) ?></a> | <a
+                    href="<?php echo $this->manage_link() ?>"><?php _e( 'Cancel', 'groundhogg-calendar' ) ?></a></p>
+		<?php
 
-		if ( $this->get_calendar()->get_meta( 'additional_notes' ) ) {
-			$description .= "\n\n<b>" . __( 'Additional Instructions:', 'groundhogg-calendar' ) . "</b>\n" .
-			                do_replacements( $this->get_calendar()->get_meta( 'additional_notes' ), $this->get_contact() );
-		}
-
-		if ( $this->get_calendar()->get_meta( 'google_appointment_description' ) ) {
-			$description .= "\n\n" . do_replacements( $this->get_calendar()->get_meta( 'google_appointment_description' ), $this->get_contact() );
-		}
-
-		if ( $this->get_meta( 'additional' ) ) {
-			$description .= "\n\<b>" . __( 'Guest Notes:', 'groundhogg-calendar' ) . "</b>\n" . $this->get_meta( 'additional' );
-		}
-
-		if ( $this->get_calendar()->is_zoom_enabled() ) {
-			$description .= "\n\n" . $this->get_zoom_meeting_details();
-		}
-
-		$description .= "\n\n" . __( 'Reschedule this appointment:', 'groundhogg-calendar' ) . ' ' . $this->reschedule_link();
-		$description .= "\n\n" . __( 'Cancel this appointment:', 'groundhogg-calendar' ) . ' ' . $this->manage_link();
-
-		return $description;
+		return ob_get_clean();
 	}
 
 	/**
@@ -718,6 +736,75 @@ class Appointment extends Base_Object_With_Meta {
 			$service->events->delete( $this->get_calendar()->get_remote_google_calendar_id(), $this->uuid );
 		} catch ( Exception $e ) {
 		}
+	}
+
+	/**
+	 * Conflicts if the start and end period intersect with the given time range
+	 *
+	 * @param $start
+	 * @param $end
+	 *
+	 * @return bool
+	 */
+	public function conflicts( $start, $end ) {
+		return
+			// given start is in between start and end
+			( $this->start_time <= $start && $this->end_time > $start ) ||
+			// given end is in between start and end
+			( $this->start_time <= $end && $this->end_time > $end ) ||
+			// the given start and end time are within the slot
+			( $this->start_time >= $start && $this->end_time <= $end ) ||
+			// the slot is within the given time
+			( $this->start_time <= $start && $this->end_time >= $end );
+	}
+
+	/**
+	 * Get a the link to add the appointment to a Google calendar
+	 *
+	 * @return string
+	 */
+	public function get_add_to_google_link() {
+
+		$start_formatted = date( 'Ymd\THis\Z', $this->get_start_time() );
+		$end_formatted   = date( 'Ymd\THis\Z', $this->get_end_time() );
+
+		return add_query_arg( urlencode_deep( [
+			'action'   => 'TEMPLATE',
+			'text'     => $this->get_name(),
+			'details'  => wp_strip_all_tags( $this->get_google_description() ),
+			'location' => $this->get_calendar()->is_zoom_enabled() ? $this->get_meta( 'zoom_join_url' ) : $this->get_location(),
+			'dates'    => $start_formatted . '/' . $end_formatted
+		] ), 'https://www.google.com/calendar/render' );
+	}
+
+	/**
+	 * Get an ICS file
+	 *
+	 * @throws Exception
+	 * @return ICS
+	 */
+	public function get_ics_file() {
+
+		$ics = new ICS( [
+			'location'    => $this->get_calendar()->is_zoom_enabled() ? $this->get_meta( 'zoom_join_url' ) : $this->get_location(),
+			'description' => str_replace( "\n", "\\n", wp_strip_all_tags( $this->get_details() ) ),
+			'HTML'        => minify_html( $this->get_google_description() ),
+			'summary'     => $this->get_name(),
+			'dtstart'     => Ymd_His( $this->get_start_time() ),
+			'dtend'       => Ymd_His( $this->get_end_time() ),
+			'url'         => $this->reschedule_link(),
+		] );
+
+		return $ics;
+	}
+
+	/**
+	 * Download the ICS file
+	 *
+	 * @return string
+	 */
+	public function get_ics_link() {
+		return $this->manage_link( 'ics' );
 	}
 
 }

@@ -1,0 +1,543 @@
+$primary-blue: rgb(0, 117, 255);
+$primary-blue-60: rgba(0, 117, 255, 0.60);
+$primary-blue-50: rgba(0, 117, 255, 0.50);
+$primary-blue-20: rgba(0, 117, 255, 0.20);
+$primary-blue-10: rgba(0, 117, 255, 0.10);
+$primary-blue-7: rgba(0, 117, 255, 0.07);
+$primary-blue-2: rgba(0, 117, 255, 0.02);
+$primary-dark: rgb(16, 38, 64);
+$primary-dark-50: rgba(16, 38, 64, 0.5);
+$primary-dark-30: rgba(16, 38, 64, 0.3);
+$primary-dark-15: rgba(16, 38, 64, 0.15);
+$primary-dark-10: rgba(16, 38, 64, 0.10);
+$primary-dark-5: rgba(16, 38, 64, 0.05);
+$error-red: rgb(233, 31, 79);
+$error-red-50: rgba(233, 31, 79, 0.5);
+$error-red-10: rgba(233, 31, 79, 0.10);
+$secondary-purple: rgb(108, 25, 173);
+$alert-yellow-50: rgba(255, 238, 88, 0.50);
+$alert-yellow: rgb(255, 238, 88);
+$benchmark-orange: rgb(245, 129, 21);
+$benchmark-orange-50: rgba(245, 129, 21, 0.50);
+$benchmark-orange-25: rgba(245, 129, 21, 0.25);
+$action-green: rgb(158, 206, 56);
+$action-green-50: rgba(158, 206, 56, 0.5);
+$action-green-25: rgba(158, 206, 56, 0.25);
+$box-shadow: 5px 5px 30px 0 rgba(24, 45, 70, 0.05);
+$background-color: #F6F9FB;
+
+html {
+  margin-top: 60px;
+}
+
+body * {
+  font-family: Helvetica, sans-serif;
+}
+
+#change-date{
+  display: none;
+}
+
+#calendar {
+
+  position: relative;
+  display: inline-block;
+  max-height: 600px;
+  min-height: 550px;
+
+  > div {
+    height: 100%;
+  }
+
+
+  a {
+    line-height: 1;
+  }
+
+  ul.appointment-details {
+    list-style: none;
+    padding-left: 0;
+
+    li {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      font-size: 16px;
+
+      *:last-child {
+        padding: 5px 10px;
+      }
+
+      > svg {
+        color: $primary-dark;
+        width: 20px;
+        height: 20px;
+      }
+    }
+  }
+
+  .calendar-details {
+    width: 400px;
+    border-right: 1px solid $primary-dark-5;
+
+    ul.appointment-details {
+      padding-left: 20px;
+    }
+
+    h4.owner-name {
+      font-size: 18px;
+      color: $primary-dark-50;
+      padding-left: 20px;
+      margin-bottom: 0;
+      margin-top: 60px;
+    }
+
+    h1.calendar-name {
+      font-size: 28px;
+      margin-top: 5px;
+      padding-left: 20px;
+    }
+
+    .description {
+
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+
+      .description-inner {
+        padding-left: 20px;
+        font-size: 16px;
+        overflow: auto;
+        flex: 1 1 100px;
+      }
+    }
+
+  }
+
+  .timezone-modal {
+    //display: none;
+    position: relative;
+
+    .gh-panel {
+      position: absolute;
+      bottom: 0;
+      left: 10px;
+      right: 10px;
+
+      .tz-list {
+
+        display: flex;
+        flex-direction: column;
+        overflow: auto;
+        height: 200px;
+
+        ul {
+          flex: 1 1 100px;
+          list-style: none;
+          padding: 0;
+
+          li {
+
+            padding: 0 5px;
+
+            button {
+              font-size: 14px;
+              width: 100%;
+              text-align: left;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .booking {
+    display: flex;
+    flex-direction: column;
+    //padding-right: 20px;
+  }
+
+  #date-picker {
+
+    height: 100%;
+
+    .date-picker {
+      padding-right: 20px;
+    }
+
+    #prev-month, #next-month {
+      svg {
+        height: 15px;
+        width: 15px;
+      }
+    }
+
+    .display-date {
+      font-size: 16px;
+      color: $primary-dark-50;
+      //padding-left: 20px;
+    }
+
+    .date-picker-header {
+      .display-date {
+        padding-left: 10px;
+      }
+    }
+
+    #time-slots {
+      overflow: auto;
+      width: 220px;
+      //max-height: 550px;
+      padding: 20px 20px 20px 0;
+      flex: 1 1 100px;
+
+      button {
+        width: 100%;
+        padding: 15px 0;
+      }
+
+      .time-slot-wrap {
+        overflow: hidden;
+        white-space: nowrap;
+
+        .slot-wrap {
+          margin-bottom: 10px;
+        }
+      }
+
+      .time-selected {
+        text-align: center;
+        width: 100%;
+        display: inline-block;
+        padding: 15px 0;
+        background: $primary-dark;
+        color: #fff;
+        border-radius: 5px;
+        font-size: 16px;
+      }
+
+    }
+
+    .gh-calendar {
+      height: 100%;
+    }
+
+    table.gh-calendar-table {
+      margin: 10px 0 20px 0;
+      border-collapse: collapse;
+
+      th {
+        text-transform: uppercase;
+        font-weight: 500;
+        color: #0c5460;
+        font-size: 14px;
+      }
+
+      td {
+        text-align: center;
+        padding: 5px;
+        box-sizing: content-box;
+        width: 45px;
+        height: 45px;
+
+        &.disabled {
+          opacity: 0.3;
+        }
+
+        button {
+          height: 100%;
+          width: 100%;
+
+          &.secondary {
+
+            &:hover {
+              background: $primary-blue-10;
+            }
+
+            background: $primary-blue-7;
+            border: none;
+          }
+        }
+      }
+    }
+  }
+
+  .confirmed{
+    padding: 60px 60px 20px 60px;
+    overflow: auto;
+    height: 100%;
+
+    > h2 {
+      margin-top: 60px;
+    }
+
+    .success-message {
+      padding: 10px 60px;
+      margin: 20px -60px;
+      background: $action-green-25;
+
+      a{
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+.gh-input {
+  -webkit-backface-visibility: hidden;
+  background: #fff;
+  border: solid 1px $primary-dark-30;
+  box-sizing: border-box;
+  outline: none;
+  padding: 10px 12px;
+  -webkit-appearance: none;
+  outline-offset: 0;
+  border-radius: 5px;
+  font-size: 14px;
+
+  &:focus {
+    box-shadow: 0 0 0 2px $primary-blue;
+    border: 1px solid transparent;
+  }
+
+  &#search-timezones {
+    width: 100%;
+  }
+}
+
+#details-form {
+
+  margin-right: 100px;
+
+  width: 300px;
+
+  label {
+    font-size: 14px;
+    font-weight: 600;
+    //line-height: 2em;
+    color: #404040;
+  }
+
+  #change-selection {
+    margin-top: 20px;
+    margin-bottom: 20px;
+  }
+
+  #confirm-booking {
+    margin-top: 60px;
+    margin-bottom: 20px;
+  }
+}
+
+p {
+  line-height: 1.6em;
+  /*letter-spacing: 1px;*/
+  font-size: 16px;
+  color: #404040;
+}
+
+
+body.groundhogg-calendar-body.framed {
+  background-color: #FFFFFF;
+  margin: 0 auto;
+}
+
+#main {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+#calendar-view {
+  display: flex;
+  flex-direction: row;
+}
+
+.groundhogg-calendar {
+  display: flex;
+  flex-grow: 1;
+  border: 1px solid rgba(77, 80, 85, 0.1);
+  border-radius: 8px;
+  box-shadow: 0 1px 8px 0 rgba(0, 0, 0, 0.08);
+  background: #FFFFFF;
+}
+
+p#credit,
+#extralinks {
+  color: #555d66;
+  text-align: center;
+  margin-top: 20px;
+}
+
+#extralinks a {
+  text-decoration: none;
+}
+
+p#credit img {
+  vertical-align: middle;
+}
+
+.hidden {
+  display: none;
+}
+
+#time-slots-inner {
+  overflow-y: auto;
+  max-height: 500px;
+  scroll-padding-right: 10px;
+  scroll-snap-type: y;
+}
+
+#logo-wrap {
+  border-bottom: 1px solid $primary-dark-5;
+  display: flex;
+  justify-content: center;
+  padding: 40px 0;
+}
+
+#logo {
+  width: 60%;
+  box-sizing: border-box;
+}
+
+.avatar {
+  position: absolute;
+  transform: translateY(-50%);
+  left: 20px;
+  border-radius: 50%;
+}
+
+.avatar-wrap {
+  position: relative;
+}
+
+.no-logo .avatar {
+  margin: 20px 0 0 20px;
+}
+
+@media only screen and (max-width: 1000px) {
+
+  #calendar {
+    height: auto;
+    max-height: max-content;
+
+    #date-picker {
+
+
+      .gh-calendar.display-flex {
+        flex-direction: column;
+      }
+
+      .display-date{
+        padding-left: 0;
+      }
+
+      #time-slots {
+        width: 100%;
+        box-sizing: border-box;
+        flex-basis: 300px;
+
+        .time-slot-wrap {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          grid-template-rows: 1fr 1fr;
+          gap: 0px 10px;
+          grid-template-areas:
+    ". ."
+    ". .";
+        }
+      }
+    }
+
+
+  }
+}
+
+@media only screen and (max-width: 750px) {
+
+  #logo-wrap{
+    display: flex;
+    justify-content: center;
+
+    #logo {
+      width: 70%;
+      margin: 10px auto;
+    }
+  }
+
+
+  body {
+    margin: 0;
+  }
+
+  html {
+    margin-top: 0 !important;
+  }
+
+ #calendar {
+
+   width: 100%;
+
+   #change-date{
+     display: flex;
+     margin: 0 auto 10px 20px;
+   }
+
+   > .display-flex{
+     flex-direction: column;
+     gap: 0;
+   }
+
+   #change-selection{
+     margin-top: 0;
+   }
+
+   .calendar-details{
+     border-right: none;
+     width: 100%;
+     border-bottom: 1px solid $primary-dark-5;
+   }
+
+   #date-picker {
+
+     .date-picker {
+       padding-left: 10px;
+     }
+
+     .gh-calendar.date-selected{
+       .date-picker{
+         display: none;
+       }
+     }
+
+     .display-date,
+     #time-slots{
+       padding-left: 20px;
+
+       .time-slot-wrap {
+         display: flex;
+         flex-direction: column;
+       }
+     }
+   }
+
+   .confirmed{
+     .display-flex{
+       flex-direction: column;
+     }
+   }
+
+   #details-form{
+     width: 100%;
+     margin: auto;
+     padding: 20px;
+     box-sizing: border-box;
+   }
+
+   .booking {
+     > p {
+       padding-left: 20px;
+     }
+   }
+ }
+}

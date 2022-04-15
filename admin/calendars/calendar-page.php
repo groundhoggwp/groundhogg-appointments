@@ -575,6 +575,9 @@ class Calendar_Page extends Admin_Page {
 		$calendar->update_meta( 'slot_hour', absint( get_request_var( 'slot_hour', 0 ) ) );
 		$calendar->update_meta( 'slot_minute', absint( get_request_var( 'slot_minute', 0 ) ) );
 
+		// Timezone
+		$calendar->update_meta( 'timezone', sanitize_text_field( get_request_var( 'timezone', wp_timezone_string() ) ) );
+
 		// Save buffer time
 		$calendar->update_meta( 'buffer_time', absint( get_request_var( 'buffer_time', 0 ) ) );
 

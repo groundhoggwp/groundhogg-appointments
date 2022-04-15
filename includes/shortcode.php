@@ -374,15 +374,16 @@ class Shortcode extends Supports_Errors {
 
 		wp_enqueue_script( 'fullframe' );
 
-		return html()->wrap( '', 'iframe', [
-			'src'         => $url,
-			'width'       => '100%',
-			'class'       => 'groundhogg-calendar-iframe',
-			'frameBorder' => '0',
-			'style'       => [
-				'border' => 'none'
-			]
-		] );
+		return html()->e( 'iframe', [
+				'id'          => 'calendar-' . $calendar->get_id(),
+				'src'         => $url,
+				'width'       => '100%',
+				'class'       => 'gh-calendar-frame',
+				'frameBorder' => '0',
+				'style'       => [
+					'border' => 'none'
+				]
+			], '', false );
 	}
 
 	/**

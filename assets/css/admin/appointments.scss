@@ -1,0 +1,40 @@
+#calendar-wrap{
+  position: fixed;
+  top: 32px;
+  right: 0;
+  bottom: 0;
+  left: 160px;
+  background: #fff;
+  //padding: 20px;
+
+  .fc .fc-toolbar.fc-header-toolbar{
+    padding: 20px 20px 0 20px;
+  }
+
+  .fc-theme-standard .fc-list,
+  .fc-theme-standard .fc-scrollgrid{
+    border-right: none;
+    border-left: none;
+    border-bottom: none;
+  }
+}
+
+.gh-modal{
+  #notes-here,#details{
+    width: 100%;
+
+    h3 {
+      font-size: 14px;
+    }
+
+    .avatar {
+      width: 35px;
+      height: 35px;
+      border-radius: 5px;
+    }
+  }
+}
+
+#wpfooter{
+  display: none;
+}

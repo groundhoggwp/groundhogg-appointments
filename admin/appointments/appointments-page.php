@@ -54,6 +54,8 @@ class Appointments_Page extends Admin_Page {
 
 		switch ( $this->get_current_action() ) {
 			case 'view':
+                wp_enqueue_editor();
+                wp_enqueue_media();
 				wp_enqueue_script( 'groundhogg-appointments-admin' );
 				wp_localize_script( 'groundhogg-appointments-admin', 'GroundhoggAppointments', [
 					'events'      => get_all_events_for_full_calendar(),
@@ -67,7 +69,7 @@ class Appointments_Page extends Admin_Page {
 			case 'add':
 
 				$object = [
-					'date'     => Ymd_His(),
+					'date'       => Ymd_His(),
 					'datepicker' => [
 						'start_of_week' => get_option( 'start_of_week' ),
 						'day_names'     => [
@@ -99,7 +101,7 @@ class Appointments_Page extends Admin_Page {
 				if ( $contact_id = get_url_var( 'contact' ) ) {
 					$object = wp_parse_args( $object, [
 						'contact_id' => $contact_id
-					]);
+					] );
 				}
 
 				wp_enqueue_script( 'groundhogg-new-appointment-admin' );
@@ -141,7 +143,7 @@ class Appointments_Page extends Admin_Page {
 
 			$appointment->sync_all_details();
 
-			if ( $appointment->has_errors() ){
+			if ( $appointment->has_errors() ) {
 				wp_send_json_error( $appointment->get_last_error() );
 			}
 
@@ -220,9 +222,9 @@ class Appointments_Page extends Admin_Page {
 
 		if ( empty( $slots ) ):
 			?>
-			<div class="notice notice-error">
-			<p><?php _e( 'Sorry, no time slots are available on this date.', 'groundhogg-calendar' ); ?></p>
-			</div><?php
+            <div class="notice notice-error">
+            <p><?php _e( 'Sorry, no time slots are available on this date.', 'groundhogg-calendar' ); ?></p>
+            </div><?php
 		else:
 			foreach ( $slots as $i => $slot ):
 
@@ -314,30 +316,19 @@ class Appointments_Page extends Admin_Page {
 		include __DIR__ . '/filters.php'
 
 		?>
-		<div class="columns">
-			<div id="calendar-wrap" class="postbox" style="">
-				<div id="calendar"></div>
-			</div>
-			<div id="appointment" class="postbox">
-				<?php if ( $appointment->exists() ): ?>
-					<?php include __DIR__ . '/view.php' ?>
-				<?php else: ?>
-					<p class="instructions">
-						<?php _e( 'Click on an appointment to bring up the details.', 'groundhogg-calendar' ); ?>
-					</p>
-				<?php endif; ?>
-			</div>
-		</div>
+        <div id="calendar-wrap" style="">
+            <div id="calendar"></div>
+        </div>
 		<?php
 	}
 
 	public function add() {
 		?>
-		<div class="gh-tools-wrap">
-			<p class="tools-help"><?php _e( 'Schedule a New Appointment', 'groundhogg-calendar' ); ?></p>
-			<div class="gh-tools-box">
-				<p><b><?php _e( 'Which calendar should the appointment be added to?', 'groundhogg-calendar' ) ?></b></p>
-				<p><?php
+        <div class="gh-tools-wrap">
+            <p class="tools-help"><?php _e( 'Schedule a New Appointment', 'groundhogg-calendar' ); ?></p>
+            <div class="gh-tools-box">
+                <p><b><?php _e( 'Which calendar should the appointment be added to?', 'groundhogg-calendar' ) ?></b></p>
+                <p><?php
 
 					$calendars = get_db( 'calendars' )->query( [
 						'user_id' => current_user_can( 'view_own_calendar' ) ? get_current_user_id() : false,
@@ -356,33 +347,33 @@ class Appointments_Page extends Admin_Page {
 					] );
 
 					?></p>
-				<p><b><?php _e( 'At what time?', 'groundhogg-calendar' ) ?></b></p>
-				<div class="booking-dates">
-					<div id="calendar"></div>
-					<div id="slots">
+                <p><b><?php _e( 'At what time?', 'groundhogg-calendar' ) ?></b></p>
+                <div class="booking-dates">
+                    <div id="calendar"></div>
+                    <div id="slots">
 						<?php $this->get_appointment_slots(); ?>
-					</div>
-				</div>
-				<p><b><?php _e( 'Select a guest to invite', 'groundhogg-calendar' ) ?></b></p>
-				<p>
+                    </div>
+                </div>
+                <p><b><?php _e( 'Select a guest to invite', 'groundhogg-calendar' ) ?></b></p>
+                <p>
 					<?php echo html()->dropdown_contacts( [
-						'id' => 'contact-id',
+						'id'       => 'contact-id',
 						'selected' => [ absint( get_url_var( 'contact' ) ) ]
 					] ); ?>
-				</p>
-				<p>
+                </p>
+                <p>
 					<?php echo html()->submit( [
 						'text'     => __( 'Schedule', 'groundhogg-calendar' ),
 						'id'       => 'schedule',
 						'disabled' => true,
 					] ) ?>
-				</p>
-				<div id="loader-wrap" class="hidden">
-					<div class="loader-overlay"></div>
-					<div class="loader-wrap"><span class="gh-loader"></span></div>
-				</div>
-			</div>
-		</div>
+                </p>
+                <div id="loader-wrap" class="hidden">
+                    <div class="loader-overlay"></div>
+                    <div class="loader-wrap"><span class="gh-loader"></span></div>
+                </div>
+            </div>
+        </div>
 		<?php
 	}
 

@@ -3,18 +3,26 @@
 namespace GroundhoggBookingCalendar\Classes;
 
 use Exception;
+use Groundhogg\Contact;
 use WP_Error;
 use Groundhogg\Plugin;
 use Google_Service_Calendar;
 use Groundhogg\Base_Object_With_Meta;
 use GroundhoggBookingCalendar\DB\Appointments;
 use function Groundhogg\array_map_keys;
+use function Groundhogg\array_map_to_class;
+use function Groundhogg\array_map_to_method;
 use function Groundhogg\convert_to_local_time;
+use function Groundhogg\get_current_ip_address;
+use function Groundhogg\get_date_time_format;
+use function Groundhogg\id_list_to_class;
 use function Groundhogg\utils;
 use function Groundhogg\get_db;
 use function Groundhogg\get_array_var;
 use function Groundhogg\do_replacements;
 use function Groundhogg\isset_not_empty;
+use function Groundhogg\Ymd;
+use function Groundhogg\Ymd_His;
 use function GroundhoggBookingCalendar\get_default_availability;
 use function GroundhoggBookingCalendar\get_time_format;
 use function GroundhoggBookingCalendar\validate_calendar_slug;
@@ -74,8 +82,8 @@ class Calendar extends Base_Object_With_Meta {
 	}
 
 	/**
-	 * @return bool|mixed|WP_Error
 	 * @deprecated
+	 * @return bool|mixed|WP_Error
 	 */
 	public function get_access_token() {
 		return $this->get_google_connection()->get_client()->getAccessToken();
@@ -208,9 +216,7 @@ class Calendar extends Base_Object_With_Meta {
 		/**
 		 * Ids to appointments
 		 */
-		return array_map( function ( $id ) {
-			return new Appointment( $id );
-		}, $ids );
+		return id_list_to_class( $ids, Appointment::class );
 	}
 
 	public function get_rules() {
@@ -254,85 +260,12 @@ class Calendar extends Base_Object_With_Meta {
 		return $periods;
 	}
 
-	/**
-	 * @param string $day
-	 *
-	 * @return bool|mixed
-	 */
-	public function get_day_available_periods( $day = 'monday' ) {
-		$periods = $this->get_available_periods();
-		if ( array_key_exists( $day, $periods ) ) {
-
-			return $periods[ $day ];
-		} else {
-			return false;
-		}
-	}
-
-	/**
-	 * @param int|string $date
-	 *
-	 * @return array
-	 */
-	public function get_todays_available_periods( $date = 0 ) {
-
-		if ( ! $date ) {
-			$date = 'now';
-		}
-
-		if ( is_string( $date ) ) {
-			$date = strtotime( $date );
-		}
-
-		$today = strtolower( date( 'l', $date ) );
-
-		return $this->get_day_available_periods( $today );
-	}
-
 	public function has_linked_form() {
 		return (bool) $this->get_linked_form();
 	}
 
 	public function get_linked_form() {
 		return absint( $this->get_meta( 'override_form_id' ) );
-	}
-
-	/**
-	 * Get the disabled days.
-	 *
-	 * @return array
-	 * @throws Exception
-	 */
-	public function get_dates_no_slots() {
-		$start = new \DateTime();
-		$end   = $this->get_max_booking_period( false );
-
-		$disabled_dates = [];
-
-		$str = sprintf( 'P%dD', 1 );
-
-		$interval = new \DateInterval( $str );
-
-		while ( $start < $end ) {
-
-			// check with the dates
-			$periods = $this->get_todays_available_periods( $start->getTimestamp() );
-
-			if ( ! $periods ) {
-				$disabled_dates[] = $start->format( 'Y-m-d' );
-			} else {
-				//check by checking the time slots
-				$slots = $this->get_appointment_slots( $start->format( 'Y-m-d' ) );
-
-				if ( empty( $slots ) ) {
-					$disabled_dates[] = $start->format( 'Y-m-d' );
-				}
-			}
-
-			$start->add( $interval );
-		}
-
-		return $disabled_dates;
 	}
 
 	/**
@@ -370,8 +303,8 @@ class Calendar extends Base_Object_With_Meta {
 	}
 
 	/**
-	 * @return \DateInterval
 	 * @throws \Exception
+	 * @return \DateInterval
 	 */
 	public function get_appointment_interval() {
 		$atts = $this->get_appointment_length();
@@ -383,13 +316,12 @@ class Calendar extends Base_Object_With_Meta {
 
 		$str = sprintf( 'PT%1$dH%2$dM', $atts['hours'], $atts['minutes'] );
 
-//        $str = 'PT' . $atts[ 'hours' ] . 'H' . $atts[ 'minutes' ] . 'M';
 		return new \DateInterval( $str );
 	}
 
 	/**
-	 * @return \DateInterval
 	 * @throws \Exception
+	 * @return \DateInterval
 	 */
 	public function get_buffer_interval() {
 		$atts = $this->get_appointment_length();
@@ -401,10 +333,11 @@ class Calendar extends Base_Object_With_Meta {
 	/**
 	 * Get the maximum date that can be booked.
 	 *
+	 * @throws Exception
+	 *
 	 * @param bool $as_string
 	 *
 	 * @return \DateTime|string
-	 * @throws Exception
 	 */
 	public function get_max_booking_period( $as_string = true ) {
 		$num  = $this->get_meta( 'max_booking_period_count' );
@@ -415,20 +348,22 @@ class Calendar extends Base_Object_With_Meta {
 			$type = 'month';
 		}
 
-		$interval = new \DateTime( date( 'Y-m-d H:i:s', strtotime( "+{$num} {$type}" ) ) );
+		$dateTime = new \DateTime( 'now', $this->get_timezone() );
+		$dateTime->modify( "+{$num} {$type}" );
 
 		if ( $as_string ) {
-			return $interval->format( 'Y-m-d' );
+			return $dateTime->format( 'Y-m-d' );
 		}
 
-		return $interval;
+		return $dateTime;
 	}
 
 	/**
+	 * @throws Exception
+	 *
 	 * @param bool $as_string
 	 *
 	 * @return \DateTime|string
-	 * @throws Exception
 	 */
 	public function get_min_booking_period( $as_string = true ) {
 		$num  = $this->get_meta( 'min_booking_period_count' );
@@ -439,217 +374,14 @@ class Calendar extends Base_Object_With_Meta {
 			$type = 'days';
 		}
 
-		$interval = new \DateTime( date( 'Y-m-d H:i:s', strtotime( "+{$num} {$type}" ) ) );
+		$dateTime = new \DateTime( 'now', $this->get_timezone() );
+		$dateTime->modify( "+{$num} {$type}" );
 
 		if ( $as_string ) {
-			return $interval->format( 'Y-m-d' );
+			return $dateTime->format( 'Y-m-d' );
 		}
 
-		return $interval;
-	}
-
-	/**
-	 * Fetches valid time slots for end using by performing all the cleaning operations.
-	 * (Most Important method)
-	 *
-	 * @param string $date
-	 * @param string $timezone
-	 *
-	 * @return array|false|mixed
-	 */
-	public function get_appointment_slots( $date = '', $timezone = '' ) {
-		$slots = $this->get_all_available_slots( $date );
-
-		$slots = $this->sort_slots( $slots );
-
-		if ( ! $slots ) {
-			return [];
-		}
-
-		$slots = array_filter( $slots, [ $this, 'slot_is_available' ] );
-
-		if ( ! current_user_can( 'edit_appointment' ) ) {
-			$slots = $this->make_me_look_busy( $slots, $date );
-		}
-
-		return array_values( $this->get_slots_name( $slots, $timezone ) );
-	}
-
-
-	/**
-	 * Check if a slot is taken based on the synced google appointments
-	 * and the regular appointments table
-	 *
-	 * @param $slot
-	 */
-	public function slot_is_available( $slot ) {
-
-		$connected_gcals = $this->get_google_calendar_list();
-
-		foreach ( $connected_gcals as $gcal ) {
-			if ( ! get_db( 'synced_events' )->time_available( $slot['start'], $slot['end'], $gcal ) ) {
-				return false;
-			}
-		}
-
-		return get_db( 'appointments' )->time_available( $slot['start'], $slot['end'], $this->get_id() );
-	}
-
-	/**
-	 * Adds display title based on the timezone. If timezone is not given then it converts that into local time using local time php function.
-	 *
-	 * @param $slots
-	 * @param $timezone
-	 *
-	 * @return mixed
-	 */
-	protected function get_slots_name( $slots, $timezone = false ) {
-
-		$format = get_time_format();
-
-		foreach ( $slots as $i => $slot ) {
-
-			// Show display...
-			if ( $timezone ) {
-				try {
-					$slots[ $i ]['display'] = sprintf( '%s',
-						date_i18n( $format, utils()->date_time->convert_to_foreign_time( absint( $slot['start'] ), $timezone ) )
-					);
-				} catch ( Exception $e ) {
-					$slots[ $i ]['display'] = sprintf( '%s',
-						date_i18n( $format, convert_to_local_time( absint( $slot['start'] ) ) )
-					);
-				}
-			} else {
-				$slots[ $i ]['display'] = sprintf( '%s',
-					date_i18n( $format, convert_to_local_time( absint( $slot['start'] ) ) )
-				);
-			}
-		}
-
-		return $slots;
-	}
-
-	/**
-	 * Slots will be returned as
-	 *
-	 * [
-	 *   'start' => (int),
-	 *   'end'   => (int),
-	 * ]
-	 *
-	 * e.g.
-	 *
-	 * [
-	 *   'start' => 1234,
-	 *   'end'   => 1234,
-	 * ]
-	 *
-	 *
-	 * @param int $date (Expected in UTC 0)
-	 *
-	 * @return array|false on failure
-	 */
-	protected function get_all_available_slots( $date = 0 ) {
-		if ( is_string( $date ) ) {
-			$date = strtotime( $date );
-		}
-
-
-		$str_date          = date( 'Y-m-d H:i:s', $date );
-		$str_date_no_hours = date( 'Y-m-d', $date );
-
-		$request_date = new \DateTime( $str_date );
-		// The actual slots we plan on returning.
-		$slots = [];
-
-		$available_periods = $this->get_todays_available_periods( $date );
-
-		if ( ! is_array( $available_periods ) ) {
-			return false;
-		}
-
-		$base_time = time();
-
-		if ( $this->get_meta( 'min_booking_period_type' ) == 'hours' ) {
-			$base_time += HOUR_IN_SECONDS * intval( $this->get_meta( 'min_booking_period_count' ) );
-		}
-
-		foreach ( $available_periods as $period ) {
-
-			// 09:00
-			$start_time = date( 'H:i:s', strtotime( "{$period[0]}:00" ) );
-			$start_time = utils()->date_time->convert_to_utc_0( strtotime( "{$str_date_no_hours} {$start_time}" ) );
-
-			if ( $start_time < $base_time ) {
-				$start_time = strtotime( date( 'Y-m-d H:00:00', $base_time ) );
-			}
-
-			$start_date = new \DateTime( date( 'Y-m-d H:i:s', $start_time ) );
-
-			// 17:00
-			$end_time = date( 'H:i:s', strtotime( "{$period[1]}:00" ) );
-			$end_time = utils()->date_time->convert_to_utc_0( strtotime( "{$str_date_no_hours} {$end_time}" ) );
-			$end_date = new \DateTime( date( 'Y-m-d H:i:s', $end_time ) );
-
-			if ( $end_date < $request_date ) {
-				continue;
-			}
-
-			while ( $start_date < $end_date ) {
-
-				$slot_start = $start_date->format( 'U' );
-
-				try {
-					$start_date->add( $this->get_appointment_interval() );
-				} catch ( \Exception $e ) {
-					return false;
-				}
-
-				$slot_end = $start_date->format( 'U' );
-
-				if ( $slot_end <= $end_date->format( 'U' ) ) {
-					$slots[] = [
-						'start' => $slot_start,
-						'end'   => $slot_end,
-					];
-				}
-
-				try {
-					$start_date->add( $this->get_buffer_interval() );
-				} catch ( \Exception $e ) {
-					return false;
-				}
-			}
-		}
-
-		return $slots;
-	}
-
-	/**
-	 * @param $slots
-	 *
-	 * @return array
-	 */
-	protected function validate_against_appointments( $slots ) {
-		if ( empty( $slots ) ) {
-			return $slots;
-		}
-
-		$available_slots = [];
-
-		/**
-		 * @var $db Appointments
-		 */
-		$db = get_db( 'appointments' );
-
-		foreach ( $slots as $slot ) {
-			if ( ! $db->appointments_exist_in_range( $slot['start'], $slot['end'], $this->get_id() ) ) {
-				$available_slots[] = $slot;
-			}
-		}
-
-		return $available_slots;
+		return $dateTime;
 	}
 
 	protected $google_appointments;
@@ -753,173 +485,6 @@ class Calendar extends Base_Object_With_Meta {
 	}
 
 	/**
-	 * Removes google appointment slots from all the appointment slots.
-	 *
-	 * @param $slots
-	 *
-	 * @return array
-	 */
-	protected function clean_google_slots( $slots ) {
-
-		if ( empty( $slots ) ) {
-			return $slots;
-		}
-
-		if ( ! $this->google_appointments ) {
-			$this->google_appointments = $this->get_google_appointments( strtotime( $this->get_min_booking_period() ), strtotime( $this->get_max_booking_period() ) );
-		}
-
-
-		if ( empty( $this->google_appointments ) ) {
-			return $slots;
-		}
-
-		$clean1 = $this->clean_big_appointment( $slots, $this->google_appointments );
-		$clean2 = $this->clean_small_appointment( $clean1, $this->google_appointments );
-
-		return $clean2;
-	}
-
-	/**
-	 * Fetches valid appointment.
-	 *
-	 * @param $slots
-	 *
-	 * @return array
-	 */
-	protected function validate_appointments( $slots ) {
-		/**
-		 * @var $db Appointments
-		 */
-		$db = get_db( 'appointments' );
-
-		$data         = [];
-		$appointments = $db->appointments_exist_in_range( absint( $slots[0]['start'] ), absint( $slots [ sizeof( $slots ) - 1 ] ['end'] ), $this->get_id() );
-
-		if ( empty( $appointments ) ) {
-			return $slots;
-		}
-
-		foreach ( $appointments as $appointment ) {
-			$data[] = [
-				'start' => strtotime( '+1 seconds', absint( $appointment->start_time ) ),
-				'end'   => absint( $appointment->end_time )
-			];
-		}
-
-		$clean1 = $this->clean_big_appointment( $slots, $data );
-		$clean2 = $this->clean_small_appointment( $clean1, $data );
-
-		return $clean2;
-	}
-
-	/**
-	 * Clean appointments where time slots are smaller then appointment.
-	 *
-	 * @param $slots
-	 * @param $appointments
-	 *
-	 * @return array
-	 */
-	protected function clean_big_appointment( $slots, $appointments ) {
-		$clean_slots = [];
-		foreach ( $slots as $slot ) {
-			$is_booked = false;
-			foreach ( $appointments as $appointment ) {
-				if ( in_between( $slot['start'], $appointment['start'], $appointment['end'] ) || in_between( $slot['end'], $appointment['start'], $appointment['end'] ) ) {
-					$is_booked = true;
-					break;
-				}
-			}
-			if ( ! $is_booked ) {
-				$clean_slots[] = $slot;
-			}
-		}
-
-		return $clean_slots;
-	}
-
-	/**
-	 * Clean appointments where time slots are bigger then appointment.
-	 *
-	 * @param $slots
-	 * @param $appointments
-	 *
-	 * @return array
-	 */
-	protected function clean_small_appointment( $slots, $appointments ) {
-		$clean_slots = [];
-		// cleaning where appointments are smaller then slots
-		foreach ( $slots as $slot ) {
-			$is_booked = false;
-			foreach ( $appointments as $appointment ) {
-				if ( in_between( $appointment['start'], $slot['start'], $slot['end'] ) ) {
-					$is_booked = true;
-					break;
-				}
-			}
-			if ( ! $is_booked ) {
-				$clean_slots[] = $slot;
-			}
-		}
-
-		return $clean_slots;
-	}
-
-
-	/**
-	 *  Removes duplicate slots from the slots array and sort array to display time slots in ascending order.
-	 *
-	 * @param $slot
-	 *
-	 * @return array
-	 */
-	protected function sort_slots( $slot ) {
-		$sort = [];
-
-		if ( empty( $slot ) ) {
-			return $slot;
-		}
-
-		$slot = array_map( "unserialize", array_unique( array_map( "serialize", $slot ) ) );
-
-		foreach ( $slot as $key => $row ) {
-			$sort[ $key ] = $row['start'];
-		}
-		array_multisort( $sort, SORT_ASC, $slot );
-
-		return $slot;
-	}
-
-
-	/**
-	 * Return number of slots based on value entered in meta
-	 *
-	 * @param $slots array
-	 * @param $date  int
-	 *
-	 * @return array
-	 */
-	protected function make_me_look_busy( $slots, $date ) {
-		$num_slots = absint( $this->get_meta( 'busy_slot', true ) );
-
-		if ( ! $num_slots || $num_slots >= count( $slots ) ) {
-			return $slots;
-		}
-
-		$busy_slots = [];
-
-		mt_srand( strtotime( $date ) );
-
-		for ($i=0; $i < $num_slots; $i++) {
-			$slot = mt_rand( 0, count( $slots )-1 );
-			$busy_slots = array_merge( $busy_slots, array_splice( $slots, $slot, 1 ) );
-		}
-
-		return $this->sort_slots( $busy_slots );
-	}
-
-	/**
 	 * Returns day number based on day name
 	 *
 	 * @param $day string
@@ -958,7 +523,6 @@ class Calendar extends Base_Object_With_Meta {
 		return (bool) get_array_var( $notifications, $which );
 	}
 
-
 	/**
 	 * Whether SMS notifications are enabled or not.
 	 *
@@ -967,6 +531,7 @@ class Calendar extends Base_Object_With_Meta {
 	public function are_sms_notifications_enabled() {
 		return (bool) $this->get_meta( 'enable_sms_notifications' );
 	}
+
 
 	/**
 	 * Get the set of notification emails.
@@ -1045,20 +610,30 @@ class Calendar extends Base_Object_With_Meta {
 	/**
 	 * Add a new appointment to this calendar.
 	 *
-	 * @param $args array list of args for the appointment
+	 * @param $contact Contact
+	 * @param $args    array list of args for the appointment
 	 *
 	 * @return Appointment|false
 	 */
-	public function schedule_appointment( $args ) {
+	public function schedule_appointment( $contact, $args ) {
 
 		$args = wp_parse_args( $args, [
-			'contact_id'  => 0,
+			'contact_id'  => $contact->get_id(),
 			'calendar_id' => $this->get_id(),
 			'status'      => 'scheduled',
 			'start_time'  => time(),
-			'end_time'    => time() + $this->get_appointment_length( true ),
-			'additional'  => '',
+			'end_time'    => false,
+			'notes'       => '',
 		] );
+
+		if ( ! $args['end_time'] ) {
+			$end_time = new \DateTime();
+			$end_time->setTimestamp( $args['start_time'] );
+			$end_time->add( $this->get_appointment_interval() );
+			$args['end_time'] = $end_time->getTimestamp();
+		}
+
+		get_db('appointments')->
 
 		$args = apply_filters( 'groundhogg/calendar/schedule_appointment', $args, $this );
 
@@ -1068,8 +643,7 @@ class Calendar extends Base_Object_With_Meta {
 			return false;
 		}
 
-		$appointment->update_meta( 'additional', $args['additional'] );
-
+		$appointment->update_meta( 'notes', $args['notes'] );
 		$appointment->schedule();
 
 		do_action( 'groundhogg/calendar/schedule_appointment/after', $this, $appointment );
@@ -1077,7 +651,6 @@ class Calendar extends Base_Object_With_Meta {
 		return $appointment;
 
 	}
-
 
 	/**
 	 * Set the Google account ID
@@ -1101,6 +674,7 @@ class Calendar extends Base_Object_With_Meta {
 	public function set_google_calendar_id( $id ) {
 		return $this->update_meta( 'google_calendar_id', $id );
 	}
+
 
 	/**
 	 * Get the Google Account ID
@@ -1191,30 +765,27 @@ class Calendar extends Base_Object_With_Meta {
 	}
 
 	/**
-	 * Get all appointments from this calendar and also any google events
+	 * Merged list of synced events and all appointments
+	 *
+	 * @return array
 	 */
-	public function get_events_for_full_calendar() {
-
+	public function get_events() {
 		$local_appointments = $this->get_all_appointments();
-		$local_events       = array_map_keys( array_map( function ( $event ) {
-			return $event->get_for_full_calendar();
-		}, $local_appointments ), function ( $i, $event ) {
-			return $event['id'];
-		} );
 
 		$google_events = get_db( 'synced_events' )->query( [
 			'local_gcalendar_id' => $this->get_google_calendar_list()
 		] );
 
-		$google_events = array_map_keys( array_map( function ( $event ) {
-			$event = new Synced_Event( $event->event_id );
+		$google_events = array_map_to_class( $google_events, Synced_Event::class );
 
-			return $event->get_for_full_calendar();
-		}, $google_events ), function ( $i, $event ) {
-			return $event['id'];
-		} );
+		return array_values( array_merge( $google_events, $local_appointments ) );
+	}
 
-		return array_values( array_merge( $google_events, $local_events ) );
+	/**
+	 * Get all appointments from this calendar and also any google events
+	 */
+	public function get_events_for_full_calendar() {
+		return array_map_to_method( $this->get_events(), 'get_for_full_calendar' );
 	}
 
 	/**
@@ -1237,6 +808,125 @@ class Calendar extends Base_Object_With_Meta {
 		endforeach;
 
 		return $business_hours;
+	}
+
+	/**
+	 * Get the availability for a calendar
+	 *
+	 * @param $start           string a date
+	 * @param $end             string a date
+	 * @param $client_timezone string|\DateTimeZone the timezone of the client
+	 *
+	 * @return array
+	 */
+	public function get_availability( $start = '', $end = '' ) {
+
+		if ( ! $start ) {
+			$start = Ymd();
+		}
+
+		if ( ! $end ) {
+			$end = $this->get_max_booking_period();
+		}
+
+		// Get all the scheduled appointments
+		$appointments = $this->get_events();
+
+		$timezone = $this->get_timezone();
+
+		// Where we start
+		$dateTime = new \DateTime( $start, $timezone );
+
+		// Set to min bookuing period
+		if ( $dateTime < $this->get_min_booking_period( false ) ) {
+			$dateTime = $this->get_min_booking_period( false );
+		}
+
+		// Max booking period is always the max
+		$endTime = min( new \DateTime( $end, $timezone ), $this->get_max_booking_period( false ) );
+		$endTime->modify( '+1 day' );
+
+		$aptInterval    = $this->get_appointment_interval();
+		$bufferInterval = $this->get_buffer_interval();
+
+		$business_hours = $this->get_business_hours();
+
+		$availability = [];
+
+		while ( $dateTime < $endTime ) { // todo make a condition
+
+			$today = $dateTime->getTimestamp();
+
+			$todays_hours = array_filter( $business_hours, function ( $rule ) use ( $dateTime ) {
+				return $rule['dow'] === absint( $dateTime->format( 'w' ) );
+			} );
+
+			$todays_slots = [];
+
+			foreach ( $todays_hours as $rule ) {
+
+				$maxDate = clone $dateTime;
+				$dateTime->modify( $rule['start'] );
+				$maxDate->modify( $rule['end'] );
+
+				while ( $dateTime < $maxDate ) {
+
+					$start = $dateTime->getTimestamp();
+					$dateTime->add( $aptInterval );
+					$end = $dateTime->getTimestamp();
+
+					$has_conflict = false;
+
+					/**
+					 * @var $apt Appointment|Synced_Event
+					 */
+					foreach ( $appointments as $apt ) {
+						// found conflict
+						if ( $apt->conflicts( $start, $end ) ) {
+							$has_conflict = true;
+							break;
+						}
+					}
+
+					if ( ! $has_conflict && $start > time() ) {
+						$todays_slots[] = [
+							'start' => $start,
+							'month' => $dateTime->format( 'n' ) - 1,
+						];
+					}
+
+					$dateTime->add( $bufferInterval );
+				}
+
+			}
+
+			$max_slots = absint( $this->get_meta( 'busy_slot' ) );
+
+			if ( $max_slots && count( $todays_slots ) > $max_slots ) {
+				$seed = $today;
+				mt_srand( $seed );
+				$todays_slots_keys = array_rand( $todays_slots, $max_slots );
+				$todays_slots      = array_map( function ( $k ) use ( $todays_slots ) {
+					return $todays_slots[ $k ];
+				}, $todays_slots_keys );
+			}
+
+			$availability = array_merge( $availability, $todays_slots );
+
+			$dateTime->modify( '+ 1 day' );
+
+		}
+
+		return $availability;
+	}
+
+	/**
+	 * Get the calendar's timezone
+	 *
+	 * @return \DateTimeZone
+	 */
+	private function get_timezone() {
+		return new \DateTimeZone( $this->get_meta( 'timezone' ) ?: wp_timezone_string() );
 	}
 
 }
