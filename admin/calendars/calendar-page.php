@@ -158,7 +158,7 @@ class Calendar_Page extends Admin_Page {
 	}
 
 	public function get_cap() {
-		return 'view_appointment';
+		return 'edit_calendars';
 	}
 
 	public function get_item_type() {

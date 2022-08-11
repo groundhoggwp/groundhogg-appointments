@@ -5,9 +5,11 @@ namespace GroundhoggBookingCalendar;
 use GroundhoggBookingCalendar\Classes\Appointment;
 use GroundhoggBookingCalendar\Classes\Calendar;
 use function Groundhogg\add_managed_rewrite_rule;
+use function Groundhogg\decrypt;
 use function Groundhogg\get_request_var;
 use function Groundhogg\is_managed_page;
 use Groundhogg\Utils\Abstract_Rewrites;
+use function Groundhogg\managed_page_url;
 
 class Rewrites extends Abstract_Rewrites {
 
@@ -21,6 +23,7 @@ class Rewrites extends Abstract_Rewrites {
 	public function add_rewrite_rules() {
 		add_managed_rewrite_rule( 'calendar/([^/?]*)/?$', 'subpage=calendar&calendar_id=$matches[1]', 'top' );
 		add_managed_rewrite_rule( 'calendar/([^/?]*)/hosted/?$', 'subpage=calendar_hosted&calendar_id=$matches[1]', 'top' );
+		add_managed_rewrite_rule( 'appointment/([^/]*)/?$', 'subpage=appointment&appointment_id=$matches[1]', 'top' );
 		add_managed_rewrite_rule( 'appointment/([^/]*)/([^/]*)/?$', 'subpage=appointment&appointment_id=$matches[1]&action=$matches[2]', 'top' );
 	}
 
@@ -44,14 +47,37 @@ class Rewrites extends Abstract_Rewrites {
 	 * @return mixed
 	 */
 	public function parse_query( $query ) {
-//		$this->map_query_var( $query, 'calendar_id', 'absint' );
-
-		// Appointment ID is encrypted for security!
-		$this->map_query_var( $query, 'appointment_id', 'urldecode' );
-		$this->map_query_var( $query, 'appointment_id', '\Groundhogg\decrypt' );
-		$this->map_query_var( $query, 'appointment_id', 'absint' );
-
 		return $query;
+	}
+
+	public function template_redirect( $template = '' ) {
+		if ( ! is_managed_page() ) {
+			return $template;
+		}
+
+		$appointment_id = get_query_var( 'appointment_id' );
+
+		$action         = get_query_var( 'action' );
+
+		if ( $appointment_id && $action ){
+
+			$get_by = 'uuid';
+
+			if ( ! wp_is_uuid( $appointment_id ) ){
+				$get_by = 'ID';
+				$appointment_id = absint( decrypt( urldecode( $appointment_id ) ) );
+			}
+
+			$appointment = new Appointment( $appointment_id, $get_by );
+
+			switch ( $action ){
+				case 'cancel':
+				case 'reschedule':
+					wp_redirect( $appointment->manage_link( $action ) );
+					die();
+					break;
+			}
+		}
 	}
 
 	/**
@@ -72,7 +98,7 @@ class Rewrites extends Abstract_Rewrites {
 
 		if ( $appointment_id ) {
 
-			$appointment = new Appointment( $appointment_id );
+			$appointment = new Appointment( $appointment_id, 'uuid' );
 
 			if ( ! $appointment->exists() ) {
 				return $template;
@@ -116,9 +142,5 @@ class Rewrites extends Abstract_Rewrites {
 		}
 
 		return $template;
-	}
-
-	public function template_redirect( $template = '' ) {
-		// TODO: Implement template_redirect() method.
 	}
 }

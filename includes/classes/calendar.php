@@ -4,6 +4,7 @@ namespace GroundhoggBookingCalendar\Classes;
 
 use Exception;
 use Groundhogg\Contact;
+use GroundhoggBookingCalendar\Calendar_Sync;
 use WP_Error;
 use Groundhogg\Plugin;
 use Google_Service_Calendar;
@@ -15,6 +16,7 @@ use function Groundhogg\array_map_to_method;
 use function Groundhogg\convert_to_local_time;
 use function Groundhogg\get_current_ip_address;
 use function Groundhogg\get_date_time_format;
+use function Groundhogg\get_time;
 use function Groundhogg\id_list_to_class;
 use function Groundhogg\utils;
 use function Groundhogg\get_db;
@@ -384,106 +386,6 @@ class Calendar extends Base_Object_With_Meta {
 		return $dateTime;
 	}
 
-	protected $google_appointments;
-
-	/**
-	 *
-	 * Fetch all the appointments between start and end-time from google calendar.
-	 *
-	 * @param $min_time
-	 * @param $max_time
-	 *
-	 * @return array
-	 */
-	protected function get_google_appointments( $min_time, $max_time ) {
-
-		if ( ! $this->is_connected_to_google() ) {
-			return [];
-		}
-
-		$client = $this->get_google_client();
-
-		$google_min          = date( 'c', $min_time );
-		$google_max          = date( 'c', $max_time );
-		$google_appointments = [];
-		$service             = new Google_Service_Calendar( $client );
-
-		// loop through calendars which are being used for availability
-		foreach ( $this->get_google_calendar_list() as $calendar_id ) {
-
-			try {
-				$optParams = array(
-//							'orderBy'      => 'startTime',
-					'singleEvents' => true,
-					'timeMin'      => $google_min,
-					'timeMax'      => $google_max
-				);
-
-				$results = $service->events->listEvents( $calendar_id, $optParams );
-				$events  = $results->getItems();
-
-				if ( empty( $events ) ) {
-					continue;
-				}
-
-				foreach ( $events as $event ) {
-
-					$google_start = $event->start->dateTime;
-					$google_end   = $event->end->dateTime;
-					/**
-					 * event contains start and end time thus it is appointment
-					 */
-					if ( ! empty( $google_start ) && ! empty( $google_end ) ) {
-
-						if ( strpos( $google_start, 'Z' ) ) {
-
-							$google_start = str_replace( 'Z', '', $google_start );
-							$google_end   = str_replace( 'Z', '', $google_end );
-
-							$google_appointments[] = array(
-								'display' => $event->getSummary(),
-								'start'   => utils()->date_time->convert_to_utc_0( strtotime( '+1 seconds', strtotime( date( $google_start ) ) ) ),
-								'end'     => utils()->date_time->convert_to_utc_0( strtotime( date( $google_end ) ) )
-							);
-
-						} else {
-
-							$google_appointments[] = array(
-								'display' => $event->getSummary(),
-								'start'   => strtotime( '+1 seconds', utils()->date_time->convert_to_utc_0( strtotime( date( $google_start ) ) ) ),
-								'end'     => utils()->date_time->convert_to_utc_0( strtotime( date( $google_end ) ) )
-							);
-						}
-
-					} else {
-						/**
-						 * Event does not contain start and end date time thus its all day event
-						 */
-
-						if ( $event->start->dateTime == null ) {
-							$google_start = $event->start->date;
-						}
-
-						if ( $event->end->dateTime == null ) {
-							$google_end = $event->end->date;
-						}
-
-						$google_appointments[] = array(
-							'display' => $event->getSummary(),
-							'start'   => strtotime( '+1 seconds', utils()->date_time->convert_to_utc_0( strtotime( date( $google_start ) ) ) ),
-							'end'     => utils()->date_time->convert_to_utc_0( strtotime( date( $google_end ) ) )
-						);
-					}
-				}
-			} catch ( Exception $e ) {
-				// catch if the calendar does not exist in google calendar
-				return [];
-			}
-		}
-
-		return $google_appointments;
-	}
-
 	/**
 	 * Returns day number based on day name
 	 *
@@ -633,8 +535,6 @@ class Calendar extends Base_Object_With_Meta {
 			$args['end_time'] = $end_time->getTimestamp();
 		}
 
-		get_db('appointments')->
-
 		$args = apply_filters( 'groundhogg/calendar/schedule_appointment', $args, $this );
 
 		$appointment = new Appointment( $args );
@@ -769,23 +669,43 @@ class Calendar extends Base_Object_With_Meta {
 	 *
 	 * @return array
 	 */
-	public function get_events() {
-		$local_appointments = $this->get_all_appointments();
+	public function get_scheduled_events( $from, $to ) {
 
-		$google_events = get_db( 'synced_events' )->query( [
-			'local_gcalendar_id' => $this->get_google_calendar_list()
+		$local_appointments = get_db( 'appointments' )->query( [
+			'calendar_id' => $this->get_id(),
+			'after'       => get_time( $from ),
+			'before'      => get_time( $to ),
+			'status'      => 'scheduled'
 		] );
 
-		$google_events = array_map_to_class( $google_events, Synced_Event::class );
+		array_map_to_class( $local_appointments, Appointment::class );
+
+		$google_events = [];
+
+		if ( $this->is_connected_to_google() ) {
+			$google_events = $this->get_google_events( $from, $to );
+		}
 
 		return array_values( array_merge( $google_events, $local_appointments ) );
 	}
 
 	/**
-	 * Get all appointments from this calendar and also any google events
+	 * Get events from Google Calendar to check slot availability
+	 *
+	 * @param $from
+	 * @param $to
+	 *
+	 * @return array|false
 	 */
-	public function get_events_for_full_calendar() {
-		return array_map_to_method( $this->get_events(), 'get_for_full_calendar' );
+	public function get_google_events( $from, $to ) {
+
+		$query = new Synced_Event_Query( [
+			'from'      => $from,
+			'to'        => $to,
+			'calendars' => $this->get_google_calendar_list()
+		] );
+
+		return $query->get_results();
 	}
 
 	/**
@@ -830,7 +750,7 @@ class Calendar extends Base_Object_With_Meta {
 		}
 
 		// Get all the scheduled appointments
-		$appointments = $this->get_events();
+		$appointments = $this->get_scheduled_events( $start, $end );
 
 		$timezone = $this->get_timezone();
 
@@ -871,9 +791,10 @@ class Calendar extends Base_Object_With_Meta {
 
 				while ( $dateTime < $maxDate ) {
 
-					$start = $dateTime->getTimestamp();
+					$start = clone $dateTime;
 					$dateTime->add( $aptInterval );
-					$end = $dateTime->getTimestamp();
+					$dateTime->add( $bufferInterval );
+					$end = clone $dateTime;
 
 					$has_conflict = false;
 
@@ -888,14 +809,12 @@ class Calendar extends Base_Object_With_Meta {
 						}
 					}
 
-					if ( ! $has_conflict && $start > time() ) {
+					if ( ! $has_conflict && $start->getTimestamp() > time() ) {
 						$todays_slots[] = [
-							'start' => $start,
+							'start' => $start->getTimestamp(),
 							'month' => $dateTime->format( 'n' ) - 1,
 						];
 					}
-
-					$dateTime->add( $bufferInterval );
 				}
 
 			}

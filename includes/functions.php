@@ -378,6 +378,10 @@ function generate_uuid() {
 	return preg_replace( "/[^A-z0-9]/", "", wp_generate_uuid4() );
 }
 
+function sanitize_google_uuid( $uuid ){
+	return preg_replace( "/[^A-z0-9]/", "", $uuid );
+}
+
 /**
  * Convert a duration to human readable format.
  *

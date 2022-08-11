@@ -2,6 +2,8 @@
 
 namespace GroundhoggBookingCalendar;
 
+use GroundhoggBookingCalendar\Classes\Appointment;
+
 class Roles extends \Groundhogg\Roles {
 
 	/**
@@ -19,58 +21,111 @@ class Roles extends \Groundhogg\Roles {
 		return [];
 	}
 
+	/**
+	 * Map caps to primitives
+	 *
+	 * @param array  $caps
+	 * @param string $cap
+	 * @param int    $user_id
+	 * @param array  $args
+	 *
+	 * @return array
+	 */
+	public function map_meta_cap( $caps, $cap, $user_id, $args ) {
+
+		switch ( $cap ) {
+			case 'edit_appointment':
+			case 'view_appointment':
+			case 'delete_appointment':
+
+				$caps = [];
+
+				$parts = explode( '_', $cap );
+
+				$caps[] = $parts[0] . '_appointments';
+
+				if ( is_a( $args[0], Appointment::class ) ){
+					$appt = $args[0];
+				} else {
+					$appt = new Appointment( $args[0] );
+				}
+
+				// Not a deal
+				if ( ! $appt->exists() ){
+					$caps[] = 'do_not_allow';
+					break;
+				}
+
+				// User is not the owner of the deal
+				if ( $appt->get_owner_id() !== $user_id ){
+					$caps[] = $parts[0] . '_others_appointments';
+				}
+
+				break;
+		}
+
+		return $caps;
+	}
+
 	public function get_administrator_caps() {
 		return [
-			'add_appointment',
-			'delete_appointment',
-			'edit_appointment',
-			'view_appointment',
+			'add_appointments',
+			'delete_appointments',
+			'delete_others_appointments',
+			'edit_appointments',
+			'edit_others_appointments',
+			'view_appointments',
+			'view_others_appointments',
 
-			'add_calendar',
-			'delete_calendar',
-			'edit_calendar',
-			'view_calendar',
+			'add_calendars',
+			'delete_calendars',
+			'edit_calendars',
+			'view_calendars',
 		];
 	}
 
 	public function get_marketer_caps() {
 		return [
-			'add_appointment',
-			'delete_appointment',
-			'edit_appointment',
-			'view_appointment',
+			'add_appointments',
+			'delete_appointments',
+			'delete_others_appointments',
+			'edit_appointments',
+			'edit_others_appointments',
+			'view_appointments',
+			'view_others_appointments',
 
-			'add_calendar',
-			'delete_calendar',
-			'edit_calendar',
-			'view_calendar',
+			'add_calendars',
+			'delete_calendars',
+			'edit_calendars',
+			'view_calendars',
 		];
 	}
 
 	public function get_sales_manager_caps() {
 		return [
-			'edit_calendar',
-			'view_calendar',
+			'add_appointments',
+			'view_appointments',
+			'view_others_appointments',
+			'delete_appointments',
+			'delete_others_appointments',
+			'edit_appointments',
+			'edit_others_appointments',
 
-			'view_appointment',
-			'add_appointment',
-			'delete_appointment',
-			'edit_appointment',
+			'edit_calendars',
+			'view_calendars',
 		];
 
 	}
 
 	public function get_sales_rep_caps() {
 		return [
-			'view_own_calendar',
-			'edit_calendar',
+			'view_appointments',
+			'add_appointments',
+			'delete_appointments',
+			'edit_appointments',
 
-			'view_appointment',
-			'add_appointment',
-			'delete_appointment',
-			'edit_appointment',
+			'edit_calendars',
 		];
-
 	}
 
 
@@ -80,6 +135,6 @@ class Roles extends \Groundhogg\Roles {
 	 * @return mixed
 	 */
 	protected function get_admin_cap_check() {
-		return 'add_calendar';
+		return 'add_calendars';
 	}
 }

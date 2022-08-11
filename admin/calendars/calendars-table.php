@@ -116,7 +116,7 @@ class Calendars_Table extends WP_List_Table {
 
 		$actions['list'] = html()->e( 'a', [
 			'href' => admin_page_url( 'gh_appointments', [
-				'calendar_id' => $calendar->get_id(),
+				'selected' => $calendar->get_id(),
 				] )
 		], __( 'Appointments', 'groundhogg-calendar' ) );
 

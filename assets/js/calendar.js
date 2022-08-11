@@ -112,6 +112,34 @@
    * @param opts
    * @returns {Promise<any>}
    */
+  async function apiDelete (url = '', data = {}, opts = {}) {
+    const response = await fetch(url, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-WP-Nonce': Groundhogg.nonces._wprest,
+      },
+      body: JSON.stringify(data),
+      ...opts,
+    })
+
+    let json = await response.json()
+
+    if (!response.ok) {
+      throw new ApiError(json.message)
+    }
+
+    return json
+  }
+
+  /**
+   * Post data
+   *
+   * @param url
+   * @param data
+   * @param opts
+   * @returns {Promise<any>}
+   */
   async function apiPatch (url = '', data = {}, opts = {}) {
     const response = await fetch(url, {
       ...opts,
@@ -133,6 +161,7 @@
   }
 
   let availability = []
+  let apiResponse = {}
 
   const appointment = {
     start: '',
@@ -167,18 +196,6 @@
                   d="M76 230h40v40H76zm80 0h40v40h-40zm80 0h40v40h-40zm80 0h40v40h-40zm80 0h40v40h-40zM76 310h40v40H76zm80 0h40v40h-40zm80 0h40v40h-40zm80 0h40v40h-40zM76 390h40v40H76zm80 0h40v40h-40zm80 0h40v40h-40zm80 0h40v40h-40zm80-80h40v40h-40z"/>
 </svg>`,
     // language=HTML
-    arrowRight: `
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
-            <path d="M79.1 0 48.9 30.2l97.8 97.8-97.8 97.8L79.1 256l128-128z"
-                  fill="currentColor"/>
-        </svg>`,
-    // language=HTML
-    arrowLeft: `
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
-            <path fill="currentColor"
-                  d="M207.1 30.2 176.9 0l-128 128 128 128 30.2-30.2-97.8-97.8z"/>
-        </svg>`,
-    // language=HTML
     dropdown: `
         <svg style="height: 10px;width: 10px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"
              xml:space="preserve">
@@ -189,222 +206,6 @@
         <svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
             <path d="M20 9H3.8l5.6-5.6L8 2l-8 8 8 8 1.4-1.4L3.8 11H20z"/>
         </svg>`,
-  }
-
-  const templates = {}
-
-  const days_of_week = [
-    __('Sun', 'groundhogg-calendar'),
-    __('Mon', 'groundhogg-calendar'),
-    __('Tue', 'groundhogg-calendar'),
-    __('Wed', 'groundhogg-calendar'),
-    __('Thu', 'groundhogg-calendar'),
-    __('Fri', 'groundhogg-calendar'),
-    __('Sat', 'groundhogg-calendar'),
-  ]
-
-  const months = [
-    __('January', 'groundhogg-calendar'),
-    __('February', 'groundhogg-calendar'),
-    __('March', 'groundhogg-calendar'),
-    __('April', 'groundhogg-calendar'),
-    __('May', 'groundhogg-calendar'),
-    __('June', 'groundhogg-calendar'),
-    __('July', 'groundhogg-calendar'),
-    __('August', 'groundhogg-calendar'),
-    __('September', 'groundhogg-calendar'),
-    __('October', 'groundhogg-calendar'),
-    __('November', 'groundhogg-calendar'),
-    __('December', 'groundhogg-calendar'),
-  ]
-
-  const calendar = (el, {
-    selected = false,
-    start_of_week = 0,
-    availability = [],
-    onSelectDate = (date) => {},
-    onSelectTime = (date) => {},
-  }) => {
-
-    let year, month, slotScroll, time
-
-    availability.sort((a, b) => a.start - b.start)
-    let initDate = new Date(availability[0].start * 1000)
-    initDate.setDate(1)
-
-    year = initDate.getFullYear()
-    month = initDate.getMonth()
-
-    if (start_of_week) {
-      let add_to_end = days_of_week.splice(0, start_of_week)
-      days_of_week.push(...add_to_end)
-    }
-
-    const render = () => {
-
-      let currDate = new Date(year, month, 1)
-
-      let week = 0
-      let calCells = [[]]
-      let timeSlots
-
-      if (currDate.getDay() !== start_of_week) {
-        let padding = Math.abs(start_of_week - currDate.getDay())
-        for (let i = 0; i < padding; i++) {
-          calCells[week].push('')
-        }
-      }
-
-      while (currDate.getMonth() < month + 1) {
-        calCells[week].push({
-          selected: selected && selected.toISOString().split('T')[0] === currDate.toISOString().split('T')[0],
-          date: currDate.getDate(),
-          month: currDate.getMonth(),
-          year: currDate.getFullYear(),
-          obj: new Date(currDate),
-        })
-        if (calCells[week].length === 7) {
-          week++
-          calCells.push([])
-        }
-        currDate.setDate(currDate.getDate() + 1)
-      }
-
-      if (selected) {
-        let unix = selected.getTime() / 1000
-        timeSlots = availability.filter(s => s.start >= unix && s.start < ( unix + ( 3600 * 24 ) ))
-      }
-
-      const timeUI = () => {
-
-        const getTime = (s) => {
-          let date = new Date()
-          date.setTime(s.start * 1000)
-          return date.toLocaleTimeString(GroundhoggCalendar.locale, {
-            timeZone: appointment.timezone,
-            hour: '2-digit', minute: '2-digit',
-          })
-        }
-
-        // language=HTML
-        return `
-            <div class="display-flex column">
-                <button id="change-date" class="gh-button secondary text icon gap-10 display-flex">
-                    ${ icons.arrowLeftAlt }
-                    <span>${ __('Select a different date') }</span>
-                </button>
-                <span class="display-date">${ selected.toDateString() }</span>
-
-                <div id="time-slots">
-                    <div class="time-slot-wrap">
-                        ${ timeSlots.map(
-                                s => s.start == time
-                                        ? `<div class="slot-wrap display-flex gap-10"><div class="time-selected"><b>${ getTime(
-                                                s) }</b></div><button class="gh-button primary" id="confirm"><b>${ __(
-                                                'Confirm') }</b></button></div>`
-                                        : `<div class="slot-wrap"><button class="gh-button secondary select-slot" data-start="${ s.start }"><b>${ getTime(
-                                                s) }</b></button></div>`).
-                                join('') }
-                    </div>
-
-                </div>
-            </div>`
-      }
-
-      // language=HTML
-      return `
-          <div class="gh-calendar display-flex ${ selected ? 'date-selected' : '' }">
-              <div class="date-picker">
-                  <div class="date-picker-header display-flex space-between">
-                      <span class="display-date">${ months[month] } ${ year }</span>
-                      <div class="display-flex">
-                          <button id="prev-month" class="gh-button primary text icon"
-                                  ${ availability.some(s => s.month == month - 1) ? '' : 'disabled' }>
-                              ${ icons.arrowLeft }
-                          </button>
-                          <button id="next-month" class="gh-button primary text icon"
-                                  ${ availability.some(s => s.month == month + 1) ? '' : 'disabled' }>
-                              ${ icons.arrowRight }
-                          </button>
-                      </div>
-                  </div>
-                  <table class="gh-calendar-table">
-                      <thead>
-                      <tr>
-                          ${ days_of_week.map(d => `<th>${ d }</th>`).join('') }
-                      </tr>
-                      </thead>
-                      <tbody>
-                      ${ calCells.map(week => `<tr>${ week.map(d => d
-                              ? ( availability.some(s => s.start >= ( d.obj.getTime() / 1000 ) && s.start <
-                                      ( ( d.obj.getTime() / 1000 ) + ( 24 * 60 * 60 ) ))
-                                      ? `<td><button class="date-choice gh-button ${ d.selected
-                                              ? 'primary'
-                                              : 'secondary' }" data-year="${ d.year }" data-date="${ d.date }" data-month="${ d.month }" type="button"><b>${ d.date }</b></button></td>`
-                                      : `<td class="disabled">${ d.date }</td>` )
-                              : '<td></td>').join('') }</tr>`).join('') }
-                      </tbody>
-                  </table>
-              </div>
-              ${ selected ? timeUI() : '' }
-          </div>`
-    }
-
-    const mount = () => {
-      $(el).html(render())
-      onMount()
-    }
-
-    const onMount = () => {
-
-      $('#change-date').on('click', e => {
-        selected = false
-        mount()
-      })
-
-      $('#time-slots').on('scroll', e => {
-        slotScroll = $(e.target).scrollTop()
-      }).scrollTop(slotScroll)
-
-      $('#confirm').on('click', e => {
-        // Modify selected to the desired time
-        selected.setTime(time * 1000)
-        onSelectTime(selected)
-      })
-
-      $('.select-slot').on('click', e => {
-
-        time = e.currentTarget.dataset.start
-        mount()
-
-      })
-
-      $('.date-choice').on('click', e => {
-
-        let d = e.currentTarget.dataset
-        selected = new Date(d.year, d.month, d.date, 0, 0, 0)
-
-        mount()
-        onSelectDate(selected)
-
-      })
-
-      $('#next-month').on('click', e => {
-
-        month++
-        mount()
-
-      })
-
-      $('#prev-month').on('click', e => {
-        month--
-        mount()
-      })
-
-    }
-
-    mount()
-
   }
 
   const changeTimeZone = (el, {
@@ -465,14 +266,14 @@
 
     const clickListener = e => {
 
-      if ( ! clickedIn( e.target, '.timezone-modal' ) ){
+      if (!clickedIn(e.target, '.timezone-modal')) {
         close()
       }
 
       console.log('checked')
     }
 
-    document.addEventListener('click', clickListener )
+    document.addEventListener('click', clickListener)
 
     $('#search-timezones').on('input', e => {
       search = e.target.value
@@ -490,7 +291,7 @@
       changeTimeZone('#tz-dialog', {
         onChange: tz => {
           appointment.timezone = tz
-          init()
+          Page.mount()
         },
       })
     })
@@ -499,6 +300,25 @@
   const detailsTemplate = () => {
 
     let { avatar, owner_name, calendar, logo, appointment_length, timezones, description, locale } = GroundhoggCalendar
+
+    const previousTime = () => {
+
+      let prevTime = new Date()
+      prevTime.setTime(GroundhoggCalendar.appointment.start * 1000)
+
+      // language=HTML
+      return `
+          <ul class="prev appointment-details">
+              <li><b style="padding-left: 0">${ __('Current date & time') }</b></li>
+              <li class="item">${ icons.calendar } <span>${ prevTime.toLocaleDateString(
+                      locale, {
+                          weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+                          hour: 'numeric',
+                          minute: '2-digit',
+                          timeZone: appointment.timezone,
+                      }) }</span></li>
+          </ul>`
+    }
 
     // language=HTML
     return `
@@ -511,6 +331,8 @@
                 <h4 class="owner-name">${ owner_name }</h4>
                 <h1 class="calendar-name">${ calendar.data.name }</h1>
                 <ul class="appointment-details">
+                    ${ GroundhoggCalendar.appointment ? `<li><b style="padding-left: 0">${ __(
+                            'New date & time') }</b></li>` : '' }
                     <li class="item">${ icons.clock } <span>${ appointment_length }</span></li>
                     ${ appointment.start
                             ? `<li class="item">${ icons.calendar } <span>${ appointment.start.toLocaleDateString(
@@ -529,6 +351,7 @@
                 </ul>
             </div>
             <div id="tz-dialog"></div>
+            ${ GroundhoggCalendar.appointment ? previousTime() : '' }
             <div class="description">
                 <div class="description-inner">
                     ${ description }
@@ -537,9 +360,31 @@
         </div>`
   }
 
-  const views = [
+  const getAvailability = () => {
+
+    if (availability.length) {
+      return new Promise((resolve) => resolve())
+    }
+
+    return apiGet(`${ GroundhoggCalendar.routes.calendars }/${ GroundhoggCalendar.calendar.ID }/availability`, {
+      timezone: appointment.timezone,
+    }).then(r => {
+
+      availability = r.slots
+
+      if (appointment.start) {
+        let unix = appointment.start.getTime() / 1000
+        if (!availability.some(s => s.start == unix)) {
+          appointment.start = false
+        }
+      }
+    })
+  }
+
+  const pages = [
     {
-      id: 'calendar',
+      slug: /pick/,
+      bodyClass: 'calendar',
       render: () => {
 
         // language=HTML
@@ -553,34 +398,52 @@
             </div>
         `
       },
-      onMount: ({ setView }) => {
+      onMount: ({ setPage, setParams, path }) => {
 
         tzOnMount()
-        calendar('#date-picker', {
-          selected: appointment.start,
-          start_of_week: 0,
-          availability,
-          onSelectTime: (d) => {
-            appointment.start = d
 
-            history.pushState({ id: curView, date: d }, curView,
-              `?date=${ d.toISOString() }#${ curView }`)
-
-            setView('form')
-          },
-          onSelectDate: (d) => {
-            dateSelected = d
-            history.pushState({ id: curView, date: d }, curView,
-              `?date=${ d.toISOString() }#${ curView }`)
-
-            resize()
-          },
+        getAvailability().then(() => {
+          GroundhoggPicker('#date-picker', {
+            selected: appointment.start,
+            timeZone: appointment.timezone,
+            start_of_week: 0,
+            availability,
+            onSelectTime: (d) => {
+              appointment.start = d
+              setPage('/book/', {
+                date: d.toISOString(),
+              })
+            },
+            onSelectDate: (d) => {
+              setParams({
+                date: d.toISOString(),
+              })
+              resize()
+            },
+          })
         })
 
       },
     },
     {
-      id: 'form',
+      slug: /^\/?book\/?$/,
+      bodyClass: 'form',
+      beforeMount: ({
+        url,
+        setPage,
+      }) => {
+        if (!appointment.start) {
+
+          let date = url.searchParams.get('date')
+
+          if (date) {
+            appointment.start = new Date(date)
+          }
+          else {
+            setPage('/pick/')
+          }
+        }
+      },
       render: () => {
         // language=HTML
         return `
@@ -631,7 +494,11 @@
             </div>
         `
       },
-      onMount: ({ setView }) => {
+      onMount: ({
+        setPage,
+        url,
+      }) => {
+
         tzOnMount()
 
         $('#name,#email,#phone,#notes').on('change', e => {
@@ -641,23 +508,24 @@
         $('#submit-form').on('submit', e => {
           e.preventDefault()
 
-          apiPost(`${ GroundhoggCalendar.route }/${ GroundhoggCalendar.calendar.ID }/schedule`, {
+          apiPost(`${ GroundhoggCalendar.routes.calendars }/${ GroundhoggCalendar.calendar.ID }/schedule`, {
             ...appointment,
             start: appointment.start.getTime() / 1000,
           }).then(r => {
             apiResponse = r
-            setView('confirmation')
+            setPage('/confirm/')
           })
         })
 
         $('#change-selection').on('click', e => {
-          setView('calendar')
+          setPage('/pick/')
         })
       },
     },
     {
-      id: 'confirmation',
-      render: () => {
+      slug: /^\/?confirm\/$/,
+      bodyClass: 'confirmation',
+      render: (params) => {
 
         let { logo, owner_name, avatar, locale, timezones, appointment_length } = GroundhoggCalendar
         let { message = '', links = {} } = apiResponse
@@ -708,78 +576,280 @@
             </div>
         `
       },
-      onMount: ({ setView }) => {
+      onMount: (params, setPage) => {
         $('.link').on('click', e => {
           window.open(e.target.dataset.link, '_blank')
         })
       },
     },
+    {
+      slug: /^\/?cancel\/?$/,
+      bodyClass: 'cancel',
+      beforeMount: ({
+        url,
+        setPage,
+      }) => {
+
+        if (!GroundhoggCalendar.appointment) {
+          setPage('/pick/')
+          return
+        }
+
+      },
+      render: () => {
+        // language=HTML
+        return `
+            <div class="display-flex gap-20 stretch">
+                ${ detailsTemplate() }
+                <div id="details-form">
+                    <p><b>${ __('Cancel Booking', 'groundhogg-calendar') }</b></p>
+                    <form id="cancel-form">
+                        <div class="gh-rows-and-columns">
+                            <div class="gh-row">
+                                <div class="gh-col">
+                                    <label for="notes">${ __(
+                                            'Reason for cancelling?') }</label>
+                                    <textarea id="notes" class="gh-input" rows="3" required></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <button id="confirm-booking" class="gh-button danger medium">${ __('Cancel') }</button>
+                    </form>
+                </div>
+            </div>
+        `
+      },
+      onMount: ({
+        setPage,
+        url,
+      }) => {
+
+        let reason
+
+        $('#notes').on('input change', e => {
+          reason = e.target.value
+        })
+
+        $('#cancel-form').on('submit', e => {
+          e.preventDefault()
+
+          apiDelete(`${ GroundhoggCalendar.routes.appointments }/${ GroundhoggCalendar.appointment.uuid }`, {
+            reason,
+          }).then(r => {
+            setPage('/cancelled/')
+          })
+        })
+
+      },
+    },
+    {
+      slug: /^\/?cancelled\/$/,
+      bodyClass: 'cancelled',
+      render: () => {
+
+        let { logo, owner_name, avatar, locale, timezones, appointment_length } = GroundhoggCalendar
+
+        // language=HTML
+        return `
+            <div class="display-flex column">
+                ${ logo ? `<div id="logo-wrap" class="logo-wrap">
+                    <img id="logo" class="logo" src="${ logo[0] }"/>
+                </div><div class="avatar-wrap">${ avatar }</div>` : `<div class="no-logo">${ avatar }</div>` }
+                <div class="confirmed">
+                    <h2>${ __('Booking Cancelled', 'groundhogg-calendar') }</h2>
+                    <p>${ sprintf(__('Your meeting with %s has been cancelled.', 'groundhogg'), owner_name) }</p>
+                </div>
+            </div>
+        `
+      },
+      onMount: (params, setPage) => {
+
+      },
+    },
+    {
+      slug: /^\/?reschedule\/?$/,
+      bodyClass: 'calendar',
+      render: () => {
+
+        // language=HTML
+        return `
+            <div class="display-flex gap-20 stretch">
+                ${ detailsTemplate() }
+                <div class="booking">
+                    <p><b>${ __('Select a new Date & Time', 'groundhogg-calendar') }</b></p>
+                    <div id="date-picker"></div>
+                </div>
+            </div>
+        `
+      },
+      onMount: ({ setPage, setParams, path }) => {
+
+        tzOnMount()
+
+        getAvailability().then(() => {
+          GroundhoggPicker('#date-picker', {
+            selected: appointment.start,
+            timeZone: appointment.timezone,
+            start_of_week: 0,
+            availability,
+            onSelectTime: (d) => {
+              appointment.start = d
+              setPage('/reschedule/book/', {
+                date: d.toISOString(),
+              })
+            },
+            onSelectDate: (d) => {
+              setParams({
+                date: d.toISOString(),
+              })
+              resize()
+            },
+          })
+        })
+
+      },
+    },
+    {
+      slug: /^\/?reschedule\/book\/?$/,
+      bodyClass: 'reschedule',
+      render: () => {
+        // language=HTML
+        return `
+            <div class="display-flex gap-20 stretch">
+                ${ detailsTemplate() }
+                <div id="details-form">
+                    <p><b>${ __('Reschedule Booking', 'groundhogg-calendar') }</b></p>
+                    <form id="reschedule-form">
+                        <div class="gh-rows-and-columns">
+                            <div class="gh-row">
+                                <div class="gh-col">
+                                    <label for="notes">${ __(
+                                            'Reason for rescheduling?') }</label>
+                                    <textarea id="notes" class="gh-input" rows="3" required></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <button id="confirm-booking" class="gh-button primary medium">${ __('Reschedule') }</button>
+                    </form>
+                </div>
+            </div>
+        `
+      },
+      onMount: ({
+        setPage,
+        url,
+      }) => {
+
+        let reason
+
+        $('#notes').on('input change', e => {
+          reason = e.target.value
+        })
+
+        $('#reschedule-form').on('submit', e => {
+          e.preventDefault()
+
+          apiPatch(`${ GroundhoggCalendar.routes.appointments }/${ GroundhoggCalendar.appointment.uuid }`, {
+            start: appointment.start.getTime() / 1000,
+            reason,
+          }).then(r => {
+            apiResponse = r
+            setPage('/confirm/')
+          })
+        })
+
+      },
+    },
   ]
-
-  let curView = 'calendar'
-  let apiResponse = {}
-  let dateSelected
-  let params = new URL(location.href).searchParams
-
-  if (window.location.hash) {
-    curView = window.location.hash.substring(1)
-  }
-
-  if (params.get('date')) {
-    appointment.start = new Date(params.get('date'))
-  }
-
-  history.pushState({ id: curView }, curView,
-    `#${ curView }`)
-
-  window.addEventListener('popstate', (e) => {
-    let state = e.state
-    if (state && state.id) {
-      curView = state.id
-      mount()
-    }
-  })
-
-  const setView = (v) => {
-    curView = v
-    history.pushState({ id: curView }, curView,
-      `#${ curView }`)
-    mount()
-  }
 
   const resize = () => {
     $('#calendar')[0].dispatchEvent(new Event('resize'))
   }
 
-  const mount = () => {
-    let view = views.find(v => v.id === curView)
-    $('#calendar').html(view.render())
-    $('body').addClass(curView)
-    view.onMount({ setView })
-    resize()
-  }
+  const Page = {
 
-  const init = () => {
-    apiGet(`${ GroundhoggCalendar.route }/${ GroundhoggCalendar.calendar.ID }/availability`, {
-      timezone: appointment.timezone,
-    }).then(r => {
+    slug: '',
+    page: pages[0],
+    path: [],
+    url: null,
 
-      availability = r.slots
+    getHash () {
+      return this.url.hash.substring(1)
+    },
 
-      if ( appointment.start ){
-        let unix = appointment.start.getTime()/1000
-        if ( ! availability.some( s => s.start == unix ) ){
-          setView('calendar')
-          appointment.start = false
-        }
+    initFromHash () {
+      this.slug = this.getHash()
+      this.path = this.slug.split('/').filter(p => p)
+      this.mount()
+    },
+
+    init () {
+
+      this.url = new URL(window.location.href)
+
+      if (this.url.hash) {
+        this.initFromHash()
+      }
+      else {
+        this.url.hash = `#/pick/`
+        history.pushState({}, '', this.url)
+        this.initFromHash()
       }
 
-      mount()
-    })
+      window.addEventListener('popstate', (e) => {
+        this.url = new URL(window.location.href)
+        this.initFromHash()
+      })
+    },
+
+    setPage (hash, params) {
+      this.url.hash = `#${ hash }`
+      this.setParams(params)
+      this.initFromHash()
+    },
+
+    setParams (params) {
+      for (let param in params) {
+        this.url.searchParams.set(param, params[param])
+      }
+      history.pushState({}, '', this.url)
+    },
+
+    mount () {
+
+      this.page = pages.find(p => this.slug.match(p.slug))
+
+      const setPage = (hash, params = {}) => this.setPage(hash, params)
+      const setParams = (params = {}) => this.setParams(params)
+
+      try {
+        this.page.beforeMount({
+          url: this.url,
+          path: this.path,
+          setPage,
+          setParams,
+        })
+      }
+      catch (e) {}
+
+      $('#calendar').html(this.page.render({
+        url: this.url,
+        path: this.path,
+      }))
+
+      this.page.onMount({
+        url: this.url,
+        path: this.path,
+        setPage,
+        setParams,
+      })
+
+      $('body').addClass(this.page.bodyClass)
+      resize()
+    },
+
   }
 
-  $(() => {
-    init()
-  })
+  $(() => Page.init())
 
 } )(jQuery)

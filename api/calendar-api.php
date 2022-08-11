@@ -139,7 +139,9 @@ class Calendar_Api extends Base_Object_Api {
 
 		return self::SUCCESS_RESPONSE([
 			'message' => wpautop( do_replacements( $calendar->get_meta( 'message' ), $contact ) ),
-			'appointment' => $appointment,
+			'appointment' => [
+				'uuid' => $appointment->uuid,
+			],
 			'links' => [
 				'google' => $appointment->get_add_to_google_link(),
 				'ics' => $appointment->get_ics_link()

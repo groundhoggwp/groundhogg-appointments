@@ -1,10 +1,67 @@
-#calendar-wrap{
+$primary-blue: rgb(0, 117, 255);
+$primary-blue-60: rgba(0, 117, 255, 0.60);
+$primary-blue-50: rgba(0, 117, 255, 0.50);
+$primary-blue-20: rgba(0, 117, 255, 0.20);
+$primary-blue-10: rgba(0, 117, 255, 0.10);
+$primary-blue-7: rgba(0, 117, 255, 0.07);
+$primary-blue-2: rgba(0, 117, 255, 0.02);
+$primary-dark: rgb(16, 38, 64);
+$primary-dark-50: rgba(16, 38, 64, 0.5);
+$primary-dark-30: rgba(16, 38, 64, 0.3);
+$primary-dark-15: rgba(16, 38, 64, 0.15);
+$primary-dark-10: rgba(16, 38, 64, 0.10);
+$primary-dark-5: rgba(16, 38, 64, 0.05);
+$error-red: rgb(233, 31, 79);
+$error-red-50: rgba(233, 31, 79, 0.5);
+$error-red-10: rgba(233, 31, 79, 0.10);
+$secondary-purple: rgb(108, 25, 173);
+$alert-yellow-50: rgba(255, 238, 88, 0.50);
+$alert-yellow: rgb(255, 238, 88);
+$benchmark-orange: rgb(245, 129, 21);
+$benchmark-orange-50: rgba(245, 129, 21, 0.50);
+$benchmark-orange-25: rgba(245, 129, 21, 0.25);
+$action-green: rgb(158, 206, 56);
+$action-green-50: rgba(158, 206, 56, 0.5);
+$action-green-25: rgba(158, 206, 56, 0.25);
+$box-shadow: 5px 5px 30px 0 rgba(24, 45, 70, 0.05);
+$background-color: #F6F9FB;
+
+#appointments-app{
   position: fixed;
   top: 32px;
   right: 0;
   bottom: 0;
   left: 160px;
-  background: #fff;
+
+  display: flex;
+  flex-direction: column;
+  //gap: 20px;
+
+  .gh-panel {
+    box-sizing: border-box;
+  }
+
+  #content-wrap{
+    height: 100%;
+  }
+
+  #sidebar{
+    width: 268px;
+    flex-shrink: 0;
+    //background: #fff;
+    padding: 20px;
+  }
+
+  .calendar-wrap {
+    width: 100%;
+    padding: 30px;
+  }
+
+  #full-calendar-wrap {
+    width: 100%;
+  }
+
+  //background: #fff;
   //padding: 20px;
 
   .fc .fc-toolbar.fc-header-toolbar{
@@ -33,8 +90,127 @@
       border-radius: 5px;
     }
   }
+
+  #date-picker {
+
+    #change-date{
+      display: none;
+    }
+
+    .date-picker {
+      padding-right: 20px;
+    }
+
+    #prev-month, #next-month {
+      svg {
+        height: 15px;
+        width: 15px;
+      }
+    }
+
+    .display-date {
+      font-size: 16px;
+      color: $primary-dark-50;
+      //padding-left: 20px;
+    }
+
+    .date-picker-header {
+      .display-date {
+        padding-left: 10px;
+      }
+    }
+
+    #time-slots {
+      overflow: auto;
+      width: 220px;
+      //max-height: 550px;
+      padding: 20px 20px 20px 0;
+      flex: 1 1 100px;
+
+      button {
+        width: 100%;
+        padding: 15px 0;
+      }
+
+      .time-slot-wrap {
+        overflow: hidden;
+        white-space: nowrap;
+
+        .slot-wrap {
+          margin-bottom: 10px;
+        }
+      }
+
+      .time-selected {
+        text-align: center;
+        width: 100%;
+        display: inline-block;
+        padding: 15px 0;
+        background: $primary-dark;
+        color: #fff;
+        border-radius: 5px;
+        font-size: 16px;
+      }
+
+    }
+
+    .gh-calendar {
+      height: 100%;
+    }
+
+    table.gh-calendar-table {
+      margin: 10px 0 20px 0;
+      border-collapse: collapse;
+
+      th {
+        text-transform: uppercase;
+        font-weight: 500;
+        color: #0c5460;
+        font-size: 14px;
+      }
+
+      td {
+        text-align: center;
+        padding: 5px;
+        box-sizing: content-box;
+        width: 45px;
+        height: 45px;
+
+        &.disabled {
+          opacity: 0.3;
+        }
+
+        button {
+          height: 100%;
+          width: 100%;
+
+          &.secondary {
+
+            &:hover {
+              background: $primary-blue-10;
+            }
+
+            background: $primary-blue-7;
+            border: none;
+          }
+        }
+      }
+    }
+  }
+}
+
+.cancel-reason {
+  margin-top: 20px;
+  font-size: 16px;
 }
 
 #wpfooter{
   display: none;
+}
+#filters-here{
+  width: 400px;
+}
+
+.gh-header {
+  z-index: 99;
 }

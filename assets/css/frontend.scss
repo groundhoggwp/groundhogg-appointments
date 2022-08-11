@@ -58,6 +58,12 @@ body * {
     list-style: none;
     padding-left: 0;
 
+    &.prev {
+      background-color: $action-green-25;
+      padding-top: 20px;
+      padding-bottom: 20px;
+    }
+
     li {
       display: flex;
       gap: 10px;

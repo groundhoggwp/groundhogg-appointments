@@ -165,6 +165,7 @@ class Google_Connection extends Base_Object {
 
 		// Errors setting up the Client
 		if ( $this->has_errors() ) {
+
 			return;
 		}
 

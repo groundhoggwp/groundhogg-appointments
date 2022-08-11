@@ -54,24 +54,6 @@ class Appointments extends DB {
 	}
 
 	/**
-	 * Get columns and formats
-	 *
-	 * @access  public
-	 * @since   2.0
-	 */
-	public function get_columns() {
-		return array(
-			'ID'          => '%d',
-			'contact_id'  => '%d',
-			'uuid'        => '%s',
-			'calendar_id' => '%d',
-			'status'      => '%s',
-			'start_time'  => '%d',
-			'end_time'    => '%d',
-		);
-	}
-
-	/**
 	 * @param $start
 	 * @param $end
 	 * @param $local_gcalendar_id
@@ -100,6 +82,34 @@ class Appointments extends DB {
 		return empty( $results );
 	}
 
+	public function query( $data = [], $ORDER_BY = '', $from_cache = true ) {
+
+		// Reps can't see others appointments
+		if ( current_user_can( 'view_appointments' ) && ! current_user_can( 'view_others_appointments' ) ){
+			$data['owner_id'] = get_current_user_id();
+		}
+
+		return parent::query( $data, $ORDER_BY, $from_cache );
+	}
+
+	/**
+	 * Get columns and formats
+	 *
+	 * @access  public
+	 * @since   2.0
+	 */
+	public function get_columns() {
+		return array(
+			'ID'          => '%d',
+			'contact_id'  => '%d',
+			'uuid'        => '%s',
+			'calendar_id' => '%d',
+			'status'      => '%s',
+			'start_time'  => '%d',
+			'end_time'    => '%d',
+		);
+	}
+
 	/**
 	 * Get default column values
 	 *
@@ -110,7 +120,7 @@ class Appointments extends DB {
 		return array(
 			'ID'          => 0,
 			'contact_id'  => 0,
-			'uuid'        => generate_uuid(),
+			'uuid'        => wp_generate_uuid4(),
 			'calendar_id' => 0,
 			'status'      => 'scheduled',
 			'start_time'  => 0,
@@ -123,17 +133,14 @@ class Appointments extends DB {
 	 *
 	 * @param $id int Calendar ID
 	 *
-	 * @return mixed
+	 * @return void
 	 */
 	public function calendar_deleted( $id ) {
 		if ( is_numeric( $id ) ) {
 			$appointments = $this->query( [ 'calendar_id' => $id ] );
-			$result       = false;
 			foreach ( $appointments as $appointment ) {
-				$result = $this->delete( absint( $appointment->ID ) );
+				$this->delete( absint( $appointment->ID ) );
 			}
-
-			return $result;
 		}
 	}
 
@@ -142,17 +149,14 @@ class Appointments extends DB {
 	 *
 	 * @param $id int Calendar ID
 	 *
-	 * @return mixed
+	 * @return void
 	 */
 	public function contact_deleted( $id ) {
 		if ( is_numeric( $id ) ) {
 			$appointments = $this->query( [ 'contact_id' => $id ] );
-			$result       = false;
 			foreach ( $appointments as $appointment ) {
-				$result = $this->delete( absint( $appointment->ID ) );
+				$this->delete( absint( $appointment->ID ) );
 			}
-
-			return $result;
 		}
 	}
 

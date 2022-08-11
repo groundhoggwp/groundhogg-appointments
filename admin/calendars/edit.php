@@ -31,7 +31,7 @@ html()->tabs( $tab_list, $tab );
 switch ( $tab ):
 	case 'view':
 		?>
-		<script>window.location.replace("<?php echo admin_page_url( 'gh_appointments', [ 'calendar_id' => get_url_var( 'calendar' ) ] ) ?>");</script>
+		<script>window.location.replace("<?php echo admin_page_url( 'gh_appointments', [ 'selected' => get_url_var( 'calendar' ) ] ) ?>");</script>
 		<?php
 		break;
 	case 'embed':

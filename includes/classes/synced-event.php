@@ -2,131 +2,60 @@
 
 namespace GroundhoggBookingCalendar\Classes;
 
-use Google_Client;
-use Google_Service_Calendar;
+
 use Google_Service_Calendar_Event;
-use Google_Service_Oauth2;
-use Groundhogg\Base_Object;
-use Groundhogg\DB\DB;
-use Groundhogg\Plugin;
-use GroundhoggBookingCalendar\DB\Google_Connections;
-use function Groundhogg\convert_to_local_time;
-use function Groundhogg\get_array_var;
-use function Groundhogg\get_date_time_format;
-use function Groundhogg\get_db;
-use function Groundhogg\isset_not_empty;
-use function Groundhogg\utils;
-use function Groundhogg\Ymd_His;
+use function Groundhogg\convert_to_utc_0;
+use function Groundhogg\get_time;
 
-class Synced_Event extends Base_Object {
+class Synced_Event {
 
-	protected function post_setup() {
-		$numeric_keys = [
-			'start_time',
-			'end_time',
-			'last_synced',
-		];
-
-		foreach ( $numeric_keys as $key ) {
-			$this->$key = intval( $this->$key );
-		}
-	}
-
-	protected function get_db() {
-		return get_db( 'synced_events' );
-	}
-
-	public function sync_all_details() {
-
-		$google_calendar = new Google_Calendar( $this->local_gcalendar_id );
-		$client          = $google_calendar->get_connection()->get_client();
-
-		if ( $google_calendar->get_connection()->has_errors() ) {
-			foreach ( $google_calendar->get_connection()->get_errors() as $error ) {
-				$this->add_error( $error );
-			}
-			return;
-		}
-
-		$service = new Google_Service_Calendar( $client );
-
-		$event = $service->events->get( $this->google_calendar_id, $this->event_id );
-
-		$this->data = wp_parse_args( $this->data, [
-			'description'   => $event->getDescription(),
-			'summary'       => $event->getSummary(),
-			'location'      => $event->getLocation(),
-			'url'           => $event->getHtmlLink(),
-			'calendar_name' => $google_calendar->name
-		] );
-	}
-
-	public function get_dates_from_event( $event ) {
-		// The start time will either be a proper daytime or the beginning of a day, which is fine.
-		$start = strtotime( $event->getStart()->getDateTime() );
-		$end   = strtotime( $event->getEnd()->getDateTime() );
-
-		// handle all day event
-		if ( ! $start || ! $end ) {
-			$start = strtotime( $event->getStart()->getDate() );
-			$end   = strtotime( $event->getEnd()->getDate() );
-
-			$end   = utils()->date_time->convert_to_utc_0( $end );
-			$start = utils()->date_time->convert_to_utc_0( $start );
-		}
-
-		return [
-			'start_time'        => $start,
-			'end_time'          => $end,
-			'start_time_pretty' => Ymd_His( $start ),
-			'end_time_pretty'   => Ymd_His( $end ),
-		];
-	}
-
-	/**
-	 * @param $event    Google_Service_Calendar_Event
-	 * @param $gcal     Google_Calendar
-	 */
-	public function create_from_event( $event, $gcal ) {
-
-		$args = wp_parse_args( $this->get_dates_from_event( $event ), [
-			'event_id'           => $event->getId(),
-			'summary'            => $event->getSummary() ?: '', // might be null
-			'status'             => $event->getStatus(),
-			'local_gcalendar_id' => $gcal->get_id(),
-			'google_calendar_id' => $gcal->google_calendar_id,
-		] );
-
-		$this->create( $args );
-	}
+	protected $start_time;
+	protected $end_time;
+	protected $summary;
+	protected $description;
+	protected $is_all_day;
+	protected $time_zone;
+	public $id;
 
 	/**
 	 * @param $event Google_Service_Calendar_Event
 	 */
-	public function update_from_event( $event ) {
+	public function __construct( $event ) {
 
-		$times = $this->get_dates_from_event( $event );
+		$this->start_time = strtotime( $event->getStart()->getDateTime() );
+		$this->end_time   = strtotime( $event->getEnd()->getDateTime() );
 
-		$this->update( wp_parse_args( $times, [
-			'summary'     => $event->getSummary(),
-			'status'      => $event->getStatus(),
-			'last_synced' => time()
-		] ) );
-	}
+		// Handle all day event
+		if ( ! $this->start_time && ! $this->end_time ) {
+			$this->is_all_day = true;
+			$this->start_time = $event->getStart()->getDate();
+			$this->end_time   = $event->getEnd()->getDate();
+			$this->time_zone  = $event->getStart()->getTimeZone();
+		}
 
-	public function get_id() {
-		return $this->event_id;
+		$this->description = $event->getDescription();
+		$this->summary     = $event->getSummary();
+		$this->id          = $event->getId();
 	}
 
 	/**
 	 * Conflicts if the start and end period intersect with the given time range
 	 *
-	 * @param $start
-	 * @param $end
+	 * @param $start \DateTime
+	 * @param $end   \DateTime
 	 *
 	 * @return bool
 	 */
 	public function conflicts( $start, $end ) {
+
+		// handle all day conflict
+		if ( $this->is_all_day ) {
+			// start_time will be a string Y-m-d string
+			if ( $this->start_time == $start->format( 'Y-m-d' ) ) {
+				return true;
+			}
+		}
+
 		return
 			// given start is in between start and end
 			( $this->start_time <= $start && $this->end_time > $start ) ||
@@ -141,16 +70,39 @@ class Synced_Event extends Base_Object {
 	public function get_for_full_calendar() {
 
 		return [
-			'id'            => $this->event_id,
+			'id'            => $this->id,
 			'title'         => $this->summary,
-			'start'         => $this->start_time * 1000,
-			'end'           => $this->end_time * 1000,
+			'description'   => $this->description,
+			'start'         => is_int( $this->start_time ) ? date( DATE_RFC3339, $this->start_time ) : $this->start_time,
+			'end'           => is_int( $this->end_time ) ? date( DATE_RFC3339, $this->end_time ) : $this->end_time,
 			'editable'      => false,
 			'allDay'        => ( $this->end_time - $this->start_time ) % DAY_IN_SECONDS === 0,
 			'color'         => '#0073aa',
 			'extendedProps' => [
-				'appointment' => $this,
+
 			]
 		];
+	}
+
+	public function __serialize() {
+		return [
+			'start'       => $this->start_time,
+			'end'         => $this->end_time,
+			'id'          => $this->id,
+			'allDay'      => $this->is_all_day,
+			'summary'     => $this->summary,
+			'description' => $this->description,
+			'timeZone'    => $this->time_zone,
+		];
+	}
+
+	public function __unserialize( $data ) {
+		$this->start_time  = $data['start'];
+		$this->end_time    = $data['end'];
+		$this->id          = $data['id'];
+		$this->is_all_day  = $data['allDay'];
+		$this->summary     = $data['summary'];
+		$this->description = $data['description'];
+		$this->time_zone   = $data['timeZone'];
 	}
 }

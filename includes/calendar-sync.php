@@ -9,6 +9,7 @@ use GroundhoggBookingCalendar\Classes\Google_Calendar;
 use GroundhoggBookingCalendar\Classes\Google_Connection;
 use function Groundhogg\array_map_to_class;
 use function Groundhogg\get_db;
+use function Groundhogg\id_list_to_class;
 use function Groundhogg\notices;
 
 class Calendar_Sync extends Supports_Errors {
@@ -70,8 +71,8 @@ class Calendar_Sync extends Supports_Errors {
 			$connection = new Google_Connection( $connection->ID );
 			$connection->sync_calendars();
 
-			if ( $connection->has_errors() ){
-				foreach ( $connection->get_errors() as $error ){
+			if ( $connection->has_errors() ) {
+				foreach ( $connection->get_errors() as $error ) {
 					$this->add_error( $error );
 				}
 			}
@@ -81,6 +82,11 @@ class Calendar_Sync extends Supports_Errors {
 
 		$calendars = get_db( 'calendars' )->query();
 		array_map_to_class( $calendars, Calendar::class );
+
+		$calendars = array_filter( $calendars, function ( $calendar ) {
+			return $calendar->is_connected_to_google();
+		} );
+
 		$gcal_ids_to_sync = array_reduce( $calendars, function ( $carry, $calendar ) {
 			/**
 			 * @var $calendar Calendar
@@ -88,27 +94,28 @@ class Calendar_Sync extends Supports_Errors {
 			return array_unique( array_merge( $carry, $calendar->get_google_calendar_list() ) );
 		}, [] );
 
-		$gcals = get_db( 'google_calendars' )->query( [
-			'ID' => $gcal_ids_to_sync
-		] );
+		$gcals = id_list_to_class( $gcal_ids_to_sync, Google_Calendar::class );
 
 		foreach ( $gcals as $gcal ) {
-			$gcal = new Google_Calendar( $gcal );
 
 			$gcal->sync_events();
 
-			if ( $gcal->has_errors() ){
-				foreach ( $gcal->get_errors() as $error ){
+			if ( $gcal->has_errors() ) {
+				foreach ( $gcal->get_errors() as $error ) {
 					$this->add_error( $error );
 				}
 			}
 		}
 
-		if ( is_admin() && $this->has_errors() && current_user_can( 'edit_calendars' ) ){
-			foreach ( $this->get_errors() as $error ){
+		if ( is_admin() && $this->has_errors() && current_user_can( 'edit_calendars' ) ) {
+			foreach ( $this->get_errors() as $error ) {
 				notices()->add( $error );
 			}
 		}
+	}
+
+	function sync_calendar() {
+
 	}
 
 }

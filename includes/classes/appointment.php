@@ -21,6 +21,7 @@ use function Groundhogg\minify_html;
 use function GroundhoggBookingCalendar\generate_uuid;
 use function GroundhoggBookingCalendar\get_date_format;
 use function GroundhoggBookingCalendar\get_time_format;
+use function GroundhoggBookingCalendar\sanitize_google_uuid;
 use function GroundhoggBookingCalendar\zoom;
 use function Groundhogg\get_date_time_format;
 use function GroundhoggBookingCalendar\get_in_time_zone;
@@ -31,13 +32,14 @@ class Appointment extends Base_Object_With_Meta {
 	 * @var \WP_User
 	 */
 	private $owner;
+	public $g_uuid;
 
 	protected function get_meta_db() {
 		return Plugin::$instance->dbs->get_db( 'appointmentmeta' );
 	}
 
 	protected function post_setup() {
-		// TODO: Implement post_setup() method.
+		$this->g_uuid = sanitize_google_uuid( $this->uuid );
 	}
 
 	protected function get_db() {
@@ -212,11 +214,20 @@ class Appointment extends Base_Object_With_Meta {
 
 		// Delete in synced events if it exists there
 		get_db( 'synced_events' )->delete( [
-			'event_id' => $this->uuid
+			'event_id' => $this->g_uuid
 		] );
 
 		return parent::delete();
 	}
+
+	/**
+     * The owner name
+     *
+	 * @return string
+	 */
+    public function get_owner_name(){
+	    return $this->get_owner()->first_name . ' ' . $this->get_owner()->last_name;
+    }
 
 	/**
 	 * Retreives in Full callendar event format
@@ -227,11 +238,10 @@ class Appointment extends Base_Object_With_Meta {
 		return [
 			'id'            => $this->uuid,
 			'local_id'      => $this->get_id(),
-			'title'         => $this->get_name(),
+			'title'         => sprintf( __( '%s and %s' ), $this->get_contact()->get_full_name(), $this->get_owner_id() === get_current_user_id() ? __('You') : $this->get_owner_name() ) ,
 			'start'         => (int) $this->get_start_time() * 1000,
 			'end'           => (int) $this->get_end_time() * 1000,
-			'constraint'    => 'businessHours',
-			'editable'      => true,
+//			'editable'      => true,
 			'allDay'        => false,
 			'color'         => $this->get_status() === 'scheduled' ? '#28a745' : '#dc3545',
 			'classNames'    => [ $this->is_cancelled() ? 'cancelled' : 'scheduled' ],
@@ -252,10 +262,11 @@ class Appointment extends Base_Object_With_Meta {
 		return array_merge( parent::get_as_array(), [
 			'contact' => $this->get_contact(),
 			'i18n'    => [
-				'dateFrom' => $startSateTime->format( get_date_format() ),
-				'dateTo'   => $endDateTime->format( get_date_format() ),
-				'from'     => $startSateTime->format( get_time_format() ),
-				'to'       => $endDateTime->format( get_time_format() ),
+				'dateFrom'  => $startSateTime->format( get_date_format() ),
+				'dateTo'    => $endDateTime->format( get_date_format() ),
+				'from'      => $startSateTime->format( get_time_format() ),
+				'to'        => $endDateTime->format( get_time_format() ),
+				'ownerName' =>  $this->get_owner_id() === get_current_user_id() ? __('You') : $this->get_owner_name(),
 			]
 		] );
 	}
@@ -308,7 +319,7 @@ class Appointment extends Base_Object_With_Meta {
 		if ( $orig_start !== $this->get_start_time() || $orig_end !== $this->get_end_time() ) {
 
 			get_db( 'synced_events' )->update( [
-				'event_id' => $this->uuid
+				'event_id' => $this->g_uuid
 			], [
 				'start_time'        => $this->get_start_time(),
 				'end_time'          => $this->get_end_time(),
@@ -363,7 +374,14 @@ class Appointment extends Base_Object_With_Meta {
 	 * @return string
 	 */
 	public function manage_link( $action = 'cancel' ) {
-		return managed_page_url( sprintf( 'appointment/%s/%s', urlencode( encrypt( $this->get_id() ) ), $action ) );
+
+		switch ( $action ) {
+			case 'reschedule':
+			case 'cancel':
+				return managed_page_url( sprintf( 'appointment/%s/#/%s/', $this->uuid, $action ) );
+			default:
+				return managed_page_url( sprintf( 'appointment/%s/%s', $this->uuid, $action ) );
+		}
 	}
 
 	/**
@@ -577,7 +595,8 @@ class Appointment extends Base_Object_With_Meta {
                     href="<?php echo $this->manage_link() ?>"><?php _e( 'Cancel', 'groundhogg-calendar' ) ?></a></p>
 		<?php
 
-		return ob_get_clean();
+		// Remove Newlines causing <br> in Google
+		return minify_html( ob_get_clean() );
 	}
 
 	/**
@@ -620,7 +639,7 @@ class Appointment extends Base_Object_With_Meta {
 	 */
 	protected function get_google_event_format() {
 		$event = [
-			'id'          => $this->uuid,
+			'id'          => $this->g_uuid,
 			'summary'     => $this->get_google_summary(),
 			'status'      => $this->is_cancelled() ? 'cancelled' : 'confirmed',
 			'description' => $this->get_google_description(),
@@ -708,7 +727,7 @@ class Appointment extends Base_Object_With_Meta {
 		$event = new Google_Service_Calendar_Event( $this->get_google_event_format() );
 
 		try {
-			$updatedEvent = $service->events->update( $this->get_calendar()->get_remote_google_calendar_id(), $this->uuid, $event, [] );
+			$updatedEvent = $service->events->update( $this->get_calendar()->get_remote_google_calendar_id(), $this->g_uuid, $event, [] );
 		} catch ( \Google\Service\Exception $exception ) {
 
 			if ( $exception->getCode() === 404 ) {
@@ -733,7 +752,7 @@ class Appointment extends Base_Object_With_Meta {
 		$client  = $this->get_calendar()->get_google_client();
 		$service = new Google_Service_Calendar( $client );
 		try {
-			$service->events->delete( $this->get_calendar()->get_remote_google_calendar_id(), $this->uuid );
+			$service->events->delete( $this->get_calendar()->get_remote_google_calendar_id(), $this->g_uuid );
 		} catch ( Exception $e ) {
 		}
 	}
@@ -741,12 +760,16 @@ class Appointment extends Base_Object_With_Meta {
 	/**
 	 * Conflicts if the start and end period intersect with the given time range
 	 *
-	 * @param $start
-	 * @param $end
+	 * @param $start \DateTime
+	 * @param $end   \DateTime
 	 *
 	 * @return bool
 	 */
 	public function conflicts( $start, $end ) {
+
+		$start = $start->getTimestamp();
+		$end   = $end->getTimestamp();
+
 		return
 			// given start is in between start and end
 			( $this->start_time <= $start && $this->end_time > $start ) ||

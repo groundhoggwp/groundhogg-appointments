@@ -6,6 +6,7 @@ use Groundhogg\DB\Manager;
 use Groundhogg\Extension;
 use GroundhoggBookingCalendar\Admin\Appointments\Appointments_Page;
 use GroundhoggBookingCalendar\Admin\Cards\Appointment_Card;
+use GroundhoggBookingCalendar\Api\Appointments_Api;
 use GroundhoggBookingCalendar\Api\Calendar_Api;
 use GroundhoggBookingCalendar\DB\Appointment_Meta;
 use GroundhoggBookingCalendar\DB\Appointments;
@@ -106,6 +107,7 @@ class Plugin extends Extension {
 
 	public function register_v4_apis( $api_manager ) {
 		$api_manager->calendar_api = new Calendar_Api();
+		$api_manager->appointments_api = new Appointments_Api();
 	}
 
 	/**
@@ -132,18 +134,18 @@ class Plugin extends Extension {
 			'jquery',
 			'groundhogg-admin-modal'
 		], GROUNDHOGG_BOOKING_CALENDAR_VERSION, true );
-
 		wp_register_script( 'fullcalendar-main', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'lib/fullcalendar/lib/main.min.js', [], GROUNDHOGG_BOOKING_CALENDAR_VERSION );
 		wp_register_script( 'jstz', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'js/jstz.min.js', [], GROUNDHOGG_BOOKING_CALENDAR_VERSION );
-		wp_register_script( 'groundhogg-new-appointment-admin', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'js/new-appointment.js', [
+		wp_register_script( 'groundhogg-calendar-picker', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'js/picker.js', [
 			'jquery',
-			'jquery-ui-datepicker',
-			'groundhogg-admin-functions',
-		], GROUNDHOGG_BOOKING_CALENDAR_VERSION, true );
+			'jstz',
+			'wp-i18n',
+		], GROUNDHOGG_BOOKING_CALENDAR_VERSION );
 
 		wp_register_script( 'groundhogg-appointments-admin', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'js/appointments.js', [
 			'jquery',
 			'fullcalendar-main',
+			'groundhogg-calendar-picker',
 			'groundhogg-admin-functions',
 			'groundhogg-admin-components',
 			'groundhogg-admin-element',
@@ -153,11 +155,14 @@ class Plugin extends Extension {
 
 	public function register_frontend_scripts( $is_minified, $IS_MINIFIED ) {
 		wp_register_script( 'jstz', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'js/jstz.min.js', [], GROUNDHOGG_BOOKING_CALENDAR_VERSION );
-		wp_register_script( 'groundhogg-calendar', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'js/calendar.js', [
-			'jstz',
+		wp_register_script( 'groundhogg-calendar-picker', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'js/picker.js', [
 			'jquery',
-			'groundhogg-frontend',
+			'jstz',
 			'wp-i18n',
+		], GROUNDHOGG_BOOKING_CALENDAR_VERSION );
+		wp_register_script( 'groundhogg-calendar', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'js/calendar.js', [
+			'groundhogg-calendar-picker',
+			'groundhogg-frontend',
 		], GROUNDHOGG_BOOKING_CALENDAR_VERSION );
 	}
 

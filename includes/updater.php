@@ -38,29 +38,42 @@ class Updater extends \Groundhogg\Updater {
 			'2.5.1',
 			'2.5.4',
 			'2.5.4.1',
+			'2.6',
 		];
 	}
 
 	protected function get_automatic_updates() {
 		return [
 			'2.5.1',
-			'2.5.4.1'
+			'2.5.4.1',
+			'2.6'
 		];
 	}
 
 	protected function get_update_descriptions() {
 		return [
-			'2.5'   => __( 'Refactor appointment and calendar settings to new formats.' ),
-			'2.5.1' => __( 'Update status of previous appointments.' ),
-			'2.5.4' => __( 'Keep track of Google calendar connection status.' ),
+			'2.5'     => __( 'Refactor appointment and calendar settings to new formats.' ),
+			'2.5.1'   => __( 'Update status of previous appointments.' ),
+			'2.5.4'   => __( 'Keep track of Google calendar connection status.' ),
 			'2.5.4.1' => __( 'Remove cap from admin role.' ),
+			'2.6'     => __( 'Change the way Google events are synced' ),
 		];
+	}
+
+	/**
+	 * Update the synced events table to the new format
+	 *
+	 * @return void
+	 */
+	public function version_2_6() {
+		get_db( 'synced_events' )->force_drop();
+		get_db( 'synced_events' )->create_table();
 	}
 
 	/**
 	 * These roles should not have this cap
 	 */
-	public function version_2_5_4_1(){
+	public function version_2_5_4_1() {
 		get_role( 'administrator' )->remove_cap( 'view_own_calendar' );
 	}
 
@@ -161,7 +174,7 @@ WHERE meta_key = 'action' AND meta_value IN ('%s', '%s');",
 		] );
 	}
 
-	public function version_2_5_4(){
+	public function version_2_5_4() {
 		// Add status col
 		get_db( 'google_connections' )->create_table();
 		// Update

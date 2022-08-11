@@ -47,11 +47,21 @@ class Calendars extends DB {
 	public function get_column_defaults() {
 		return array(
 			'ID'          => 0,
-			'user_id'     => 0,
+			'user_id'     => get_current_user_id(),
 			'name'        => '',
 			'slug'        => '',
 			'description' => '',
 		);
+	}
+
+	public function query( $data = [], $ORDER_BY = '', $from_cache = true ) {
+
+		// Reps can't see others calendars
+		if ( current_user_can( 'view_calendars' ) && ! current_user_can( 'view_others_calendars' ) ){
+			$data['user_id'] = get_current_user_id();
+		}
+
+		return parent::query( $data, $ORDER_BY, $from_cache );
 	}
 
 	/**

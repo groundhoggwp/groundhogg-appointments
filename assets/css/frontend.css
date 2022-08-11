@@ -26,6 +26,11 @@ body * {
   list-style: none;
   padding-left: 0;
 }
+#calendar ul.appointment-details.prev {
+  background-color: rgba(158, 206, 56, 0.25);
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
 #calendar ul.appointment-details li {
   display: flex;
   gap: 10px;
