@@ -328,7 +328,6 @@ class Calendar extends Base_Object_With_Meta {
 	public function get_buffer_interval() {
 		$atts = $this->get_appointment_length();
 		$str  = 'PT' . $atts['buffer'] . 'M';
-
 		return new \DateInterval( $str );
 	}
 
@@ -686,7 +685,13 @@ class Calendar extends Base_Object_With_Meta {
 			$google_events = $this->get_google_events( $from, $to );
 		}
 
-		return array_values( array_merge( $google_events, $local_appointments ) );
+		$events = array_values( array_merge( $google_events, $local_appointments ) );
+
+		usort( $events, function ($a, $b) {
+			return $a->get_start_date() <=> $b->get_start_date();
+		} );
+
+		return $events;
 	}
 
 	/**
@@ -793,10 +798,7 @@ class Calendar extends Base_Object_With_Meta {
 
 					$start = clone $dateTime;
 					$dateTime->add( $aptInterval );
-					$dateTime->add( $bufferInterval );
 					$end = clone $dateTime;
-
-					$has_conflict = false;
 
 					/**
 					 * @var $apt Appointment|Synced_Event

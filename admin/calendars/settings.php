@@ -17,93 +17,93 @@ if ( $calendar == null ) {
 ?>
 <form method="post">
 	<?php wp_nonce_field( 'edit' ); ?>
-	<h3><?php _e( 'Calendar Settings', 'groundhogg-calendar' ) ?></h3>
-	<table class="form-table">
-		<tbody>
-		<tr>
-			<th scope="row"><label><?php _e( 'Calendar Name' ) ?></label></th>
-			<td>
+    <h3><?php _e( 'Calendar Settings', 'groundhogg-calendar' ) ?></h3>
+    <table class="form-table">
+        <tbody>
+        <tr>
+            <th scope="row"><label><?php _e( 'Calendar Name' ) ?></label></th>
+            <td>
 				<?php echo html()->input( [
 					'name'        => 'name',
 					'placeholder' => __( 'Calendar Name', 'groundhogg-calendar' ),
 					'value'       => $calendar->get_name()
 				] ); ?>
-				<p class="description"><?php _e( 'A name of a calendar.', 'groundhogg-calendar' ) ?>.</p>
-			</td>
-		</tr>
-		<tr>
-			<th scope="row"><label><?php _e( 'URL Slug' ) ?></label></th>
-			<td>
+                <p class="description"><?php _e( 'A name of a calendar.', 'groundhogg-calendar' ) ?>.</p>
+            </td>
+        </tr>
+        <tr>
+            <th scope="row"><label><?php _e( 'URL Slug' ) ?></label></th>
+            <td>
 				<?php echo html()->input( [
 					'name'        => 'slug',
 					'placeholder' => sanitize_title( $calendar->get_name() ),
 					'value'       => $calendar->slug
 				] ); ?>
-				<p class="description"><?php _e( 'The public URL of the calendar.', 'groundhogg-calendar' ) ?>.</p>
-			</td>
-		</tr>
-		<tr class="form-field term-contact-wrap">
-			<th scope="row"><label><?php _e( 'Calendar Owner' ) ?></label></th>
-			<td>
+                <p class="description"><?php _e( 'The public URL of the calendar.', 'groundhogg-calendar' ) ?>.</p>
+            </td>
+        </tr>
+        <tr class="form-field term-contact-wrap">
+            <th scope="row"><label><?php _e( 'Calendar Owner' ) ?></label></th>
+            <td>
 				<?php echo html()->dropdown_owners( [
 					'selected' => $calendar->get_user_id() ?: 0
 				] ); ?>
-				<p class="description"><?php _e( 'Select owner for whom you are creating the calendar.', 'groundhogg-calendar' ) ?></p>
-			</td>
-		</tr>
+                <p class="description"><?php _e( 'Select owner for whom you are creating the calendar.', 'groundhogg-calendar' ) ?></p>
+            </td>
+        </tr>
         <tr class="form-field term-contact-wrap">
             <th scope="row"><label for="timezone"><?php _e( 'Timezone' ) ?></label></th>
             <td>
                 <select id="timezone" name="timezone">
-		            <?php echo wp_timezone_choice( $calendar->get_meta('timezone') ?: wp_timezone_string(), get_user_locale() ); ?>
+					<?php echo wp_timezone_choice( $calendar->get_meta( 'timezone' ) ?: wp_timezone_string(), get_user_locale() ); ?>
                 </select>
                 <p class="description"><?php _e( 'Select owner for whom you are creating the calendar.', 'groundhogg-calendar' ) ?></p>
             </td>
         </tr>
-		<tr>
-			<th scope="row"><label><?php _e( 'Description/Instructions', 'groundhogg-calendar' ); ?></label></th>
-			<td>
-				<div style="max-width: 700px">
+        <tr>
+            <th scope="row"><label><?php _e( 'Description/Instructions', 'groundhogg-calendar' ); ?></label></th>
+            <td>
+                <div style="max-width: 700px">
 					<?php wp_editor( $calendar->get_description(), 'description', [
 						'editor_height' => 200,
 						'editor_width'  => 300,
 						'media_buttons' => false,
 						'quicktags'     => false,
 					] ); ?>
-					<p class="description"><?php _e( 'Describe your booking calendar in few words and any instructions for the guest. Shows on the scheduling page as well as in the appointment description.', 'groundhogg-calendar' ) ?></p>
-				</div>
-			</td>
-		</tr>
-		</tbody>
-	</table>
-	<h2><?php _e( 'Appointment Settings', 'groundhogg-calendar' ); ?></h2>
-	<table class="form-table">
-		<tbody>
-		<tr>
-			<th><?php _e( 'Additional Instructions/Notes', 'groundhogg-calendar' ); ?></th>
-			<td>
-				<p><?php Plugin::instance()->replacements->show_replacements_dropdown(); ?></p>
-				<div style="max-width: 700px">
+                    <p class="description"><?php _e( 'Describe your booking calendar in few words and any instructions for the guest. Shows on the scheduling page as well as in the appointment description.', 'groundhogg-calendar' ) ?></p>
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <h2><?php _e( 'Appointment Settings', 'groundhogg-calendar' ); ?></h2>
+    <table class="form-table">
+        <tbody>
+        <tr>
+            <th><?php _e( 'Additional Instructions/Notes', 'groundhogg-calendar' ); ?></th>
+            <td>
+                <p><?php Plugin::instance()->replacements->show_replacements_dropdown(); ?></p>
+                <div style="max-width: 700px">
 					<?php wp_editor( $calendar->get_meta( 'additional_notes' ), 'additional_notes', [
 						'editor_height' => 200,
 						'editor_width'  => 500,
 						'media_buttons' => false,
 						'quicktags'     => false,
 					] ); ?>
-				</div>
+                </div>
 				<?php
 				echo html()->description( __( 'Any additional instructions you want to add after the appointment has been booked.', 'groundhogg-calendar' ) );
 				?>
-			</td>
-		</tr>
-		<tr>
-			<th scope="row"><label><?php _e( 'Length of appointment', 'groundhogg-calendar' ); ?></label></th>
-			<td>
+            </td>
+        </tr>
+        <tr>
+            <th scope="row"><label><?php _e( 'Length of appointment', 'groundhogg-calendar' ); ?></label></th>
+            <td>
 				<?php
 				for ( $i = 0; $i < 24; $i ++ ) {
 					$hours[ $i ] = $i;
 				}
-				for ( $i = 0; $i < 60; $i ++ ) {
+				for ( $i = 0; $i < 60; $i+=5 ) {
 					$mins[ $i ] = $i;
 				}
 
@@ -123,34 +123,35 @@ if ( $calendar == null ) {
 				echo "&nbsp;";
 				_e( 'Minutes', 'groundhogg-calendar' );
 				?>
-				<p class="description"><?php _e( 'Select default length of appointment', 'groundhogg-calendar' ); ?></p>
-			</td>
-		</tr>
-		<tr>
-			<th scope="row"><label><?php _e( 'Buffer Time', 'groundhogg-calendar' ) ?></label></th>
-			<td>
+                <p class="description"><?php _e( 'Select default length of appointment', 'groundhogg-calendar' ); ?></p>
+            </td>
+        </tr>
+        <tr>
+            <th scope="row"><label><?php _e( 'Buffer Time', 'groundhogg-calendar' ) ?></label></th>
+            <td>
 				<?php
-				for ( $i = 0; $i <= 60; $i ++ ) {
-					$mins[ $i ] = $i;
-				}
 				echo html()->dropdown( [
 					'name'     => 'buffer_time',
-					'options'  => $mins,
+					'options'  => [
+						0  => __( 'No buffer' ),
+						15 => sprintf( __( '%d minutes' ), 15 ),
+						30 => sprintf( __( '%d minutes' ), 30 ),
+						45 => sprintf( __( '%d minutes' ), 45 ),
+						60 => sprintf( __( '%d hour' ), 1 ),
+					],
 					'selected' => $calendar->get_meta( 'buffer_time', true ) ? $calendar->get_meta( 'buffer_time', true ) : 0
-				] );
-				echo "&nbsp;";
-				_e( 'Minutes', 'groundhogg-calendar' ); ?>
-				<p class="description"><?php _e( 'Add extra time between appointments.', 'groundhogg-calendar' ) ?></p>
-			</td>
-		</tr>
-		</tbody>
-	</table>
-	<h3><?php _e( 'Submission Settings', 'groundhogg-calendar' ) ?></h3>
-	<table class="form-table">
-		<tbody>
-		<tr>
-			<th><?php _e( 'Use a custom form', 'groundhogg-calendar' ); ?></th>
-			<td>
+				] ); ?>
+                <p class="description"><?php _e( 'Add extra time between appointments.', 'groundhogg-calendar' ) ?></p>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <h3><?php _e( 'Submission Settings', 'groundhogg-calendar' ) ?></h3>
+    <table class="form-table">
+        <tbody>
+        <tr>
+            <th><?php _e( 'Use a custom form', 'groundhogg-calendar' ); ?></th>
+            <td>
 				<?php echo html()->dropdown( [
 					'options'  => get_form_list(),
 					'name'     => 'override_form_id',
@@ -160,38 +161,38 @@ if ( $calendar == null ) {
 
 				echo html()->description( __( 'Use a custom form built using the form builder in a funnel instead of the default form.', 'groundhogg-calendar' ) );
 				?>
-			</td>
-		</tr>
-		<tr>
-			<th scope="row"><label><?php _e( 'Redirect to another page', 'groundhogg-calendar' ) ?></label></th>
-			<td>
+            </td>
+        </tr>
+        <tr>
+            <th scope="row"><label><?php _e( 'Redirect to another page', 'groundhogg-calendar' ) ?></label></th>
+            <td>
 				<?php echo html()->link_picker( [
 					'name'        => 'redirect_link',
 					'placeholder' => site_url(),
 					'value'       => $calendar->get_meta( 'redirect_link', true )
 				] ); ?>
-				<p>
+                <p>
 					<?php echo html()->checkbox( [
 						'label'   => 'Enable',
 						'name'    => 'redirect_link_status',
 						'checked' => $calendar->get_meta( 'redirect_link_status', true ) ? $calendar->get_meta( 'redirect_link_status', true ) : 0
 					] );
 					?>
-				</p>
-				<p class="description"><?php _e( 'Enabling this setting redirect user to specified thank you page.', 'groundhogg-calendar' ) ?></p>
-			</td>
-		</tr>
-		</tbody>
-	</table>
-	<h2><?php _e( 'Success Message', 'groundhogg-calendar' ); ?></h2>
-	<div style="max-width: 700px">
-		<p><?php Plugin::instance()->replacements->show_replacements_dropdown(); ?></p>
+                </p>
+                <p class="description"><?php _e( 'Enabling this setting redirect user to specified thank you page.', 'groundhogg-calendar' ) ?></p>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <h2><?php _e( 'Success Message', 'groundhogg-calendar' ); ?></h2>
+    <div style="max-width: 700px">
+        <p><?php Plugin::instance()->replacements->show_replacements_dropdown(); ?></p>
 		<?php wp_editor( $calendar->get_meta( 'message' ) ? $calendar->get_meta( 'message' ) : __( 'Appointment booked Successfully!', 'groundhogg-calendar' ), 'message', [
 			'editor_height' => 200,
 			'editor_width'  => 500,
 			'media_buttons' => false,
 			'quicktags'     => false,
 		] ); ?>
-	</div>
-	<?php submit_button()?>
+    </div>
+	<?php submit_button() ?>
 </form>

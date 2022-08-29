@@ -26,7 +26,7 @@ use function GroundhoggBookingCalendar\zoom;
 use function Groundhogg\get_date_time_format;
 use function GroundhoggBookingCalendar\get_in_time_zone;
 
-class Appointment extends Base_Object_With_Meta {
+class Appointment extends Base_Object_With_Meta implements Availability {
 
 	/**
 	 * @var \WP_User
@@ -221,13 +221,13 @@ class Appointment extends Base_Object_With_Meta {
 	}
 
 	/**
-     * The owner name
-     *
+	 * The owner name
+	 *
 	 * @return string
 	 */
-    public function get_owner_name(){
-	    return $this->get_owner()->first_name . ' ' . $this->get_owner()->last_name;
-    }
+	public function get_owner_name() {
+		return $this->get_owner()->first_name . ' ' . $this->get_owner()->last_name;
+	}
 
 	/**
 	 * Retreives in Full callendar event format
@@ -238,7 +238,7 @@ class Appointment extends Base_Object_With_Meta {
 		return [
 			'id'            => $this->uuid,
 			'local_id'      => $this->get_id(),
-			'title'         => sprintf( __( '%s and %s' ), $this->get_contact()->get_full_name(), $this->get_owner_id() === get_current_user_id() ? __('You') : $this->get_owner_name() ) ,
+			'title'         => sprintf( __( '%s and %s' ), $this->get_contact()->get_full_name(), $this->get_owner_id() === get_current_user_id() ? __( 'You' ) : $this->get_owner_name() ),
 			'start'         => (int) $this->get_start_time() * 1000,
 			'end'           => (int) $this->get_end_time() * 1000,
 //			'editable'      => true,
@@ -266,7 +266,7 @@ class Appointment extends Base_Object_With_Meta {
 				'dateTo'    => $endDateTime->format( get_date_format() ),
 				'from'      => $startSateTime->format( get_time_format() ),
 				'to'        => $endDateTime->format( get_time_format() ),
-				'ownerName' =>  $this->get_owner_id() === get_current_user_id() ? __('You') : $this->get_owner_name(),
+				'ownerName' => $this->get_owner_id() === get_current_user_id() ? __( 'You' ) : $this->get_owner_name(),
 			]
 		] );
 	}
@@ -765,20 +765,20 @@ class Appointment extends Base_Object_With_Meta {
 	 *
 	 * @return bool
 	 */
-	public function conflicts( $start, $end ) {
+	public function conflicts( \DateTime $start, \DateTime $end ) {
 
 		$start = $start->getTimestamp();
 		$end   = $end->getTimestamp();
 
 		return
-			// given start is in between start and end
-			( $this->start_time <= $start && $this->end_time > $start ) ||
-			// given end is in between start and end
-			( $this->start_time <= $end && $this->end_time > $end ) ||
+			// Start is within range
+			( $start >= $this->start_time && $start < $this->end_time ) ||
+			// End is within range
+			( $end > $this->start_time && $end <= $this->end_time ) ||
 			// the given start and end time are within the slot
-			( $this->start_time >= $start && $this->end_time <= $end ) ||
+			( $start >= $this->start_time && $end <= $this->end_time ) ||
 			// the slot is within the given time
-			( $this->start_time <= $start && $this->end_time >= $end );
+			( $start <= $this->start_time && $end >= $this->end_time );
 	}
 
 	/**
@@ -830,4 +830,15 @@ class Appointment extends Base_Object_With_Meta {
 		return $this->manage_link( 'ics' );
 	}
 
+	public function get_start_date() {
+		return new \DateTime( Ymd_His( $this->start_time ) );
+	}
+
+	public function get_end_date() {
+		return new \DateTime( Ymd_His( $this->end_time ) );
+	}
+
+	public function is_back_to_back( \DateTime $start, \DateTime $end ) {
+		return $start == $this->get_end_date() || $end == $this->get_start_date();
+	}
 }

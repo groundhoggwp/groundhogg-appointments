@@ -6,8 +6,9 @@ namespace GroundhoggBookingCalendar\Classes;
 use Google_Service_Calendar_Event;
 use function Groundhogg\convert_to_utc_0;
 use function Groundhogg\get_time;
+use function Groundhogg\Ymd_His;
 
-class Synced_Event {
+class Synced_Event implements Availability {
 
 	protected $start_time;
 	protected $end_time;
@@ -57,14 +58,14 @@ class Synced_Event {
 		}
 
 		return
-			// given start is in between start and end
-			( $this->start_time <= $start && $this->end_time > $start ) ||
-			// given end is in between start and end
-			( $this->start_time <= $end && $this->end_time > $end ) ||
+			// Start is within range
+			( $start >= $this->start_time && $start < $this->end_time ) ||
+			// End is within range
+			( $end > $this->start_time && $end <= $this->end_time ) ||
 			// the given start and end time are within the slot
-			( $this->start_time >= $start && $this->end_time <= $end ) ||
+			( $start >= $this->start_time && $end <= $this->end_time ) ||
 			// the slot is within the given time
-			( $this->start_time <= $start && $this->end_time >= $end );
+			( $start <= $this->start_time && $end >= $this->end_time );
 	}
 
 	public function get_for_full_calendar() {
@@ -104,5 +105,17 @@ class Synced_Event {
 		$this->summary     = $data['summary'];
 		$this->description = $data['description'];
 		$this->time_zone   = $data['timeZone'];
+	}
+
+	public function get_start_date() {
+		return new \DateTime( Ymd_His( $this->start_time ) );
+	}
+
+	public function get_end_date() {
+		return new \DateTime( Ymd_His( $this->end_time ) );
+	}
+
+	public function is_back_to_back( \DateTime $start, \DateTime $end ) {
+		return $start == $this->get_end_date() || $end == $this->get_start_date();
 	}
 }
