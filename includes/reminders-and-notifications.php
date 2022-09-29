@@ -126,7 +126,7 @@ class Reminders_And_Notifications {
 			}
 		}
 
-		if ( $appointment->get_calendar()->are_sms_notifications_enabled() && is_sms_plugin_active() ) {
+		if ( $appointment->get_calendar()->are_sms_notifications_enabled() ) {
 
 			$sms_reminders = $appointment->get_calendar()->get_sms_reminders();
 

@@ -6,6 +6,7 @@ use Groundhogg\Contact;
 use Groundhogg\Email;
 use Groundhogg\Event_Process;
 use GroundhoggSMS\Classes\SMS;
+use function GroundhoggBookingCalendar\is_sms_plugin_active;
 
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -36,7 +37,6 @@ class SMS_Reminder implements Event_Process {
 	 * @deprecated use SCHEDULED instead
 	 */
 	public const APPROVED = 'appointment_approved';
-
 	public const SCHEDULED = 'appointment_scheduled';
 	public const RESCHEDULED = 'appointment_rescheduled';
 	public const CANCELLED = 'appointment_cancelled';
@@ -50,6 +50,11 @@ class SMS_Reminder implements Event_Process {
 	 * @param int $appointment_id
 	 */
 	public function __construct( $appointment_id, $sms_id ) {
+
+		if ( ! is_sms_plugin_active() ){
+			return;
+		}
+
 		$this->sms         = new SMS( $sms_id );
 		$this->appointment = new Appointment( $appointment_id );
 	}
@@ -59,10 +64,19 @@ class SMS_Reminder implements Event_Process {
 	}
 
 	public function get_step_title() {
+		if ( ! is_sms_plugin_active() ){
+			return 'SMS addon is not active';
+		}
+
 		return $this->sms->get_title();
 	}
 
 	public function run( $contact, $event ) {
+
+		if ( ! is_sms_plugin_active() ){
+			return new \WP_Error( 'sms_inactive', 'SMS addon is not active' );
+		}
+
 		do_action( 'groundhogg/calendar/sms_reminder/run/before', $this, $contact, $event );
 		$result = $this->sms->send( $contact, $event );
 		do_action( 'groundhogg/calendar/sms_reminder/run/after', $this, $contact, $event );
@@ -71,6 +85,6 @@ class SMS_Reminder implements Event_Process {
 	}
 
 	public function can_run() {
-		return true;
+		return is_sms_plugin_active();
 	}
 }
