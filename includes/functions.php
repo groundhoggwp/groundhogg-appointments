@@ -238,18 +238,19 @@ function send_email_reminder_notification( $email_id = 0, $appointment_id = 0, $
  */
 function setup_reminder_notification_object( $event ) {
 
-	if ( $event->get_event_type() === SMS_Reminder::NOTIFICATION_TYPE ) {
+    // Only if SMS is enabled, otherwise use email notification
+	if ( $event->get_event_type() === SMS_Reminder::NOTIFICATION_TYPE && is_sms_plugin_active() ) {
 
 		// Step ID will be the ID of the email
 		// Funnel ID will be the ID of the appointment
 		$event->step = new SMS_Reminder( $event->get_funnel_id(), $event->get_step_id() );
-
-	} else if ( $event->get_event_type() === Email_Reminder::NOTIFICATION_TYPE ) {
-
-		// Step ID will be the ID of the email
-		// Funnel ID will be the ID of the appointment
-		$event->step = new Email_Reminder( $event->get_funnel_id(), $event->get_step_id() );
+        return;
 	}
+
+	// Step ID will be the ID of the email
+	// Funnel ID will be the ID of the appointment
+	$event->step = new Email_Reminder( $event->get_funnel_id(), $event->get_step_id() );
+
 }
 
 add_action( 'groundhogg/event/post_setup', __NAMESPACE__ . '\setup_reminder_notification_object' );
@@ -305,11 +306,11 @@ function is_sms_plugin_active() {
 
 function add_booking_appointment() {
 	?>
-	<table class="form-table">
-		<tr>
-			<th><?php _ex( 'Book Appointment', 'contact_record', 'groundhogg-calendar' ); ?></th>
-			<td>
-				<div style="max-width: 400px;">
+    <table class="form-table">
+        <tr>
+            <th><?php _ex( 'Book Appointment', 'contact_record', 'groundhogg-calendar' ); ?></th>
+            <td>
+                <div style="max-width: 400px;">
 					<?php
 					$calendars = get_calendar_list();
 					echo Plugin::$instance->utils->html->select2( [
@@ -321,14 +322,14 @@ function add_booking_appointment() {
 						'placeholder' => __( 'Please select a calendar', 'groundhogg-calendar' ),
 					] );
 					?>
-					<div class="row-actions">
-						<button type="submit" name="appointment_book" value="appointment_book"
-						        class="button"><?php _e( 'Book Appointment', 'groundhogg-calendar' ); ?></button>
-					</div>
-				</div>
-			</td>
-		</tr>
-	</table>
+                    <div class="row-actions">
+                        <button type="submit" name="appointment_book" value="appointment_book"
+                                class="button"><?php _e( 'Book Appointment', 'groundhogg-calendar' ); ?></button>
+                    </div>
+                </div>
+            </td>
+        </tr>
+    </table>
 	<?php
 }
 
@@ -381,12 +382,12 @@ function generate_uuid() {
 /**
  * Convert a duration to human readable format.
  *
+ * @since 5.1.0
+ *
  * @param string $duration Duration will be in string format (HH:ii:ss) OR (ii:ss),
  *                         with a possible prepended negative sign (-).
  *
  * @return string|false A human readable duration string, false on failure.
- * @since 5.1.0
- *
  */
 function better_human_readable_duration( $duration = '' ) {
 	if ( ( empty( $duration ) || ! is_string( $duration ) ) ) {
@@ -415,7 +416,7 @@ function better_human_readable_duration( $duration = '' ) {
 		}
 		// Three parts: hours, minutes & seconds.
 		list( $second, $minute, $hour ) = $duration_parts;
-	} elseif ( 2 === $duration_count ) {
+	} else if ( 2 === $duration_count ) {
 		// Validate ii:ss duration format.
 		if ( ! ( (bool) preg_match( '/^([0-5]?[0-9]):([0-5]?[0-9])$/', $duration ) ) ) {
 			return false;
@@ -547,8 +548,8 @@ function send_appointment_admin_notifications( $appointment, $status ) {
 /**
  * Get's the maximum booking period of all the calendars
  *
- * @return int|mixed
  * @throws \Exception
+ * @return int|mixed
  */
 function get_max_booking_period() {
 

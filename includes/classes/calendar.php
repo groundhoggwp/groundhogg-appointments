@@ -17,6 +17,7 @@ use function Groundhogg\do_replacements;
 use function Groundhogg\isset_not_empty;
 use function GroundhoggBookingCalendar\get_default_availability;
 use function GroundhoggBookingCalendar\get_time_format;
+use function GroundhoggBookingCalendar\is_sms_plugin_active;
 use function GroundhoggBookingCalendar\validate_calendar_slug;
 use function GroundhoggBookingCalendar\zoom;
 use function GroundhoggBookingCalendar\in_between;
@@ -965,7 +966,7 @@ class Calendar extends Base_Object_With_Meta {
 	 * @return bool
 	 */
 	public function are_sms_notifications_enabled() {
-		return (bool) $this->get_meta( 'enable_sms_notifications' );
+		return (bool) $this->get_meta( 'enable_sms_notifications' ) && is_sms_plugin_active();
 	}
 
 	/**
