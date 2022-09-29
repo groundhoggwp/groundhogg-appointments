@@ -5,6 +5,7 @@ namespace GroundhoggBookingCalendar\Classes;
 
 use \Exception;
 use Google\Model;
+use Groundhogg\Contact;
 use Groundhogg\Plugin;
 use \Google_Service_Calendar;
 use \Google_Service_Calendar_Event;
@@ -81,7 +82,7 @@ class Appointment extends Base_Object_With_Meta {
 	 * @return false|\Groundhogg\Contact
 	 */
 	public function get_contact() {
-		return get_contactdata( $this->get_contact_id() );
+		return new Contact( $this->get_contact_id() );
 	}
 
 	/**
