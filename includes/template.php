@@ -317,7 +317,7 @@ function default_form() {
 	?>
 	<div class="gh-form-wrapper">
 		<form class="gh-form details-form" method="post" target="_parent">
-			<div class="gh-form">
+			<div class="form-fields">
 				<div class="gh-form-row clearfix">
 					<div class="gh-form-column col-1-of-2">
 						<div class="gh-form-field">
@@ -477,7 +477,7 @@ function cancellation_form() {
 	?>
 	<div class="gh-form-wrapper">
 		<form class="gh-form details-form" method="post" target="_parent">
-			<div class="gh-form">
+			<div class="form-fields">
 				<div class="gh-form-row clearfix">
 					<div class="gh-form-column col-1-of-1">
 						<div class="gh-form-field">
@@ -523,7 +523,7 @@ function reschedule_form() {
 	?>
 	<div class="gh-form-wrapper">
 		<form class="gh-form details-form" method="post" target="_parent">
-			<div class="gh-form">
+			<div class="form-fields">
 				<div class="gh-form-row clearfix">
 					<div class="gh-form-column col-1-of-1">
 						<div class="gh-form-field">

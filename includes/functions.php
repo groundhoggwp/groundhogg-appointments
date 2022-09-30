@@ -238,13 +238,14 @@ function send_email_reminder_notification( $email_id = 0, $appointment_id = 0, $
  */
 function setup_reminder_notification_object( $event ) {
 
-    // Only if SMS is enabled, otherwise use email notification
+	// Only if SMS is enabled, otherwise use email notification
 	if ( $event->get_event_type() === SMS_Reminder::NOTIFICATION_TYPE && is_sms_plugin_active() ) {
 
 		// Step ID will be the ID of the email
 		// Funnel ID will be the ID of the appointment
 		$event->step = new SMS_Reminder( $event->get_funnel_id(), $event->get_step_id() );
-        return;
+
+		return;
 	}
 
 	// Step ID will be the ID of the email
@@ -515,17 +516,21 @@ function get_tz_db_name() {
  */
 function send_appointment_admin_notifications( $appointment, $status ) {
 
+	$status_i18n = [
+		Email_Reminder::SCHEDULED   => __( 'Appointment Scheduled', 'groundhogg-appointments' ),
+		Email_Reminder::RESCHEDULED => __( 'Appointment Rescheduled', 'groundhogg-appointments' ),
+		Email_Reminder::CANCELLED   => __( 'Appointment Cancelled', 'groundhogg-appointments' ),
+	];
+
 	\GroundhoggBookingCalendar\Plugin::$instance->replacements->set_appointment( $appointment );
 
 	$content = $appointment->get_calendar()->get_meta( 'notification' );
-
-	$content = sanitize_textarea_field( do_replacements( $content, $appointment->get_contact_id() ) );
-
-	$content .= "\n" . sprintf( __( "Status: %s", 'groundhogg-calendar' ), key_to_words( $status ) );
+	$content = sanitize_textarea_field( do_replacements( $content, $appointment->get_contact() ) );
+	$content .= "\n" . sprintf( __( "Status: %s", 'groundhogg-calendar' ), $status_i18n[$status] );
 
 	$subject = $appointment->get_calendar()->get_meta( 'subject' );
-	$subject = sanitize_text_field( do_replacements( $subject, $appointment->get_contact_id() ) );
-	$subject = sprintf( "%s: %s", words_to_key( $status ), $subject );
+	$subject = sanitize_text_field( do_replacements( $subject, $appointment->get_contact() ) );
+	$subject = sprintf( "%s: %s", $status_i18n[$status], $subject );
 
 	$headers = [
 		sprintf( 'From: %s <%s>', get_default_from_name(), get_default_from_email() )
