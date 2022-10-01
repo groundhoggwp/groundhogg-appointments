@@ -238,20 +238,17 @@ function send_email_reminder_notification( $email_id = 0, $appointment_id = 0, $
  */
 function setup_reminder_notification_object( $event ) {
 
-	// Only if SMS is enabled, otherwise use email notification
-	if ( $event->get_event_type() === SMS_Reminder::NOTIFICATION_TYPE && is_sms_plugin_active() ) {
+    switch ( $event->get_event_type() ){
+        case SMS_Reminder::NOTIFICATION_TYPE;
+            if ( is_sms_plugin_active() ){
+	            $event->step = new SMS_Reminder( $event->get_funnel_id(), $event->get_step_id() );
+            }
+            break;
 
-		// Step ID will be the ID of the email
-		// Funnel ID will be the ID of the appointment
-		$event->step = new SMS_Reminder( $event->get_funnel_id(), $event->get_step_id() );
-
-		return;
-	}
-
-	// Step ID will be the ID of the email
-	// Funnel ID will be the ID of the appointment
-	$event->step = new Email_Reminder( $event->get_funnel_id(), $event->get_step_id() );
-
+        case Email_Reminder::NOTIFICATION_TYPE;
+	        $event->step = new Email_Reminder( $event->get_funnel_id(), $event->get_step_id() );
+	        break;
+    }
 }
 
 add_action( 'groundhogg/event/post_setup', __NAMESPACE__ . '\setup_reminder_notification_object' );

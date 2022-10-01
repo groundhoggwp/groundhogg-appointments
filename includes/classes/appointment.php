@@ -116,7 +116,12 @@ class Appointment extends Base_Object_With_Meta {
 	public function get_owner() {
 
 		if ( ! $this->owner ) {
-			$this->owner = get_userdata( $this->get_calendar()->get_user_id() );
+			$owner = get_userdata( $this->get_calendar()->get_user_id() );
+			if ( ! $owner ){
+				$owner = $this->get_contact()->get_ownerdata();
+			}
+
+			$this->owner = $owner;
 		}
 
 		return $this->owner;
@@ -143,7 +148,11 @@ class Appointment extends Base_Object_With_Meta {
 	 * @return string
 	 */
 	public function get_name() {
-		return sprintf( _x( '%s and %s %s', 'Appointment Name', 'groundhogg-calendar' ), $this->get_contact()->get_full_name(), $this->get_owner()->first_name, $this->get_owner()->last_name );
+		return sprintf( _x( '%s and %s %s', 'Appointment Name', 'groundhogg-calendar' ),
+			$this->get_contact()->get_full_name(),
+			$this->get_owner()->first_name,
+			$this->get_owner()->last_name
+		);
 	}
 
 	public function get_status() {
