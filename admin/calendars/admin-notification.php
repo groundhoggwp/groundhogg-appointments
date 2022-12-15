@@ -3,7 +3,7 @@
 namespace GroundhoggBookingCalendar\Admin\Calendars;
 
 use Groundhogg\Plugin;
-use GroundhoggBookingCalendar\Classes\Email_Reminder;
+use GroundhoggBookingCalendar\Classes\Appointment_Reminder;
 use function Groundhogg\enqueue_groundhogg_modal;
 use function Groundhogg\get_array_var;
 use function Groundhogg\get_request_var;
@@ -38,7 +38,7 @@ $calendar    = new Calendar( $calendar_id );
 		html()->checkbox( [
 			'name'    => 'scheduled_notification',
 			'label'   => __( 'Enabled', 'groundhogg' ),
-			'checked' => $calendar->is_admin_notification_enabled( Email_Reminder::SCHEDULED )
+			'checked' => $calendar->is_admin_email_notification_enabled( Appointment_Reminder::SCHEDULED )
 
 		] ),
 		html()->description( __( 'Email that is sent when an appointment is booked.', 'groundhogg-calendar' ) ),
@@ -53,7 +53,7 @@ $calendar    = new Calendar( $calendar_id );
 		html()->checkbox( [
 			'name'    => 'rescheduled_notification',
 			'label'   => __( 'Enabled', 'groundhogg' ),
-			'checked' => $calendar->is_admin_notification_enabled( Email_Reminder::RESCHEDULED )
+			'checked' => $calendar->is_admin_email_notification_enabled( Appointment_Reminder::RESCHEDULED )
 		] ),
 		html()->description( __( 'Get notified when an appointment is rescheduled.', 'groundhogg-calendar' ) ),
 	] );
@@ -66,7 +66,7 @@ $calendar    = new Calendar( $calendar_id );
 		html()->checkbox( [
 			'name'    => 'cancelled_notification',
 			'label'   => __( 'Enabled', 'groundhogg' ),
-			'checked' => $calendar->is_admin_notification_enabled( Email_Reminder::CANCELLED )
+			'checked' => $calendar->is_admin_email_notification_enabled( Appointment_Reminder::CANCELLED )
 		] ),
 		html()->description( __( 'Email that is sent when an appointment is cancelled.', 'groundhogg-calendar' ) ),
 	] );
@@ -80,7 +80,7 @@ $calendar    = new Calendar( $calendar_id );
 			html()->checkbox( [
 				'name'    => 'admin_sms_notifications',
 				'label'   => __( 'Enabled', 'groundhogg' ),
-				'checked' => $calendar->is_admin_notification_enabled( 'sms' )
+				'checked' => $calendar->is_admin_email_notification_enabled( 'sms' )
 			] ),
 			html()->description( __( 'Also receive SMS notifications in addition to email notifications.', 'groundhogg-calendar' ) ),
 		] );
@@ -134,6 +134,7 @@ $calendar    = new Calendar( $calendar_id );
 			<?php Plugin::instance()->replacements->show_replacements_dropdown(); ?>
 		</p>
 		<?php
+
 		echo html()->textarea( [
 			'name'  => 'notification',
 			'value' => $calendar->get_meta( 'notification' ) ? $calendar->get_meta( 'notification' ) : "Name: {full_name} \nEmail: {email} \n\nStart: {appointment_start_time_admin} \nEnd: {appointment_end_time_admin}",

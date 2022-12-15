@@ -3,6 +3,7 @@
 namespace GroundhoggBookingCalendar;
 
 use GroundhoggBookingCalendar\Classes\Appointment;
+use GroundhoggBookingCalendar\Classes\Calendar;
 
 class Roles extends \Groundhogg\Roles {
 
@@ -76,6 +77,7 @@ class Roles extends \Groundhogg\Roles {
 			'edit_others_appointments',
 			'view_appointments',
 			'view_others_appointments',
+			'edit_calendar_integrations',
 
 			'add_calendars',
 			'delete_calendars',
@@ -93,6 +95,7 @@ class Roles extends \Groundhogg\Roles {
 			'edit_others_appointments',
 			'view_appointments',
 			'view_others_appointments',
+			'edit_calendar_integrations',
 
 			'add_calendars',
 			'delete_calendars',
@@ -124,7 +127,7 @@ class Roles extends \Groundhogg\Roles {
 			'delete_appointments',
 			'edit_appointments',
 
-			'edit_calendars',
+			'view_calendars',
 		];
 	}
 

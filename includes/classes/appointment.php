@@ -5,6 +5,7 @@ namespace GroundhoggBookingCalendar\Classes;
 
 use \Exception;
 use Google\Model;
+use Google\Service\ShoppingContent\DateTime;
 use Groundhogg\Plugin;
 use \Google_Service_Calendar;
 use \Google_Service_Calendar_Event;
@@ -18,9 +19,11 @@ use function Groundhogg\get_contactdata;
 use function Groundhogg\managed_page_url;
 use function Groundhogg\Ymd_His;
 use function Groundhogg\minify_html;
-use function GroundhoggBookingCalendar\generate_uuid;
+use function GroundhoggBookingCalendar\generate_google_uuid;
 use function GroundhoggBookingCalendar\get_date_format;
 use function GroundhoggBookingCalendar\get_time_format;
+use function GroundhoggBookingCalendar\get_user_google_connection;
+use function GroundhoggBookingCalendar\get_user_zoom_account_id;
 use function GroundhoggBookingCalendar\sanitize_google_uuid;
 use function GroundhoggBookingCalendar\zoom;
 use function Groundhogg\get_date_time_format;
@@ -39,7 +42,10 @@ class Appointment extends Base_Object_With_Meta implements Availability {
 	}
 
 	protected function post_setup() {
-		$this->g_uuid = sanitize_google_uuid( $this->uuid );
+		$this->g_uuid     = sanitize_google_uuid( $this->uuid );
+		$this->start_time = absint( $this->start_time );
+		$this->end_time   = absint( $this->end_time );
+		$this->get_google_connection();
 	}
 
 	protected function get_db() {
@@ -52,6 +58,8 @@ class Appointment extends Base_Object_With_Meta implements Availability {
 
 	/**
 	 * Get the start time in pretty format.
+	 *
+	 * @deprecated
 	 *
 	 * @param bool $zone whether to return as the timezone of the contact
 	 *
@@ -101,7 +109,19 @@ class Appointment extends Base_Object_With_Meta implements Availability {
 	 * @return int
 	 */
 	public function get_owner_id() {
-		return $this->get_calendar()->get_user_id();
+		return absint( $this->owner_id );
+	}
+
+	/**
+	 * @return false|\WP_User
+	 */
+	public function get_owner() {
+
+		if ( ! $this->owner ) {
+			$this->owner = get_userdata( $this->get_owner_id() );
+		}
+
+		return $this->owner;
 	}
 
 	/**
@@ -111,18 +131,6 @@ class Appointment extends Base_Object_With_Meta implements Availability {
 	 */
 	public function get_calendar_id() {
 		return absint( $this->calendar_id );
-	}
-
-	/**
-	 * @return false|\WP_User
-	 */
-	public function get_owner() {
-
-		if ( ! $this->owner ) {
-			$this->owner = get_userdata( $this->get_calendar()->get_user_id() );
-		}
-
-		return $this->owner;
 	}
 
 	protected $calendar = null;
@@ -146,7 +154,11 @@ class Appointment extends Base_Object_With_Meta implements Availability {
 	 * @return string
 	 */
 	public function get_name() {
-		return sprintf( _x( '%s and %s %s', 'Appointment Name', 'groundhogg-calendar' ), $this->get_contact()->get_full_name(), $this->get_owner()->first_name, $this->get_owner()->last_name );
+		return sprintf( _x( '%s and %s %s', 'Appointment Name', 'groundhogg-calendar' ),
+			$this->get_contact()->get_full_name(),
+			$this->get_owner()->first_name,
+			$this->get_owner()->last_name
+		);
 	}
 
 	public function get_status() {
@@ -157,13 +169,17 @@ class Appointment extends Base_Object_With_Meta implements Availability {
 		return $this->get_status() === 'cancelled';
 	}
 
+	public function is_scheduled() {
+		return $this->get_status() === 'scheduled';
+	}
+
 	/**
 	 * Return start time of appointment
 	 *
 	 * @return int
 	 */
 	public function get_start_time( $local = false ) {
-		return $local ? utils()->date_time->convert_to_local_time( absint( $this->start_time ) ) : absint( $this->start_time );
+		return $this->start_time;
 	}
 
 	/**
@@ -172,7 +188,58 @@ class Appointment extends Base_Object_With_Meta implements Availability {
 	 * @return int
 	 */
 	public function get_end_time( $local = false ) {
-		return $local ? utils()->date_time->convert_to_local_time( absint( $this->end_time ) ) : absint( $this->end_time );
+		return $this->end_time;
+	}
+
+	/**
+	 * Get start time in given format and timezone
+	 *
+	 * @throws Exception
+	 *
+	 * @param $local
+	 * @param $format
+	 *
+	 * @return string
+	 */
+	public function get_start_time_formatted( $format = false, $local = false ) {
+		return $this->get_time_formatted( $this->get_start_time(), $format, $local );
+	}
+
+	/**
+	 * Get end time in given format and timezone
+	 *
+	 * @throws Exception
+	 *
+	 * @param $local
+	 * @param $format
+	 *
+	 * @return string
+	 */
+	public function get_end_time_formatted( $format = false, $local = false ) {
+		return $this->get_time_formatted( $this->get_end_time(), $format, $local );
+	}
+
+	/**
+	 * Get formatted time
+	 *
+	 * @throws Exception
+	 *
+	 * @param $format
+	 * @param $local
+	 * @param $time
+	 *
+	 * @return string
+	 */
+	protected function get_time_formatted( $time, $format = false, $local = false ) {
+
+		if ( ! $format ) {
+			$format = get_date_time_format();
+		}
+
+		$dateTime = new \DateTime( 'now', $local ? $this->get_contact()->get_time_zone( false ) : wp_timezone() );
+		$dateTime->setTimestamp( $time );
+
+		return $dateTime->format( $format );
 	}
 
 	/**
@@ -192,8 +259,8 @@ class Appointment extends Base_Object_With_Meta implements Availability {
 		/**
 		 * updates the zoom meeting if there is one
 		 */
-		$this->update_zoom_meeting();
-		$this->update_in_google();
+		$this->maybe_update_zoom_meeting();
+		$this->maybe_update_in_google();
 
 		return true;
 	}
@@ -209,8 +276,8 @@ class Appointment extends Base_Object_With_Meta implements Availability {
 	public function delete() {
 
 		$this->cancel();
-		$this->delete_zoom_meeting();
-		$this->delete_in_google();
+		$this->maybe_delete_zoom_meeting();
+		$this->maybe_delete_in_google();
 
 		// Delete in synced events if it exists there
 		get_db( 'synced_events' )->delete( [
@@ -278,8 +345,8 @@ class Appointment extends Base_Object_With_Meta implements Availability {
 	 */
 	public function schedule() {
 
-		$this->create_zoom_meeting();
-		$this->add_in_google();
+		$this->maybe_create_zoom_meeting();
+		$this->maybe_add_in_google();
 
 		/**
 		 * Runs if the appointment was initially scheduled
@@ -317,15 +384,6 @@ class Appointment extends Base_Object_With_Meta implements Availability {
 
 		// match the dates before performing the operation..
 		if ( $orig_start !== $this->get_start_time() || $orig_end !== $this->get_end_time() ) {
-
-			get_db( 'synced_events' )->update( [
-				'event_id' => $this->g_uuid
-			], [
-				'start_time'        => $this->get_start_time(),
-				'end_time'          => $this->get_end_time(),
-				'start_time_pretty' => Ymd_His( $this->get_start_time() ),
-				'end_time_pretty'   => Ymd_His( $this->get_end_time() ),
-			] );
 
 			/**
 			 * Runs if the appointment was rescheduled
@@ -393,6 +451,14 @@ class Appointment extends Base_Object_With_Meta implements Availability {
 		return $this->manage_link( 'reschedule' );
 	}
 
+	public function location_is_google_meet() {
+		return $this->get_meta( 'location' ) === 'google_meet';
+	}
+
+	public function location_is_zoom() {
+		return $this->get_meta( 'location' ) === 'zoom';
+	}
+
 	/**
 	 * Return zoom meeting id
 	 *
@@ -405,8 +471,9 @@ class Appointment extends Base_Object_With_Meta implements Availability {
 	/**
 	 * Create the zoom meeting if the zoom integration is enabled
 	 */
-	public function create_zoom_meeting() {
-		if ( ! $this->get_calendar()->is_zoom_enabled() ) {
+	public function maybe_create_zoom_meeting() {
+
+		if ( ! $this->location_is_zoom() ) {
 			return;
 		}
 
@@ -423,7 +490,7 @@ class Appointment extends Base_Object_With_Meta implements Availability {
 			$details['settings'] = $settings;
 		}
 
-		$response = zoom()->request( $this->get_calendar()->get_zoom_account_id(), 'users/me/meetings', $details );
+		$response = zoom()->request( get_user_zoom_account_id( $this->get_owner_id() ), 'users/me/meetings', $details );
 
 		if ( is_wp_error( $response ) ) {
 			$this->add_error( $response );
@@ -434,24 +501,24 @@ class Appointment extends Base_Object_With_Meta implements Availability {
 			$this->update_meta( 'zoom_join_url', $response->join_url );
 		}
 
-		$this->update_zoom_meeting_invitation();
+		$this->maybe_update_zoom_meeting_invitation();
 	}
 
 	/**
 	 * Update an existing zoom meeting
 	 */
-	public function update_zoom_meeting() {
+	public function maybe_update_zoom_meeting() {
 
-		if ( ! $this->get_calendar()->is_zoom_enabled() ) {
+		if ( ! $this->location_is_zoom() ) {
 			return;
 		} else if ( ! $this->get_zoom_meeting_id() ) {
-			$this->create_zoom_meeting();
+			$this->maybe_create_zoom_meeting();
 
 			return;
 		}
 
 		if ( $this->is_cancelled() ) {
-			$this->delete_zoom_meeting();
+			$this->maybe_delete_zoom_meeting();
 
 			return;
 		}
@@ -469,22 +536,27 @@ class Appointment extends Base_Object_With_Meta implements Availability {
 			$details['settings'] = $settings;
 		}
 
-		zoom()->request( $this->get_calendar()->get_zoom_access_token( true ), 'meetings/' . $this->get_zoom_meeting_id(), $details, 'PATCH' );
+		zoom()->request(
+			get_user_zoom_account_id( $this->get_owner_id() ),
+			'meetings/' . $this->get_zoom_meeting_id(), $details,
+			'PATCH'
+		);
 
-		$this->update_zoom_meeting_invitation();
+		$this->maybe_update_zoom_meeting_invitation();
 	}
 
 	/**
 	 * Delete any existing zoom meeting
 	 */
-	public function delete_zoom_meeting() {
-		if ( ! $this->get_calendar()->is_zoom_enabled() || ! $this->get_zoom_meeting_id() ) {
+	public function maybe_delete_zoom_meeting() {
+
+		if ( ! $this->location_is_zoom() || ! $this->get_zoom_meeting_id() ) {
 			return;
 		}
 
 		// ensure that this appointment actually has a zoom meeting
 		zoom()->request(
-			$this->get_calendar()->get_zoom_access_token( true ),
+			get_user_zoom_account_id( $this->get_owner_id() ),
 			'meetings/' . $this->get_zoom_meeting_id(),
 			null,
 			'DELETE'
@@ -498,14 +570,14 @@ class Appointment extends Base_Object_With_Meta implements Availability {
 	 *
 	 * @return false|string|void
 	 */
-	public function update_zoom_meeting_invitation() {
-		if ( ! $this->get_calendar()->is_zoom_enabled() ) {
+	public function maybe_update_zoom_meeting_invitation() {
+		if ( ! $this->location_is_zoom() ) {
 			return false;
 		}
 
 		$endpoint = 'meetings/' . $this->get_zoom_meeting_id() . '/invitation';
 
-		$response = zoom()->request( $this->get_calendar()->get_zoom_account_id(), $endpoint, null, 'GET' );
+		$response = zoom()->request( get_user_zoom_account_id( $this->get_owner_id() ), $endpoint, null, 'GET' );
 
 		if ( ! $response->invitation ) {
 			return false;
@@ -523,14 +595,14 @@ class Appointment extends Base_Object_With_Meta implements Availability {
 	 */
 	public function get_zoom_meeting_details() {
 
-		if ( ! $this->get_calendar()->is_zoom_enabled() ) {
+		if ( ! $this->location_is_zoom() ) {
 			return false;
 		}
 
 		$invite = $this->get_meta( 'zoom_meeting_invitation' );
 
 		if ( ! $invite && $this->get_zoom_meeting_id() ) {
-			$invite = $this->update_zoom_meeting_invitation();
+			$invite = $this->maybe_update_zoom_meeting_invitation();
 		}
 
 		return $invite;
@@ -554,7 +626,7 @@ class Appointment extends Base_Object_With_Meta implements Availability {
 			$description .= "\n\n<b>" . __( 'Guest Notes:', 'groundhogg-calendar' ) . "</b>\n" . $this->get_meta( 'notes' );
 		}
 
-		if ( $this->get_calendar()->is_zoom_enabled() ) {
+		if ( $this->location_is_zoom() ) {
 			$description .= "\n\n" . $this->get_zoom_meeting_details();
 		}
 
@@ -588,7 +660,7 @@ class Appointment extends Base_Object_With_Meta implements Availability {
 		<?php if ( $this->get_meta( 'notes' ) ) : ?>
 			<?php echo wpautop( $this->get_meta( 'notes' ) ) ?>
 		<?php endif; ?>
-		<?php if ( $this->get_calendar()->is_zoom_enabled() ) : ?>
+		<?php if ( $this->location_is_zoom() ) : ?>
 			<?php echo wpautop( $this->get_zoom_meeting_details() ) ?>
 		<?php endif; ?>
         <p><a href="<?php echo $this->reschedule_link() ?>"><?php _e( 'Reschedule', 'groundhogg-calendar' ) ?></a> | <a
@@ -615,26 +687,63 @@ class Appointment extends Base_Object_With_Meta implements Availability {
 	}
 
 	/**
+	 * Get the location string
+	 *
+	 * @return string
+	 */
+	public function get_location() {
+		return do_replacements( $this->get_meta( 'location' ), $this->get_contact() );
+	}
+
+	/**
+	 * Get the location string for calendar invites
+	 *
+	 * @return string
+	 */
+	public function get_invite_location() {
+		if ( $this->location_is_zoom() ) {
+			return $this->get_meta( 'zoom_join_url' );
+		} else if ( $this->location_is_google_meet() ) {
+			return $this->get_meta( 'google_meet_url' );
+		} else {
+			return $this->get_location();
+		}
+	}
+
+	/**
+	 * @var Google_Connection
+	 */
+	protected $google_connection;
+
+	public function get_google_connection() {
+		$connection = get_user_google_connection( $this->get_owner_id() );
+		if ( $connection && is_a( $connection, Google_Connection::class ) ) {
+			$this->google_connection = $connection;
+		}
+
+		return $this->google_connection;
+	}
+
+	public function is_connected_to_google() {
+		return (bool) $this->google_connection;
+	}
+
+	/**
 	 * Get the google meet conference ID
 	 *
 	 * @return bool|mixed
 	 */
 	protected function get_google_meet_conference_id() {
 		if ( ! $this->get_meta( 'google_meet_conference_id' ) ) {
-			$this->update_meta( 'google_meet_conference_id', generate_uuid() );
+			$this->update_meta( 'google_meet_conference_id', generate_google_uuid() );
 		}
 
 		return $this->get_meta( 'google_meet_conference_id' );
 	}
 
 	/**
-	 * @return string
-	 */
-	public function get_location() {
-		return do_replacements( $this->get_calendar()->get_meta( 'appointment_location' ) ?: '', $this->get_contact() );
-	}
-
-	/**
+	 * Get the appointment as a google event format
+	 *
 	 * @return array
 	 */
 	protected function get_google_event_format() {
@@ -643,7 +752,6 @@ class Appointment extends Base_Object_With_Meta implements Availability {
 			'summary'     => $this->get_google_summary(),
 			'status'      => $this->is_cancelled() ? 'cancelled' : 'confirmed',
 			'description' => $this->get_google_description(),
-			'location'    => $this->get_calendar()->is_zoom_enabled() ? $this->get_meta( 'zoom_join_url' ) : $this->get_location(),
 			'start'       => [
 				'dateTime' => date( DATE_RFC3339, $this->get_start_time() ),
 				'timeZone' => 'UTC'
@@ -657,7 +765,7 @@ class Appointment extends Base_Object_With_Meta implements Availability {
 			],
 		];
 
-		if ( $this->get_calendar()->is_google_meet_enabled() ) {
+		if ( $this->location_is_google_meet() ) {
 
 			$event['conferenceData'] = [
 				'createRequest' => [
@@ -670,6 +778,8 @@ class Appointment extends Base_Object_With_Meta implements Availability {
 					]
 				]
 			];
+		} else {
+			$event['location'] = $this->get_invite_location();
 		}
 
 		return $event;
@@ -678,13 +788,13 @@ class Appointment extends Base_Object_With_Meta implements Availability {
 	/**
 	 * Add the appointment in the Google
 	 */
-	public function add_in_google() {
+	public function maybe_add_in_google() {
 
-		if ( ! $this->get_calendar()->is_connected_to_google() ) {
+		if ( ! $this->is_connected_to_google() ) {
 			return false;
 		}
 
-		$client  = $this->get_calendar()->get_google_client();
+		$client  = $this->get_google_connection()->get_client();
 		$service = new Google_Service_Calendar( $client );
 
 		\GroundhoggBookingCalendar\Plugin::$instance->replacements->set_appointment( $this );
@@ -693,7 +803,7 @@ class Appointment extends Base_Object_With_Meta implements Availability {
 		$event = new Google_Service_Calendar_Event( $this->get_google_event_format() );
 
 		try {
-			$event_created = $service->events->insert( $this->get_calendar()->get_remote_google_calendar_id(), $event, [ 'conferenceDataVersion' => 1 ] );
+			$event_created = $service->events->insert( $this->get_google_connection()->get_main_calendar_id(), $event, [ 'conferenceDataVersion' => 1 ] );
 
 			if ( $event_created->hangoutLink ) {
 				$this->add_meta( 'google_meet_url', $event_created->hangoutLink );
@@ -711,14 +821,14 @@ class Appointment extends Base_Object_With_Meta implements Availability {
 	 *
 	 * @return bool
 	 */
-	protected function update_in_google() {
+	protected function maybe_update_in_google() {
 
-		if ( ! $this->get_calendar()->is_connected_to_google() ) {
+		if ( ! $this->is_connected_to_google() ) {
 			return false;
 		}
 
 		// create google client
-		$client = $this->get_calendar()->get_google_client();
+		$client = $this->get_google_connection()->get_client();
 
 		$service = new Google_Service_Calendar( $client );
 
@@ -727,11 +837,11 @@ class Appointment extends Base_Object_With_Meta implements Availability {
 		$event = new Google_Service_Calendar_Event( $this->get_google_event_format() );
 
 		try {
-			$updatedEvent = $service->events->update( $this->get_calendar()->get_remote_google_calendar_id(), $this->g_uuid, $event, [] );
+			$updatedEvent = $service->events->update( $this->get_google_connection()->get_main_calendar_id(), $this->g_uuid, $event, [] );
 		} catch ( \Google\Service\Exception $exception ) {
 
 			if ( $exception->getCode() === 404 ) {
-				return $this->add_in_google();
+				return $this->maybe_add_in_google();
 			}
 
 			return false;
@@ -743,18 +853,69 @@ class Appointment extends Base_Object_With_Meta implements Availability {
 	/**
 	 * Delete Appointment from google calendar if it exist.
 	 */
-	public function delete_in_google() {
+	public function maybe_delete_in_google() {
 
-		if ( ! $this->get_calendar()->is_connected_to_google() ) {
+		if ( ! $this->is_connected_to_google() ) {
 			return;
 		}
 
-		$client  = $this->get_calendar()->get_google_client();
+		$client  = $this->get_google_connection()->get_client();
 		$service = new Google_Service_Calendar( $client );
 		try {
-			$service->events->delete( $this->get_calendar()->get_remote_google_calendar_id(), $this->g_uuid );
+			$service->events->delete( $this->get_google_connection()->get_main_calendar_id(), $this->g_uuid );
 		} catch ( Exception $e ) {
 		}
+	}
+
+	/**
+	 * Get a the link to add the appointment to a Google calendar
+	 *
+	 * @return string
+	 */
+	public function get_add_to_google_link() {
+
+		$start_formatted = date( 'Ymd\THis\Z', $this->get_start_time() );
+		$end_formatted   = date( 'Ymd\THis\Z', $this->get_end_time() );
+
+		$data = [
+			'action'   => 'TEMPLATE',
+			'text'     => $this->get_name(),
+			'details'  => wp_strip_all_tags( $this->get_google_description() ),
+			'dates'    => $start_formatted . '/' . $end_formatted,
+			'location' => $this->get_invite_location(),
+		];
+
+		return add_query_arg( urlencode_deep( $data ), 'https://www.google.com/calendar/render' );
+	}
+
+	/**
+	 * Get an ICS file
+	 *
+	 * @throws Exception
+	 * @return ICS
+	 */
+	public function get_ics_file() {
+
+		$data = [
+			'description' => str_replace( "\n", "\\n", wp_strip_all_tags( $this->get_details() ) ),
+			'HTML'        => minify_html( $this->get_google_description() ),
+			'summary'     => $this->get_name(),
+			'dtstart'     => Ymd_His( $this->get_start_time() ),
+			'dtend'       => Ymd_His( $this->get_end_time() ),
+			'url'         => $this->reschedule_link(),
+			'location'    => $this->get_invite_location(),
+		];
+
+		return new ICS( $data );
+	}
+
+	/**
+	 * Download the ICS file
+	 *
+	 * @return string
+	 */
+	public function get_ics_link() {
+		return $this->manage_link( 'ics' );
 	}
 
 	/**
@@ -781,61 +942,12 @@ class Appointment extends Base_Object_With_Meta implements Availability {
 			( $start <= $this->start_time && $end >= $this->end_time );
 	}
 
-	/**
-	 * Get a the link to add the appointment to a Google calendar
-	 *
-	 * @return string
-	 */
-	public function get_add_to_google_link() {
-
-		$start_formatted = date( 'Ymd\THis\Z', $this->get_start_time() );
-		$end_formatted   = date( 'Ymd\THis\Z', $this->get_end_time() );
-
-		return add_query_arg( urlencode_deep( [
-			'action'   => 'TEMPLATE',
-			'text'     => $this->get_name(),
-			'details'  => wp_strip_all_tags( $this->get_google_description() ),
-			'location' => $this->get_calendar()->is_zoom_enabled() ? $this->get_meta( 'zoom_join_url' ) : $this->get_location(),
-			'dates'    => $start_formatted . '/' . $end_formatted
-		] ), 'https://www.google.com/calendar/render' );
-	}
-
-	/**
-	 * Get an ICS file
-	 *
-	 * @throws Exception
-	 * @return ICS
-	 */
-	public function get_ics_file() {
-
-		$ics = new ICS( [
-			'location'    => $this->get_calendar()->is_zoom_enabled() ? $this->get_meta( 'zoom_join_url' ) : $this->get_location(),
-			'description' => str_replace( "\n", "\\n", wp_strip_all_tags( $this->get_details() ) ),
-			'HTML'        => minify_html( $this->get_google_description() ),
-			'summary'     => $this->get_name(),
-			'dtstart'     => Ymd_His( $this->get_start_time() ),
-			'dtend'       => Ymd_His( $this->get_end_time() ),
-			'url'         => $this->reschedule_link(),
-		] );
-
-		return $ics;
-	}
-
-	/**
-	 * Download the ICS file
-	 *
-	 * @return string
-	 */
-	public function get_ics_link() {
-		return $this->manage_link( 'ics' );
-	}
-
 	public function get_start_date() {
-		return new \DateTime( Ymd_His( $this->start_time ) );
+		return new \DateTime( Ymd_His( $this->get_start_time() ) );
 	}
 
 	public function get_end_date() {
-		return new \DateTime( Ymd_His( $this->end_time ) );
+		return new \DateTime( Ymd_His( $this->get_end_time() ) );
 	}
 
 	public function is_back_to_back( \DateTime $start, \DateTime $end ) {

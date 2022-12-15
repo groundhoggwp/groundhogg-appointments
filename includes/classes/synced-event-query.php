@@ -2,33 +2,51 @@
 
 namespace GroundhoggBookingCalendar\Classes;
 
+use Google\Service\Exception;
 use Groundhogg\Base_Object;
 use Groundhogg\DB\DB;
 use function Groundhogg\get_db;
+use function Groundhogg\get_time;
 use function Groundhogg\Ymd_His;
+use function GroundhoggBookingCalendar\get_max_booking_period;
 
 class Synced_Event_Query extends Base_Object {
 
 	protected $query;
 	protected $cache_key;
+	protected $connection;
 
-	public function __construct( $query_or_cache_key, $field = 'cache_key' ) {
+	public function __construct( $query_or_cache_key, $field_or_connection = 'cache_key' ) {
 
 		if ( is_array( $query_or_cache_key ) ) {
 
 			$query = wp_parse_args( $query_or_cache_key, [
-				'from'      => '',
-				'to'        => '',
-				'calendars' => []
+				'from'       => '',
+				'to'         => '',
+				'account_id' => '',
 			] );
+
+			$connection = $query['account_id'];
+
+			if ( is_a( $field_or_connection, Google_Connection::class ) ) {
+				$connection = $field_or_connection;
+				$field_or_connection = 'cache_key';
+			}
+
+			if ( ! is_a( $connection, Google_Connection::class ) ) {
+				$connection = new Google_Connection( $query['account_id'], 'account_id' );
+			}
+
+			$this->connection    = $connection;
+
+			$query['account_id'] = $connection->get_account_id();
 
 			$this->query        = $query;
 			$this->cache_key    = md5( serialize( $query ) );
 			$query_or_cache_key = $this->cache_key;
-			$field              = 'cache_key';
 		}
 
-		parent::__construct( $query_or_cache_key, $field );
+		parent::__construct( $query_or_cache_key, $field_or_connection );
 	}
 
 	public function get_id() {
@@ -58,38 +76,7 @@ class Synced_Event_Query extends Base_Object {
 	 * @return array
 	 */
 	protected function get_events() {
-
-		$gcal_query = [];
-
-		if ( ! empty( $this->query['calendars'] ) ) {
-			$gcal_query['ID'] = $this->query['calendars'];
-		} else {
-
-			// only use calendars which are actively used for availability
-			$calendars_in_use = get_db( 'calendarmeta' )->query( [
-				'meta_key' => 'google_calendar_list'
-			] );
-
-			$gcal_query['ID'] = array_unique( array_merge( ...array_map( 'maybe_unserialize', wp_list_pluck( $calendars_in_use, 'meta_value' ) ) ) );
-		}
-
-		$gcals = get_db( 'google_calendars' )->query( $gcal_query );
-
-		$events = [];
-
-		foreach ( $gcals as $gcal ) {
-			$gcal = new Google_Calendar( $gcal );
-
-			$events = array_merge( $events, $gcal->get_events( $this->query['from'], $this->query['to'] ) );
-
-			if ( $gcal->has_errors() ) {
-				foreach ( $gcal->get_errors() as $error ) {
-					$this->add_error( $error );
-				}
-			}
-		}
-
-		return $events;
+		return $this->connection->get_events( $this->query['from'], $this->query['to'] );
 	}
 
 	/**

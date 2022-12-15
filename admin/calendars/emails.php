@@ -2,7 +2,7 @@
 
 namespace GroundhoggBookingCalendar\Admin\Calendars;
 
-use GroundhoggBookingCalendar\Classes\Email_Reminder;
+use GroundhoggBookingCalendar\Classes\Appointment_Reminder;
 use function Groundhogg\enqueue_groundhogg_modal;
 use function Groundhogg\get_array_var;
 use function Groundhogg\get_request_var;
@@ -119,9 +119,9 @@ enqueue_groundhogg_modal();
 	html()->th( __( 'Appointment Scheduled', 'groundhogg-calendar' ) );
 	html()->td( [
 		html()->dropdown_emails( [
-			'name'     => Email_Reminder::SCHEDULED,
-			'id'       => Email_Reminder::SCHEDULED,
-			'selected' => $calendar->get_email_notification( Email_Reminder::SCHEDULED ),
+			'name'     => Appointment_Reminder::SCHEDULED,
+			'id'       => Appointment_Reminder::SCHEDULED,
+			'selected' => $calendar->get_email_notification( Appointment_Reminder::SCHEDULED ),
 		] ),
 		'&nbsp;',
 		html()->e( 'a', [ 'href' => '#', 'class' => 'button edit-email' ], __( 'Edit Email' ) ),
@@ -133,9 +133,9 @@ enqueue_groundhogg_modal();
 	html()->th( __( 'Appointment Rescheduled', 'groundhogg-calendar' ) );
 	html()->td( [
 		html()->dropdown_emails( [
-			'name'     => Email_Reminder::RESCHEDULED,
-			'id'       => Email_Reminder::RESCHEDULED,
-			'selected' => $calendar->get_email_notification( Email_Reminder::RESCHEDULED ),
+			'name'     => Appointment_Reminder::RESCHEDULED,
+			'id'       => Appointment_Reminder::RESCHEDULED,
+			'selected' => $calendar->get_email_notification( Appointment_Reminder::RESCHEDULED ),
 		] ),
 		'&nbsp;',
 		html()->e( 'a', [ 'href' => '#', 'class' => 'button edit-email' ], __( 'Edit Email' ) ),
@@ -147,9 +147,9 @@ enqueue_groundhogg_modal();
 	html()->th( __( 'Appointment Cancelled', 'groundhogg-calendar' ) );
 	html()->td( [
 		html()->dropdown_emails( [
-			'name'     => Email_Reminder::CANCELLED,
-			'id'       => Email_Reminder::CANCELLED,
-			'selected' => $calendar->get_email_notification( Email_Reminder::CANCELLED ),
+			'name'     => Appointment_Reminder::CANCELLED,
+			'id'       => Appointment_Reminder::CANCELLED,
+			'selected' => $calendar->get_email_notification( Appointment_Reminder::CANCELLED ),
 		] ),
 		'&nbsp;',
 		html()->e( 'a', [ 'href' => '#', 'class' => 'button edit-email' ], __( 'Edit Email' ) ),

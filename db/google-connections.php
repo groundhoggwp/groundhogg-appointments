@@ -3,6 +3,7 @@
 namespace GroundhoggBookingCalendar\DB;
 
 use Groundhogg\DB\DB;
+use GroundhoggBookingCalendar\Classes\Google_Connection;
 use GroundhoggBookingCalendar\Plugin;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -16,13 +17,13 @@ if ( ! defined( 'ABSPATH' ) ) {
  * rather than store events from google calendar and other synced calendars in the main appointments table, add them to this other table
  * which can be easily truncated and manipulated
  *
- * @package     Includes
+ * @since       File available since Release 2.0
+ *
  * @subpackage  includes/DB
  * @author      Adrian Tobey <info@groundhogg.io>
  * @copyright   Copyright (c) 2018, Groundhogg Inc.
  * @license     https://opensource.org/licenses/GPL-3.0 GNU Public License v3
- * @since       File available since Release 2.0
- *
+ * @package     Includes
  */
 class Google_Connections extends DB {
 
@@ -42,6 +43,10 @@ class Google_Connections extends DB {
 		return 'google_connection';
 	}
 
+	public function create_object( $object ) {
+		return new Google_Connection( $object );
+	}
+
 	/**
 	 * Clean up DB events when this happens.
 	 */
@@ -56,15 +61,18 @@ class Google_Connections extends DB {
 	 */
 	public function get_columns() {
 		return array(
-			'ID'            => '%d',
-			'account_id'    => '%d',
-			'account_email' => '%s',
-			'access_token'  => '%s',
-			'refresh_token' => '%s',
-			'created'       => '%d',
-			'expires_in'    => '%d',
-			'status'        => '%s',
-			'added_by'      => '%d',
+			'ID'                  => '%d',
+			'account_id'          => '%d',
+			'account_email'       => '%s',
+			'access_token'        => '%s',
+			'refresh_token'       => '%s',
+			'created'             => '%d',
+			'expires_in'          => '%d',
+			'status'              => '%s',
+			'added_by'            => '%d',
+			'add_appointments_to' => '%s',
+			'check_for_conflicts' => '%s',
+			'all_calendars'       => '%s',
 		);
 	}
 
@@ -76,15 +84,18 @@ class Google_Connections extends DB {
 	 */
 	public function get_column_defaults() {
 		return array(
-			'ID'            => 0,
-			'account_id'    => 0,
-			'account_email' => '',
-			'access_token'  => '',
-			'refresh_token' => '',
-			'created'       => 0,
-			'expires_in'    => 0,
-			'status'        => 'active',
-			'added_by'      => get_current_user_id(),
+			'ID'                  => 0,
+			'account_id'          => 0,
+			'account_email'       => '',
+			'access_token'        => '',
+			'refresh_token'       => '',
+			'created'             => 0,
+			'expires_in'          => 0,
+			'status'              => 'active',
+			'added_by'            => get_current_user_id(),
+			'add_appointments_to' => '',
+			'check_for_conflicts' => '',
+			'all_calendars'       => '',
 		);
 	}
 
@@ -108,6 +119,9 @@ class Google_Connections extends DB {
         status varchar(20) NOT NULL,
         created bigint(20) unsigned NOT NULL,                
         added_by bigint(20) unsigned NOT NULL,                
+        add_appointments_to mediumtext NOT NULL,
+        check_for_conflicts mediumtext NOT NULL,
+        all_calendars longtext NOT NULL,
         PRIMARY KEY (ID)
 		) {$this->get_charset_collate()};";
 

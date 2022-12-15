@@ -8,6 +8,7 @@ use GroundhoggBookingCalendar\Admin\Appointments\Appointments_Page;
 use GroundhoggBookingCalendar\Admin\Cards\Appointment_Card;
 use GroundhoggBookingCalendar\Api\Appointments_Api;
 use GroundhoggBookingCalendar\Api\Calendar_Api;
+use GroundhoggBookingCalendar\Api\Google_Connection_Api;
 use GroundhoggBookingCalendar\DB\Appointment_Meta;
 use GroundhoggBookingCalendar\DB\Appointments;
 use GroundhoggBookingCalendar\DB\Calendar_Meta;
@@ -108,6 +109,7 @@ class Plugin extends Extension {
 	public function register_v4_apis( $api_manager ) {
 		$api_manager->calendar_api = new Calendar_Api();
 		$api_manager->appointments_api = new Appointments_Api();
+		$api_manager->google_connections_api = new Google_Connection_Api();
 	}
 
 	/**
@@ -150,6 +152,12 @@ class Plugin extends Extension {
 			'groundhogg-admin-components',
 			'groundhogg-admin-element',
 			'groundhogg-admin-notes',
+		], GROUNDHOGG_BOOKING_CALENDAR_VERSION, true );
+
+		wp_register_script( 'groundhogg-appointments-calendar-settings', GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL . 'js/calendar-settings.js', [
+			'groundhogg-admin-functions',
+			'groundhogg-admin-components',
+			'groundhogg-admin-element'
 		], GROUNDHOGG_BOOKING_CALENDAR_VERSION, true );
 	}
 
@@ -218,7 +226,7 @@ class Plugin extends Extension {
 	 */
 	protected function register_autoloader() {
 		require __DIR__ . '/autoloader.php';
-		require __DIR__ . '/lib/google/vendor/autoload.php';
+		require __DIR__ . '/../vendor/autoload.php';
 		Autoloader::run();
 	}
 

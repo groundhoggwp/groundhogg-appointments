@@ -10,7 +10,7 @@ use function Groundhogg\get_date_time_format;
 use function Groundhogg\get_db;
 use function Groundhogg\html;
 use GroundhoggBookingCalendar\Classes\Appointment;
-use GroundhoggBookingCalendar\Classes\Email_Reminder;
+use GroundhoggBookingCalendar\Classes\Appointment_Reminder;
 use function Groundhogg\managed_page_url;
 
 /**
@@ -166,8 +166,13 @@ class Replacements {
 	 * @return bool|Appointment
 	 */
 	protected function get_appointment() {
+
 		if ( isset( $this->appointment ) ) {
 			return $this->appointment;
+		}
+
+		if ( current_appointment() ){
+			return current_appointment();
 		}
 
 		if ( $event = \Groundhogg\Plugin::$instance->event_queue->get_current_event() ) {
@@ -175,7 +180,7 @@ class Replacements {
 			$this->event = $event;
 
 			// If is a reminder event
-			if ( $event->get_event_type() === Email_Reminder::NOTIFICATION_TYPE || $event->get_event_type() === SMS_Reminder::NOTIFICATION_TYPE ) {
+			if ( $event->get_event_type() === Appointment_Reminder::NOTIFICATION_TYPE || $event->get_event_type() === SMS_Reminder::NOTIFICATION_TYPE ) {
 				$this->appointment = new Appointment( $event->get_funnel_id() );
 
 				return $this->appointment;

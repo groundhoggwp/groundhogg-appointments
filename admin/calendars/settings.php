@@ -57,7 +57,7 @@ if ( $calendar == null ) {
                 <select id="timezone" name="timezone">
 					<?php echo wp_timezone_choice( $calendar->get_meta( 'timezone' ) ?: wp_timezone_string(), get_user_locale() ); ?>
                 </select>
-                <p class="description"><?php _e( 'Select owner for whom you are creating the calendar.', 'groundhogg-calendar' ) ?></p>
+                <p class="description"><?php _e( 'Select the calendar timezone.', 'groundhogg-calendar' ) ?></p>
             </td>
         </tr>
         <tr>

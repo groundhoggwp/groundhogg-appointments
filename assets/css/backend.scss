@@ -1,0 +1,118 @@
+
+#wpcontent{
+  padding: 0;
+}
+
+#gh-calendar-settings {
+
+  #page {
+    width: 1000px;
+    margin: auto;
+    margin-top: 30px;
+
+    #right {
+      width: 300px;
+      flex-shrink: 0;
+
+      .right-sticky {
+        position: sticky;
+        bottom: 0;
+        top: 120px;
+      }
+    }
+
+    #settings {
+      width: 100%;
+
+    }
+
+    &.hide-sms {
+      .sms-settings {
+        display: none;
+      }
+    }
+  }
+
+  .small-number {
+    width: 100px;
+  }
+
+  table#zoom-table {
+    td:first-child {
+      text-align: left;
+      padding-right: 20px;
+    }
+
+    th, td {
+      padding-bottom: 20px;
+    }
+  }
+
+  table.notifcations {
+    td:first-child {
+      text-align: left;
+      padding: 5px 5px 5px 0;
+    }
+
+    td:not(:first-child) {
+      text-align: right;
+      padding: 5px 5px 5px 20px;
+    }
+
+    tr:has(input:not(:checked)) {
+      a {
+        visibility: hidden;
+      }
+    }
+  }
+
+  .gh-panel {
+    hr {
+      margin: 10px -20px;
+    }
+
+    .display-flex {
+
+      ul {
+        padding-left: 20px;
+        list-style: disc;
+        margin: 0;
+      }
+    }
+
+  }
+
+  #after-submit-settings {
+    &.message {
+      #redirect {
+        display: none;
+      }
+    }
+
+    &.redirect {
+      #message {
+        display: none;
+      }
+    }
+  }
+
+  .skeleton {
+    opacity: .7;
+    animation: skeleton-loading 1s linear infinite alternate;
+    min-width: 150px;
+    min-height: 20px;
+    border-radius: 5px;
+  }
+
+  @keyframes skeleton-loading {
+    0% {
+      background-color: hsl(200, 20%, 70%);
+    }
+
+    100% {
+      background-color: hsl(200, 20%, 95%);
+    }
+  }
+
+
+}

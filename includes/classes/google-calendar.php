@@ -56,6 +56,17 @@ class Google_Calendar extends Base_Object {
 		return $this->connection;
 	}
 
+	/**
+	 * Get events from google calendar
+	 *
+	 *
+	 * @throws \Exception
+	 *
+	 * @param $to
+	 * @param $from
+	 *
+	 * @return array|false
+	 */
 	public function get_events( $from = false, $to = false ){
 
 		$events = [];
@@ -183,17 +194,6 @@ class Google_Calendar extends Base_Object {
 				}
 
 				return;
-			}
-
-			foreach ( $events->getItems() as $event ) {
-
-//				$synced = new Synced_Event( $event->getId(), 'event_id' );
-//
-//				if ( ! $synced->exists() ) {
-//					$synced->create_from_event( $event, $this );
-//				} else {
-//					$synced->update_from_event( $event );
-//				}
 			}
 
 			$pageToken = $events->getNextPageToken();

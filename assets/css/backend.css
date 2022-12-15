@@ -1,166 +1,76 @@
-
-/* Display alerts in admin section */
-
-.alert {
-    position: relative;
-    padding: .75rem 1.25rem;
-    margin-bottom: 1rem;
-    border: 1px solid transparent;
-    border-radius: .25rem;
+#wpcontent {
+  padding: 0;
 }
 
-.alert-info {
-    color: #0c5460;
-    background-color: #d1ecf1;
-    border-color: #bee5eb;
+#gh-calendar-settings #page {
+  width: 1000px;
+  margin: auto;
+  margin-top: 30px;
+}
+#gh-calendar-settings #page #right {
+  width: 300px;
+  flex-shrink: 0;
+}
+#gh-calendar-settings #page #right .right-sticky {
+  position: sticky;
+  bottom: 0;
+  top: 120px;
+}
+#gh-calendar-settings #page #settings {
+  width: 100%;
+}
+#gh-calendar-settings #page.hide-sms .sms-settings {
+  display: none;
+}
+#gh-calendar-settings .small-number {
+  width: 100px;
+}
+#gh-calendar-settings table#zoom-table td:first-child {
+  text-align: left;
+  padding-right: 20px;
+}
+#gh-calendar-settings table#zoom-table th, #gh-calendar-settings table#zoom-table td {
+  padding-bottom: 20px;
+}
+#gh-calendar-settings table.notifcations td:first-child {
+  text-align: left;
+  padding: 5px 5px 5px 0;
+}
+#gh-calendar-settings table.notifcations td:not(:first-child) {
+  text-align: right;
+  padding: 5px 5px 5px 20px;
+}
+#gh-calendar-settings table.notifcations tr:has(input:not(:checked)) a {
+  visibility: hidden;
+}
+#gh-calendar-settings .gh-panel hr {
+  margin: 10px -20px;
+}
+#gh-calendar-settings .gh-panel .display-flex ul {
+  padding-left: 20px;
+  list-style: disc;
+  margin: 0;
+}
+#gh-calendar-settings #after-submit-settings.message #redirect {
+  display: none;
+}
+#gh-calendar-settings #after-submit-settings.redirect #message {
+  display: none;
+}
+#gh-calendar-settings .skeleton {
+  opacity: 0.7;
+  animation: skeleton-loading 1s linear infinite alternate;
+  min-width: 150px;
+  min-height: 20px;
+  border-radius: 5px;
+}
+@keyframes skeleton-loading {
+  0% {
+    background-color: #a3b8c2;
+  }
+  100% {
+    background-color: #f0f3f5;
+  }
 }
 
-.alert-light {
-    color: #818182;
-    background-color: #fefefe;
-    border-color: #fdfdfe;
-}
-
-.alert-dark {
-    color: #1b1e21;
-    background-color: #d6d8d9;
-    border-color: #c6c8ca;
-}
-
-.alert-danger {
-    color: #721c24;
-    background-color: #f8d7da;
-    border-color: #f5c6cb;
-}
-
-.alert-warning {
-    color: #856404;
-    background-color: #fff3cd;
-    border-color: #ffeeba;
-}
-
-.alert-success {
-    color: #155724;
-    background-color: #d4edda;
-    border-color: #c3e6cb;
-}
-
-.alert-primary {
-    color: #004085;
-    background-color: #cce5ff;
-    border-color: #b8daff;
-}
-
-/* calendar style */
-.fc-day-number {
-    font-size: 20px;
-
-}
-
-/* btn style */
-
-#appointment-status .btn-approve {
-    color: #fff;
-    text-shadow: 1px 1px 1px rgba( 0, 0, 0, 0.2);
-    background-color: #28a745;
-    border-color: #23783c;
-}
-
-#appointment-status .btn-cancel {
-    color: #fff;
-    text-shadow: 1px 1px 1px rgba( 0, 0, 0, 0.2);
-    background-color: #ffc107;
-    border-color: #bf8e07;
-}
-
-#appointment-status .btn-delete {
-    color: #fff;
-    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.47);
-    background-color: #dc3545;
-    border-color: #91222e;
-}
-
-.gh_appointment_class {
-    color: #fff;
-    text-shadow: 1px 1px 1px rgba( 0, 0, 0, 0.2);
-    display: inline-block;
-    text-decoration: none;
-    font-size: 13px;
-    line-height: 26px;
-    height: 28px;
-    padding: 0 10px 1px;
-    cursor: pointer;
-    border-width: 1px;
-    border-style: solid;
-    -webkit-appearance: none;
-    border-radius: 3px;
-    white-space: nowrap;
-    box-sizing: border-box;
-
-}
-
-
-.select-time .appointment-time{
-    display: block;
-    margin: 0 0 5px 10px;
-    width: 100%;
-}
-
-.select-time .appointment-time.selected{
-    color: #fff;
-    background-color: #28a745;
-    border-color: #23783c;
-}
-
-.appointment-errors{
-    background: rgba(255, 198, 174, 0.56);
-    color: #FF1212;
-    border: 1px solid #FF1212;
-    border-radius: 2px;
-    padding-left: 4px;
-    margin: 5px 0 2px 0;
-}
-
-.appointment-success{
-    background: rgba(138, 230, 120, 0.56);
-    color: #558f49;
-    border: 1px solid #60a054;
-    border-radius: 2px;
-    padding-left: 4px;
-    margin: 5px 0 2px 0;
-}
-
-table.status-colors{
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-}
-
-table.status-colors td {
-    /*width: 100px;*/
-    padding: 8px;
-    border: 1px solid #e5e5e5;
-    text-align: center;
-}
-
-table.status-colors td.pending{
-    border-color: #0073aa;
-    color: #0c5460;
-    background-color: #cce5ff;
-}
-
-table.status-colors td.scheduled{
-    color: #155724;
-    background-color: #d4edda;
-    border-color: #28a745;
-}
-
-table.status-colors td.canceled{
-    color: #721c24;
-    background-color: #f8d7da;
-    border-color: #dc3545;
-}
-
-.submit-wrap{
-    margin: 20px 0;
-}
+/*# sourceMappingURL=backend.css.map */

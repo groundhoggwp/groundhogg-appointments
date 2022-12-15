@@ -393,7 +393,9 @@
                 ${ detailsTemplate() }
                 <div class="booking">
                     <p><b>${ __('Select a Date & Time', 'groundhogg-calendar') }</b></p>
-                    <div id="date-picker"></div>
+                    <div id="date-picker">
+                    </div>
+                    <div class="gh-lds-ring"><div></div><div></div><div></div><div></div></div>
                 </div>
             </div>
         `
@@ -402,7 +404,18 @@
 
         tzOnMount()
 
+        GroundhoggPicker('#date-picker', {
+          // selected: appointment.start,
+          // timeZone: appointment.timezone,
+          start_of_week: 0,
+          // availability,
+        })
+
+
         getAvailability().then(() => {
+
+          document.querySelector( '.gh-lds-ring' ).remove()
+
           GroundhoggPicker('#date-picker', {
             selected: appointment.start,
             timeZone: appointment.timezone,
@@ -541,7 +554,7 @@
                         <div style="width: 300px;">
                             <h2>${ __('Booking confirmed!', 'groundhogg-calendar') }</h2>
                             <p>${ sprintf(__('You are scheduled with %s.', 'groundhogg'), owner_name) }</p>
-                            <p>${ sprintf(__('A calendar invitation has been send to %s', 'groundhogg-calendar'),
+                            <p>${ sprintf(__('A calendar invitation has been sent to %s', 'groundhogg-calendar'),
                                     `<b>${ appointment.email }</b>`) }</p>
                         </div>
                         <ul class="appointment-details">

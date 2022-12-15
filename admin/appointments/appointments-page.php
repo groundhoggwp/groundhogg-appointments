@@ -61,21 +61,21 @@ class Appointments_Page extends Admin_Page {
 		$calendars = get_db( 'calendars' )->query();
 		array_map_to_class( $calendars, Calendar::class );
 
-		$gcal_ids_to_sync = array_reduce( $calendars, function ( $carry, $calendar ) {
+//		$gcal_ids_to_sync = array_reduce( $calendars, function ( $carry, $calendar ) {
+//
+//			if ( ! $calendar->is_connected_to_google() ) {
+//				return $carry;
+//			}
+//
+//			/**
+//			 * @var $calendar Calendar
+//			 */
+//			return array_unique( array_merge( $carry, $calendar->get_google_calendar_list() ) );
+//		}, [] );
 
-			if ( ! $calendar->is_connected_to_google() ) {
-				return $carry;
-			}
-
-			/**
-			 * @var $calendar Calendar
-			 */
-			return array_unique( array_merge( $carry, $calendar->get_google_calendar_list() ) );
-		}, [] );
-
-		$gcals                     = id_list_to_class( $gcal_ids_to_sync, Google_Calendar::class );
+//		$gcals                     = id_list_to_class( $gcal_ids_to_sync, Google_Calendar::class );
 		$selected_calendars        = get_object_ids( $calendars );
-		$selected_synced_calendars = get_object_ids( $gcals );
+//		$selected_synced_calendars = get_object_ids( $gcals );
 
 		if ( get_url_var( 'selected' ) ) {
 			$calendar                  = new Calendar( get_url_var( 'selected' ) );
@@ -93,7 +93,7 @@ class Appointments_Page extends Admin_Page {
 			],
 			'calendars' => [
 				'local'  => $calendars,
-				'synced' => $gcals,
+				'synced' => [],
 			],
 			'selected'  => [
 				'local'  => $selected_calendars,

@@ -12,7 +12,9 @@ use GroundhoggBookingCalendar\DB\Google_Connections;
 use function Groundhogg\get_array_var;
 use function Groundhogg\get_date_time_format;
 use function Groundhogg\get_db;
+use function Groundhogg\get_time;
 use function Groundhogg\isset_not_empty;
+use function GroundhoggBookingCalendar\get_max_booking_period;
 
 class Google_Connection extends Base_Object {
 
@@ -165,7 +167,6 @@ class Google_Connection extends Base_Object {
 
 		// Errors setting up the Client
 		if ( $this->has_errors() ) {
-
 			return;
 		}
 
@@ -174,6 +175,8 @@ class Google_Connection extends Base_Object {
 		}
 
 		$service = new Google_Service_Calendar( $client );
+
+		$synced_calendars = [];
 
 		try {
 			$calendarList = $service->calendarList->listCalendarList();
@@ -195,16 +198,10 @@ class Google_Connection extends Base_Object {
 		do {
 
 			foreach ( $calendarList->getItems() as $calendarListEntry ) {
-
-				$cal = new Google_Calendar( [
-					'google_calendar_id' => $calendarListEntry->getId(),
-					'google_account_id'  => $this->get_account_id(),
-					'connection_id'      => $this->get_id(),
-				], null, $this );
-
-				$cal->update( [
+				$synced_calendars[] = [
+					'id'   => $calendarListEntry->getId(),
 					'name' => $calendarListEntry->getSummary()
-				] );
+				];
 			}
 
 			$pageToken = $calendarList->getNextPageToken();
@@ -215,33 +212,19 @@ class Google_Connection extends Base_Object {
 			}
 		} while ( $pageToken );
 
-	}
+		$this->update( [
+			'all_calendars' => $synced_calendars
+		] );
 
-	protected $calendars = [];
+	}
 
 	/**
 	 * List of associated google calendars!
 	 *
-	 * @return Google_Calendar[]
+	 * @return array[]
 	 */
 	public function get_calendars() {
-
-		$self = $this;
-
-		if ( empty( $this->calendars ) ) {
-
-			$calendars = get_db( 'google_calendars' )->query( [
-				'account_id'    => $this->get_account_id(),
-				'connection_id' => $this->get_id(),
-			] );
-
-			$this->calendars = array_map( function ( $cal ) use ( $self ) {
-				return new Google_Calendar( $cal, null, $self );
-			}, $calendars );
-
-		}
-
-		return $this->calendars;
+		return $this->all_calendars;
 	}
 
 	/**
@@ -263,14 +246,118 @@ class Google_Connection extends Base_Object {
 	}
 
 	/**
+	 * Get events from google calendar
+	 *
+	 *
+	 * @throws \Exception
+	 *
+	 * @param $to
+	 * @param $from
+	 *
+	 * @return array|false
+	 */
+	public function get_events( $from = false, $to = false ){
+
+		$events = [];
+
+		if ( ! $from ) {
+			$from = time();
+		}
+
+		if ( ! $to ) {
+			$to = get_max_booking_period();
+		}
+
+		$client = $this->get_client();
+
+		// Errors setting up the Client
+		if ( $this->has_errors() ) {
+			return [];
+		}
+
+		$service = new Google_Service_Calendar( $client );
+
+		//check for the calendar
+		$optParams = array(
+			'orderBy'      => 'startTime',
+			'singleEvents' => true, // change
+			'timeMin'      => date( DATE_RFC3339, get_time( $from ) ),
+			'timeMax'      => date( DATE_RFC3339, get_time( $to ) ),
+			'timeZone'     => 'UTC'
+		);
+
+		foreach ( $this->check_for_conflicts as $calendar_id ){
+			do {
+
+				try {
+					$_events = $service->events->listEvents( $calendar_id, $optParams );
+				} catch ( Exception $e ) {
+					$this->add_error( $e->getCode(), $e->getMessage() );
+
+					switch ( $e->getCode() ) {
+						case 'code_invalid':
+						case 'invalid_grant':
+							$this->update( [
+								'status' => 'inactive'
+							] );
+							break;
+					}
+
+					return false;
+				}
+
+				foreach ( $_events->getItems() as $event ) {
+					$events[] = new Synced_Event( $event );
+				}
+
+				$pageToken = $_events->getNextPageToken();
+
+				if ( $pageToken ) {
+					$optParams['pageToken'] = $pageToken;
+				}
+
+			} while ( $pageToken );
+		}
+
+		return $events;
+	}
+
+	/**
+	 * Get cached events for this connection
+	 *
+	 * @param $from
+	 * @param $to
+	 *
+	 * @return array
+	 */
+	public function get_cached_events( $from, $to ) {
+
+		$query = new Synced_Event_Query( [
+			'from'    => $from,
+			'to'      => $to,
+		], $this );
+
+		return $query->get_results();
+	}
+
+	/**
 	 * Handle setup actions
 	 */
 	protected function post_setup() {
 
-		$this->expires_in = absint( $this->expires_in );
-		$this->created    = absint( $this->created );
+		$this->expires_in          = absint( $this->expires_in );
+		$this->created             = absint( $this->created );
+		$this->all_calendars       = maybe_unserialize( $this->all_calendars );
+		$this->check_for_conflicts = array_filter( explode( ',', $this->check_for_conflicts ) );
 
 		$this->setup_client();
+	}
+
+	/**
+	 * @return bool|mixed
+	 */
+	public function get_main_calendar_id(){
+		return $this->add_appointments_to;
 	}
 
 	/**
@@ -280,6 +367,35 @@ class Google_Connection extends Base_Object {
 	 */
 	protected function get_db() {
 		return get_db( 'google_connections' );
+	}
+//
+//	/**
+//	 * @return array
+//	 */
+//	public function get_as_array() {
+//		return [
+//			'ID'            => $this->get_id(),
+//			'user_id'       => $this->user_id,
+//			'account_id'    => $this->account_id,
+//			'account_email' => $this->account_email,
+//			'calendars'     => $this->get_calendars(),
+//		];
+//	}
+
+	protected function sanitize_columns( $data = [] ) {
+
+		foreach ( $data as $column => &$val ) {
+			switch ( $column ) {
+				case 'all_calendars':
+					$val = maybe_serialize( $val );
+					break;
+				case 'check_for_conflicts':
+					$val = is_array( $val ) ? implode(',', $val ) : $val;
+					break;
+			}
+		}
+
+		return $data;
 	}
 
 }

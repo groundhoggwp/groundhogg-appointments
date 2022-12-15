@@ -57,15 +57,16 @@ class Calendar_Api extends Base_Object_Api {
 	/**
 	 * Get the slots of a calendar for a time range
 	 *
+	 * @throws \Exception
+	 *
 	 * @param \WP_REST_Request $request
 	 *
 	 * @return \WP_Error|\WP_REST_Response
 	 */
 	public function read_availability( \WP_REST_Request $request ) {
 
-		$start    = $request->get_param( 'start' ) ?: Ymd();
-		$end      = $request->get_param( 'end' );
-		$timezone = $request->get_param( 'timezone' );
+		$start = $request->get_param( 'start' ) ?: Ymd();
+		$end   = $request->get_param( 'end' );
 
 		/**
 		 * @var $calendar Calendar
@@ -77,7 +78,7 @@ class Calendar_Api extends Base_Object_Api {
 		}
 
 		return self::SUCCESS_RESPONSE( [
-			'slots' => $calendar->get_availability( $start, $end, $timezone )
+			'slots' => $calendar->get_availability( $start, $end )
 		] );
 	}
 
@@ -131,22 +132,22 @@ class Calendar_Api extends Base_Object_Api {
 			'notes'      => $notes,
 		] );
 
-		if ( ! $appointment || ! $appointment->exists() ){
+		if ( ! $appointment || ! $appointment->exists() ) {
 			return self::ERROR_403();
 		}
 
 		after_form_submit_handler( $contact );
 
-		return self::SUCCESS_RESPONSE([
-			'message' => wpautop( do_replacements( $calendar->get_meta( 'message' ), $contact ) ),
+		return self::SUCCESS_RESPONSE( [
+			'message'     => wpautop( do_replacements( $calendar->get_meta( 'message' ), $contact ) ),
 			'appointment' => [
 				'uuid' => $appointment->uuid,
 			],
-			'links' => [
+			'links'       => [
 				'google' => $appointment->get_add_to_google_link(),
-				'ics' => $appointment->get_ics_link()
+				'ics'    => $appointment->get_ics_link()
 			]
-		]);
+		] );
 	}
 
 	public function public_permissions_callback( WP_REST_Request $request ) {

@@ -61,7 +61,8 @@ let GroundhoggPicker
     let year, month, slotScroll, time
 
     availability.sort((a, b) => a.start - b.start)
-    let initDate = new Date(availability[0].start * 1000)
+    let initDate = new Date(availability.length ? availability[0].start * 1000 : Date.now() )
+    // let initDate = new Date(availability[0].start * 1000 )
     initDate.setDate(1)
 
     year = initDate.getFullYear()

@@ -4,7 +4,7 @@ namespace GroundhoggBookingCalendar\DB;
 
 use Groundhogg\DB\DB;
 use GroundhoggBookingCalendar\Plugin;
-use function GroundhoggBookingCalendar\generate_uuid;
+use function GroundhoggBookingCalendar\generate_google_uuid;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -16,13 +16,13 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * Store appointment info
  *
- * @package     Includes
+ * @since       File available since Release 2.0
+ *
  * @subpackage  includes/DB
  * @author      Adrian Tobey <info@groundhogg.io>
  * @copyright   Copyright (c) 2018, Groundhogg Inc.
  * @license     https://opensource.org/licenses/GPL-3.0 GNU Public License v3
- * @since       File available since Release 2.0
- *
+ * @package     Includes
  */
 class Appointments extends DB {
 	public function get_db_suffix() {
@@ -85,7 +85,7 @@ class Appointments extends DB {
 	public function query( $data = [], $ORDER_BY = '', $from_cache = true ) {
 
 		// Reps can't see others appointments
-		if ( current_user_can( 'view_appointments' ) && ! current_user_can( 'view_others_appointments' ) ){
+		if ( current_user_can( 'view_appointments' ) && ! current_user_can( 'view_others_appointments' ) ) {
 			$data['owner_id'] = get_current_user_id();
 		}
 
@@ -101,12 +101,13 @@ class Appointments extends DB {
 	public function get_columns() {
 		return array(
 			'ID'          => '%d',
-			'contact_id'  => '%d',
 			'uuid'        => '%s',
+			'contact_id'  => '%d',
+			'owner_id'    => '%d',
 			'calendar_id' => '%d',
-			'status'      => '%s',
 			'start_time'  => '%d',
 			'end_time'    => '%d',
+			'status'      => '%s',
 		);
 	}
 
@@ -119,12 +120,13 @@ class Appointments extends DB {
 	public function get_column_defaults() {
 		return array(
 			'ID'          => 0,
-			'contact_id'  => 0,
 			'uuid'        => wp_generate_uuid4(),
+			'contact_id'  => 0,
+			'owner_id'    => 0,
 			'calendar_id' => 0,
-			'status'      => 'scheduled',
 			'start_time'  => 0,
 			'end_time'    => 0,
+			'status'      => 'scheduled',
 		);
 	}
 
@@ -174,6 +176,7 @@ class Appointments extends DB {
         ID bigint(20) unsigned NOT NULL AUTO_INCREMENT,
         uuid varchar({$this->get_max_index_length()}) NOT NULL,
         contact_id bigint(20) unsigned NOT NULL,
+        owner_id bigint(20) unsigned NOT NULL,
         calendar_id bigint(20) unsigned NOT NULL,
         status VARCHAR(20) NOT NULL,
         start_time bigint(20) unsigned NOT NULL,

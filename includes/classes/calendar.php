@@ -5,6 +5,7 @@ namespace GroundhoggBookingCalendar\Classes;
 use Exception;
 use Groundhogg\Contact;
 use GroundhoggBookingCalendar\Calendar_Sync;
+use GroundhoggBookingCalendar\Reminders_And_Notifications;
 use WP_Error;
 use Groundhogg\Plugin;
 use Google_Service_Calendar;
@@ -18,6 +19,7 @@ use function Groundhogg\get_current_ip_address;
 use function Groundhogg\get_date_time_format;
 use function Groundhogg\get_time;
 use function Groundhogg\id_list_to_class;
+use function Groundhogg\managed_page_url;
 use function Groundhogg\utils;
 use function Groundhogg\get_db;
 use function Groundhogg\get_array_var;
@@ -27,6 +29,7 @@ use function Groundhogg\Ymd;
 use function Groundhogg\Ymd_His;
 use function GroundhoggBookingCalendar\get_default_availability;
 use function GroundhoggBookingCalendar\get_time_format;
+use function GroundhoggBookingCalendar\get_user_google_connection;
 use function GroundhoggBookingCalendar\validate_calendar_slug;
 use function GroundhoggBookingCalendar\zoom;
 use function GroundhoggBookingCalendar\in_between;
@@ -70,29 +73,21 @@ class Calendar extends Base_Object_With_Meta {
 	}
 
 	/**
-	 * @return bool
+	 * Generate a slug based on the calendar name
 	 */
-	public function is_connected_to_google() {
-		return $this->get_google_connection_id() && $this->get_local_google_calendar_id();
-	}
+	public function generate_slug() {
 
-	/**
-	 * @return \Google_Client|WP_Error
-	 */
-	public function get_google_client() {
-		return $this->get_google_connection()->get_client();
-	}
+		$slug = validate_calendar_slug( $this->name, $this->get_id() );
 
-	/**
-	 * @deprecated
-	 * @return bool|mixed|WP_Error
-	 */
-	public function get_access_token() {
-		return $this->get_google_connection()->get_client()->getAccessToken();
+		$this->update( [
+			'slug' => $slug
+		] );
 	}
 
 	/**
 	 * The id of the calendar of which appointments are added to
+	 *
+	 * @deprecated
 	 *
 	 * @return int
 	 */
@@ -102,6 +97,8 @@ class Calendar extends Base_Object_With_Meta {
 
 	/**
 	 * The id of the calendar of which appointments are added to
+	 *
+	 * @deprecated
 	 *
 	 * @return string
 	 */
@@ -116,9 +113,12 @@ class Calendar extends Base_Object_With_Meta {
 	/**
 	 * List of all connected google calendars
 	 *
+	 * @deprecated
+	 *
 	 * @return array|mixed
 	 */
 	public function get_google_calendar_list() {
+
 		$list = $this->get_meta( 'google_calendar_list', true ) ?: [];
 
 		if ( ! in_array( $this->get_local_google_calendar_id(), $list ) ) {
@@ -126,21 +126,6 @@ class Calendar extends Base_Object_With_Meta {
 		}
 
 		return $list;
-	}
-
-	/**
-	 * @return mixed
-	 */
-	public function show_in_12_hour() {
-		return $this->get_meta( 'time_12hour', true );
-	}
-
-	public function get_start_time() {
-		return $this->get_meta( 'start_time', true );
-	}
-
-	public function get_end_time() {
-		return $this->get_meta( 'end_time', true );
 	}
 
 	/**
@@ -157,18 +142,6 @@ class Calendar extends Base_Object_With_Meta {
 
 		return $appts;
 
-	}
-
-	/**
-	 * Generate a slug based on the calendar name
-	 */
-	public function generate_slug() {
-
-		$slug = validate_calendar_slug( $this->name, $this->get_id() );
-
-		$this->update( [
-			'slug' => $slug
-		] );
 	}
 
 	/**
@@ -225,43 +198,6 @@ class Calendar extends Base_Object_With_Meta {
 		return $this->get_meta( 'rules' ) ?: get_default_availability();
 	}
 
-	/**
-	 * @return array|mixed
-	 */
-	public function get_available_periods() {
-		$rules = $this->get_rules();
-
-		$periods = [];
-
-		if ( ! empty( $rules ) ) {
-
-			foreach ( $rules as $rule ) {
-
-				if ( isset_not_empty( $periods, $rule['day'] ) ) {
-					$periods[ $rule['day'] ][] = [ $rule['start'], $rule['end'] ];
-				} else {
-					$periods[ $rule['day'] ] = [ [ $rule['start'], $rule['end'] ] ];
-				}
-			}
-		}
-
-		if ( empty( $periods ) ) {
-
-			// Monday is 1 and Sunday is 7
-			$periods = wp_parse_args( $periods, [
-				'monday'    => [ [ '09:00', '17:00' ] ],
-				'tuesday'   => [ [ '09:00', '17:00' ] ],  //, ['08:00','10:00'] ,['15:00','17:00']
-				'wednesday' => [ [ '09:00', '17:00' ] ],
-				'thursday'  => [ [ '09:00', '17:00' ] ],
-				'friday'    => [ [ '09:00', '17:00' ] ],
-				'saturday'  => [ [ '09:00', '17:00' ] ],
-				'sunday'    => [ [ '09:00', '17:00' ] ],
-			] );
-		}
-
-		return $periods;
-	}
-
 	public function has_linked_form() {
 		return (bool) $this->get_linked_form();
 	}
@@ -293,7 +229,7 @@ class Calendar extends Base_Object_With_Meta {
 	}
 
 	/**
-	 * Ge the formatted appointment length
+	 * Get the formatted appointment length
 	 *
 	 * @return false|string
 	 */
@@ -305,30 +241,34 @@ class Calendar extends Base_Object_With_Meta {
 	}
 
 	/**
+	 * Returns the length of the appointment as a DateInterval object
+	 *
 	 * @throws \Exception
 	 * @return \DateInterval
 	 */
 	public function get_appointment_interval() {
-		$atts = $this->get_appointment_length();
+		$parts = $this->get_appointment_length();
 
-		if ( absint( $atts['hours'] ) === 0 && absint( $atts['minutes'] ) === 0 ) {
-			$atts['hours']   = 1;
-			$atts['minutes'] = 0;
+		if ( absint( $parts['hours'] ) === 0 && absint( $parts['minutes'] ) === 0 ) {
+			$parts['hours']   = 1;
+			$parts['minutes'] = 0;
 		}
 
-		$str = sprintf( 'PT%1$dH%2$dM', $atts['hours'], $atts['minutes'] );
+		$minutes = ( $parts['hours'] * 60 ) + $parts['minutes'];
 
-		return new \DateInterval( $str );
+		return \DateInterval::createFromDateString( sprintf( '%d minutes', $minutes ) );
 	}
 
 	/**
+	 * Returns the buffer time as a DateInterval
+	 *
 	 * @throws \Exception
 	 * @return \DateInterval
 	 */
 	public function get_buffer_interval() {
 		$atts = $this->get_appointment_length();
-		$str  = 'PT' . $atts['buffer'] . 'M';
-		return new \DateInterval( $str );
+
+		return \DateInterval::createFromDateString( sprintf( '%d minutes', $atts['buffer'] ) );
 	}
 
 	/**
@@ -360,6 +300,8 @@ class Calendar extends Base_Object_With_Meta {
 	}
 
 	/**
+	 * Get the minimum date that can be booked
+	 *
 	 * @throws Exception
 	 *
 	 * @param bool $as_string
@@ -394,16 +336,69 @@ class Calendar extends Base_Object_With_Meta {
 	 */
 	public function get_day_number( $day ) {
 		$days = [
+			'sunday'    => 0,
 			'monday'    => 1,
 			'tuesday'   => 2,
 			'wednesday' => 3,
 			'thursday'  => 4,
 			'friday'    => 5,
 			'saturday'  => 6,
-			'sunday'    => 0
 		];
 
 		return $days[ $day ];
+	}
+
+	/**
+	 * Whether SMS notifications are enabled or not.
+	 *
+	 * @deprecated
+	 *
+	 * @return bool
+	 */
+	public function are_sms_notifications_enabled() {
+		return (bool) $this->get_meta( 'enable_sms_notifications' );
+	}
+
+	/**
+	 * Whether a notification is enabled or not.
+	 *
+	 * @param $which
+	 *
+	 * @return bool
+	 */
+	public function is_notification_enabled( $key, $which ) {
+		$notifications = $this->get_meta( $key );
+
+		// Default to true if these have not been specifically configured.
+		if ( ! $notifications ) {
+			return false;
+		}
+
+		$notification_config = get_array_var( $notifications, $which );
+
+		return (bool) get_array_var( $notification_config, 'enabled' );
+	}
+
+	/**
+	 * Get a notification template
+	 *
+	 * @param string $key
+	 * @param string $which
+	 * @param array  $defaults
+	 *
+	 * @return array
+	 */
+	public function get_notification_template( $key, $which, $defaults = [] ) {
+		$notifications = $this->get_meta( $key );
+
+		// Default to true if these have not been specifically configured.
+		if ( ! $notifications ) {
+			return $defaults;
+		}
+
+		$notification_config = get_array_var( $notifications, $which );
+
+		return wp_parse_args( get_array_var( $notification_config, 'template', [] ), $defaults );
 	}
 
 	/**
@@ -413,46 +408,61 @@ class Calendar extends Base_Object_With_Meta {
 	 *
 	 * @return bool
 	 */
-	public function is_admin_notification_enabled( $which ) {
-		$notifications = $this->get_meta( 'enabled_admin_notifications' );
-
-		// Default to true if these have not been specifically configured.
-		if ( ! $notifications ) {
-			return true;
-		}
-
-		return (bool) get_array_var( $notifications, $which );
-	}
-
-	/**
-	 * Whether SMS notifications are enabled or not.
-	 *
-	 * @return bool
-	 */
-	public function are_sms_notifications_enabled() {
-		return (bool) $this->get_meta( 'enable_sms_notifications' );
+	public function is_admin_email_notification_enabled( $which ) {
+		return $this->is_notification_enabled( 'admin_notifications', $which );
 	}
 
 
 	/**
-	 * Get the set of notification emails.
+	 * Get the template for a given admin notification
 	 *
-	 * @param string $which which email to retrieve, otherwise get ALL emails
+	 * @param string|int $which which email template to use
 	 *
-	 * @return array|int
+	 * @return array
 	 */
-	public function get_email_notification( $which = false ) {
-		$emails = $this->get_meta( 'email_notifications' );
-
-		if ( ! $which ) {
-			return $emails;
+	public function get_admin_email_notification_template( $which = false ) {
+		switch ( $which ) {
+			case Reminders_And_Notifications::CANCELLED:
+			case Reminders_And_Notifications::SCHEDULED:
+			case Reminders_And_Notifications::RESCHEDULED:
+				return $this->get_notification_template( 'admin_notifications', $which, [
+					'subject' => '',
+					'content' => ''
+				] );
+			default:
+			case Appointment_Reminder::ADMIN_REMINDER:
+			case Appointment_Reminder::ADMIN_EMAIL:
+				return $this->get_meta( 'personalized_email_notification' );
 		}
+	}
 
-		return get_array_var( $emails, $which );
+	/**
+	 * Get the template for a given admin notification
+	 *
+	 * @param string|int $which which email template to use
+	 *
+	 * @return array
+	 */
+	public function get_contact_email_notification_template( $which = false ) {
+		switch ( $which ) {
+			case Reminders_And_Notifications::CANCELLED:
+			case Reminders_And_Notifications::SCHEDULED:
+			case Reminders_And_Notifications::RESCHEDULED:
+				return $this->get_notification_template( 'contact_email_notifications', $which, [
+					'subject' => '',
+					'content' => ''
+				] );
+			default:
+			case Appointment_Reminder::REMINDER:
+			case Appointment_Reminder::CONTACT_EMAIL:
+				return $this->get_meta( 'personalized_email_reminder' );
+		}
 	}
 
 	/**
 	 * Get the set of notification SMS.
+	 *
+	 * @deprecated
 	 *
 	 * @param string $which
 	 *
@@ -473,19 +483,16 @@ class Calendar extends Base_Object_With_Meta {
 	 *
 	 * @return array
 	 */
-	public function get_email_reminders() {
-		$reminders = $this->get_meta( 'email_reminders' );
+	public function get_reminders( $which ) {
 
-		if ( ! is_array( $reminders ) ) {
-			$reminders = []; // Todo Add defaults?
-		}
+		$reminders_key_map = [
+			Appointment_Reminder::CONTACT_EMAIL => 'email_reminders',
+			Appointment_Reminder::CONTACT_SMS   => 'sms_reminders',
+			Appointment_Reminder::ADMIN_EMAIL   => 'notifications',
+			Appointment_Reminder::ADMIN_SMS     => 'sms_notifications',
+		];
 
-		foreach ( $reminders as &$reminder ) {
-			$reminder['number']   = absint( $reminder['number'] );
-			$reminder['email_id'] = absint( $reminder['email_id'] );
-		}
-
-		return $reminders;
+		return $this->get_meta( $reminders_key_map[ $which ] );
 	}
 
 	/**
@@ -521,6 +528,7 @@ class Calendar extends Base_Object_With_Meta {
 		$args = wp_parse_args( $args, [
 			'contact_id'  => $contact->get_id(),
 			'calendar_id' => $this->get_id(),
+			'owner_id'    => $this->get_user_id(),
 			'status'      => 'scheduled',
 			'start_time'  => time(),
 			'end_time'    => false,
@@ -543,6 +551,28 @@ class Calendar extends Base_Object_With_Meta {
 		}
 
 		$appointment->update_meta( 'notes', $args['notes'] );
+
+		$location      = '';
+		$location_type = $this->get_meta( 'location_type' );
+
+		switch ( $location_type ) {
+			case 'zoom':
+			case 'google_meet':
+				$location = $location_type;
+				break;
+			case 'address':
+				$location = $this->get_meta( 'location_address' );
+				break;
+			case 'call_you':
+				$location = $this->get_meta( 'location_phone' );
+				break;
+			case 'custom':
+				$location = $this->get_meta( 'location_custom' );
+				break;
+		}
+
+		$appointment->update_meta( 'location', $location );
+
 		$appointment->schedule();
 
 		do_action( 'groundhogg/calendar/schedule_appointment/after', $this, $appointment );
@@ -552,165 +582,38 @@ class Calendar extends Base_Object_With_Meta {
 	}
 
 	/**
-	 * Set the Google account ID
-	 *
-	 * @param $id
-	 *
-	 * @return bool|mixed
-	 */
-	public function set_google_connection_id( $id ) {
-		return $this->update_meta( 'google_connection_id', $id );
-	}
-
-
-	/**
-	 * Set the Google account ID
-	 *
-	 * @param $id
-	 *
-	 * @return bool|mixed
-	 */
-	public function set_google_calendar_id( $id ) {
-		return $this->update_meta( 'google_calendar_id', $id );
-	}
-
-
-	/**
-	 * Get the Google Account ID
-	 *
-	 * @return string
-	 */
-	public function get_google_connection_id() {
-		return $this->get_meta( 'google_connection_id' );
-	}
-
-	/**
-	 * @var Google_Connection
-	 */
-	protected $google_connection;
-
-	/**
-	 * @return Google_Connection
-	 */
-	public function get_google_connection() {
-		if ( ! $this->google_connection ) {
-			$this->google_connection = new Google_Connection( $this->get_google_connection_id() );
-		}
-
-		return $this->google_connection;
-	}
-
-	/**
-	 * Returns the evalue of google meet enabled checkbox.
-	 *
-	 * @return bool
-	 */
-	public function is_google_meet_enabled() {
-		return (bool) $this->get_meta( 'google_meet_enable', true );
-	}
-
-	/**
-	 * Return value of zoom enable checkbox.
-	 *
-	 * @return bool
-	 */
-	public function is_zoom_enabled() {
-		return (bool) $this->get_meta( 'zoom_account_id', true );
-	}
-
-	/**
-	 * fetch access_token for the zoom
-	 *
-	 * @return WP_Error|string
-	 */
-	public function get_zoom_access_token( $refresh_if_expired = false ) {
-
-		$account_id = $this->get_zoom_account_id();
-		$token      = zoom()->get_access_token( $account_id );
-
-		if ( ! $token || ! $account_id ) {
-			return new WP_Error( 'error', 'no token' );
-		}
-
-		if ( $refresh_if_expired && zoom()->is_token_expired( $account_id ) ) {
-			$account_id = zoom()->refresh_connection( $account_id );
-
-			if ( is_wp_error( $account_id ) ) {
-				return $account_id;
-			}
-
-			$token = zoom()->get_access_token( $account_id );
-		}
-
-		return $token;
-	}
-
-	/**
-	 * Set the zoom access token
-	 *
-	 * @param string $id
-	 */
-	public function set_zoom_account_id( $id ) {
-		$this->update_meta( 'zoom_account_id', $id );
-	}
-
-	/**
-	 * Set the soom access token
-	 *
-	 * @param string $id
-	 */
-	public function get_zoom_account_id() {
-		return $this->get_meta( 'zoom_account_id' );
-	}
-
-	/**
 	 * Merged list of synced events and all appointments
 	 *
-	 * @return array
+	 * @return Appointment[]
 	 */
 	public function get_scheduled_events( $from, $to ) {
 
 		$local_appointments = get_db( 'appointments' )->query( [
-			'calendar_id' => $this->get_id(),
-			'after'       => get_time( $from ),
-			'before'      => get_time( $to ),
-			'status'      => 'scheduled'
+			// compare against owner ID if assigned to more than 1 calendar
+			// rather than the calendar ID
+			'owner_id' => $this->get_user_id(),
+			'after'    => get_time( $from ),
+			'before'   => get_time( $to ),
+			'status'   => 'scheduled'
 		] );
 
 		array_map_to_class( $local_appointments, Appointment::class );
 
 		$google_events = [];
 
-		if ( $this->is_connected_to_google() ) {
-			$google_events = $this->get_google_events( $from, $to );
+		$google_connection = get_user_google_connection( $this->get_user_id() );
+
+		if ( $google_connection && is_a( $google_connection, Google_Connection::class ) ) {
+			$google_events = $google_connection->get_cached_events( $from, $to );
 		}
 
 		$events = array_values( array_merge( $google_events, $local_appointments ) );
 
-		usort( $events, function ($a, $b) {
+		usort( $events, function ( $a, $b ) {
 			return $a->get_start_date() <=> $b->get_start_date();
 		} );
 
 		return $events;
-	}
-
-	/**
-	 * Get events from Google Calendar to check slot availability
-	 *
-	 * @param $from
-	 * @param $to
-	 *
-	 * @return array|false
-	 */
-	public function get_google_events( $from, $to ) {
-
-		$query = new Synced_Event_Query( [
-			'from'      => $from,
-			'to'        => $to,
-			'calendars' => $this->get_google_calendar_list()
-		] );
-
-		return $query->get_results();
 	}
 
 	/**
@@ -736,13 +639,109 @@ class Calendar extends Base_Object_With_Meta {
 	}
 
 	/**
-	 * Get the availability for a calendar
+	 * @var array[]
+	 */
+	protected $conflicts = [];
+	protected $events_per_day = [];
+
+	/**
+	 * Whether a time is in the list
 	 *
-	 * @param $start           string a date
-	 * @param $end             string a date
-	 * @param $client_timezone string|\DateTimeZone the timezone of the client
+	 * @param \DateTime $date
+	 *
+	 * @return bool
+	 */
+	public function conflict_exists( \DateTime $date ) {
+		return key_exists( $date->getTimestamp(), $this->conflicts );
+	}
+
+	/**
+	 * Retrieve the conflicting appointment
+	 *
+	 * @param \DateTime $date
 	 *
 	 * @return array
+	 */
+	public function get_conflict( \DateTime $date ) {
+		return $this->conflicts[ $date->getTimestamp() ];
+	}
+
+
+	/**
+	 * The number of scheduled events on a given day
+	 *
+	 * @param \DateTime $date
+	 *
+	 * @return int
+	 */
+	public function get_num_events( \DateTime $date ) {
+		return isset( $this->events_per_day[ $date->format('Y-m-d') ] ) ? $this->events_per_day[ $date->format('Y-m-d') ] : 0;
+	}
+
+	/**
+	 * Prepare the conflict times
+	 *
+	 * @param $start
+	 * @param $end
+	 *
+	 * @return void
+	 */
+	public function prepare_conflicts( $start, $end ) {
+
+		// Get all the scheduled appointments
+		// Ordered datetime ascending
+		$appointments = $this->get_scheduled_events( $start, $end );
+		$_5min        = \DateInterval::createFromDateString( '5 minutes' );
+
+		foreach ( $appointments as $appointment ) {
+			$date = $appointment->get_start_date();
+			$end  = $appointment->get_end_date();
+			$date->setTimezone( $this->get_timezone() );
+
+			if ( method_exists( $appointment, 'get_calendar_id' ) && $appointment->get_calendar_id() === $this->get_id() ){
+				$Ymd = $date->format( 'Y-m-d' );
+
+				if ( key_exists( $Ymd, $this->events_per_day ) ){
+					$this->events_per_day[$Ymd]++;
+				} else {
+					$this->events_per_day[$Ymd] = 1;
+				}
+			}
+
+			$this->conflicts[ $date->getTimestamp() ] = [
+				'when' => 'start',
+				'end'  => $end->getTimestamp()
+			];
+
+			$date->add( $_5min );
+
+			while ( $date < $end ) {
+				$this->conflicts[ $date->getTimestamp() ] = [
+					'when' => 'inner',
+					'end'  => $end->getTimestamp()
+				];
+				$date->add( $_5min );
+			}
+
+			$this->conflicts[ $date->getTimestamp() ] = [
+				'when' => 'end',
+				'end'  => $end->getTimestamp()
+			];
+		}
+	}
+
+	/**
+	 * Get the availability for a calendar
+	 *
+	 * Takes into account scheduled appointments as well as synced appointments
+	 * and will exclude conflicting slots from the availability.
+	 *
+	 * @throws Exception
+	 *
+	 * @param $end             string a date
+	 * @param $start           string a date
+	 *
+	 * @return array[]
 	 */
 	public function get_availability( $start = '', $end = '' ) {
 
@@ -754,15 +753,14 @@ class Calendar extends Base_Object_With_Meta {
 			$end = $this->get_max_booking_period();
 		}
 
-		// Get all the scheduled appointments
-		$appointments = $this->get_scheduled_events( $start, $end );
+		$this->prepare_conflicts( $start, $end );
 
 		$timezone = $this->get_timezone();
 
 		// Where we start
 		$dateTime = new \DateTime( $start, $timezone );
 
-		// Set to min bookuing period
+		// Set to min booking period
 		if ( $dateTime < $this->get_min_booking_period( false ) ) {
 			$dateTime = $this->get_min_booking_period( false );
 		}
@@ -774,21 +772,39 @@ class Calendar extends Base_Object_With_Meta {
 		$aptInterval    = $this->get_appointment_interval();
 		$bufferInterval = $this->get_buffer_interval();
 
+		$buffA = new \DateTime( 'now' );
+		$buffB = clone $buffA;
+		$buffB->add( $bufferInterval );
+
+		$bufferInSeconds = $buffB->getTimestamp() - $buffA->getTimestamp();
+
 		$business_hours = $this->get_business_hours();
 
 		$availability = [];
+		$checked      = [];
+
+		$limit_slots    = (bool) $this->get_meta( 'limit_slots' );
+		$max_slots      = absint( $this->get_meta( 'busy_slot' ) );
+		$limit_bookings = (bool) $this->get_meta( 'limit_bookings' );
+		$max_bookings   = absint( $this->get_meta( 'max_bookings' ) );
 
 		while ( $dateTime < $endTime ) { // todo make a condition
 
 			$today = $dateTime->getTimestamp();
 
-			$todays_hours = array_filter( $business_hours, function ( $rule ) use ( $dateTime ) {
+			$todays_rules = array_filter( $business_hours, function ( $rule ) use ( $dateTime ) {
 				return $rule['dow'] === absint( $dateTime->format( 'w' ) );
 			} );
 
+			// No slots today!
+			if ( empty( $todays_rules ) || ( $limit_bookings && $this->get_num_events( $dateTime ) >= $max_bookings ) ) {
+				$dateTime->modify( 'tomorrow' );
+				continue;
+			}
+
 			$todays_slots = [];
 
-			foreach ( $todays_hours as $rule ) {
+			foreach ( $todays_rules as $rule ) {
 
 				$maxDate = clone $dateTime;
 				$dateTime->modify( $rule['start'] );
@@ -800,30 +816,73 @@ class Calendar extends Base_Object_With_Meta {
 					$dateTime->add( $aptInterval );
 					$end = clone $dateTime;
 
-					/**
-					 * @var $apt Appointment|Synced_Event
-					 */
-					foreach ( $appointments as $apt ) {
-						// found conflict
-						if ( $apt->conflicts( $start, $end ) ) {
-							$has_conflict = true;
-							break;
+					if ( $end > $maxDate ) {
+						continue;
+					}
+
+					// We already visited this potential slot, next!
+					if ( key_exists( $start->getTimestamp(), $checked ) ) {
+						continue;
+					}
+
+					$checked[ $start->getTimestamp() ] = true;
+
+					// Start conflicts
+					if ( $this->conflict_exists( $start ) ) {
+						$conflict = $this->get_conflict( $start );
+
+						switch ( $conflict['when'] ) {
+							case 'start':
+							case 'inner':
+								$dateTime->setTimestamp( $conflict['end'] );
+								$dateTime->add( $bufferInterval );
+								continue 2;
+							case 'end':
+
+								if ( $bufferInSeconds === 0 ) {
+									break;
+								}
+
+								$dateTime->add( $bufferInterval );
+								continue 2;
 						}
 					}
 
-					if ( ! $has_conflict && $start->getTimestamp() > time() ) {
-						$todays_slots[] = [
-							'start' => $start->getTimestamp(),
-							'month' => $dateTime->format( 'n' ) - 1,
-						];
+					// End conflicts
+					if ( $this->conflict_exists( $end ) ) {
+						$conflict = $this->get_conflict( $end );
+
+						switch ( $conflict['when'] ) {
+							case 'end':
+							case 'inner':
+								$dateTime->setTimestamp( $conflict['end'] );
+								$dateTime->add( $bufferInterval );
+								continue 2;
+							case 'start':
+
+								if ( $bufferInSeconds === 0 ) {
+									break;
+								}
+
+								$dateTime->setTimestamp( $conflict['end'] );
+								$dateTime->add( $bufferInterval );
+								continue 2;
+						}
 					}
+
+					// Only one slot can exist at this time stamp
+					$todays_slots[ $start->getTimestamp() ] = [
+						'start' => $start->getTimestamp(),
+						'month' => $dateTime->format( 'n' ) - 1,
+					];
+
 				}
 
 			}
 
-			$max_slots = absint( $this->get_meta( 'busy_slot' ) );
+			$todays_slots = array_values( $todays_slots );
 
-			if ( $max_slots && count( $todays_slots ) > $max_slots ) {
+			if ( $limit_slots && count( $todays_slots ) > $max_slots ) {
 				$seed = $today;
 				mt_srand( $seed );
 				$todays_slots_keys = array_rand( $todays_slots, $max_slots );
@@ -834,7 +893,7 @@ class Calendar extends Base_Object_With_Meta {
 
 			$availability = array_merge( $availability, $todays_slots );
 
-			$dateTime->modify( '+ 1 day' );
+			$dateTime->modify( 'tomorrow' );
 
 		}
 
@@ -848,6 +907,16 @@ class Calendar extends Base_Object_With_Meta {
 	 */
 	private function get_timezone() {
 		return new \DateTimeZone( $this->get_meta( 'timezone' ) ?: wp_timezone_string() );
+	}
+
+	public function get_link() {
+		return managed_page_url( sprintf( 'calendar/%s/', $this->slug ) );
+	}
+
+	public function get_as_array() {
+		return array_merge( parent::get_as_array(), [
+			'link' => $this->get_link()
+		] );
 	}
 
 }

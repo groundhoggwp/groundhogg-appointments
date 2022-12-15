@@ -78,7 +78,7 @@ class Calendar_Sync extends Supports_Errors {
 			}
 		}
 
-		get_db( 'synced_events' )->delete_old_events();
+//		get_db( 'synced_events' )->delete_old_events();
 
 		$calendars = get_db( 'calendars' )->query();
 		array_map_to_class( $calendars, Calendar::class );

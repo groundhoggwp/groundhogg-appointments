@@ -18,6 +18,7 @@ $tab_list = [
 	'embed'        => __( 'Embed', 'groundhogg-calendar' ),
 	'view'         => __( 'Appointments', 'groundhogg-calendar' ),
 	'delete'       => __( 'Delete', 'groundhogg-calendar' ),
+	'new'       => __( 'NEw', 'groundhogg-calendar' ),
 ];
 
 if ( ! is_sms_plugin_active() ) {
@@ -60,5 +61,10 @@ switch ( $tab ):
 		break;
 	case 'delete':
 		include __DIR__ . '/delete.php';
+		break;
+	case 'new':
+		?>
+    <div id="gh-calendar-settings"></div>
+<?php
 		break;
 endswitch;

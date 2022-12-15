@@ -10,7 +10,7 @@ use function Groundhogg\html;
 use Groundhogg\Step;
 use Groundhogg\Steps\Benchmarks\Benchmark;
 use GroundhoggBookingCalendar\Classes\Appointment;
-use GroundhoggBookingCalendar\Classes\Email_Reminder;
+use GroundhoggBookingCalendar\Classes\Appointment_Reminder;
 
 class Booking_Calendar extends Benchmark {
 
@@ -56,9 +56,9 @@ class Booking_Calendar extends Benchmark {
 					'id'       => $this->setting_id_prefix( 'action' ),
 					'name'     => $this->setting_name_prefix( 'action' ),
 					'options'  => [
-						Email_Reminder::SCHEDULED   => __( 'Appointment Scheduled' ),
-						Email_Reminder::RESCHEDULED => __( 'Appointment Rescheduled' ),
-						Email_Reminder::CANCELLED   => __( 'Appointment Cancelled' ),
+//						Appointment_Reminder::SCHEDULED   => __( 'Appointment Scheduled' ),
+//						Appointment_Reminder::RESCHEDULED => __( 'Appointment Rescheduled' ),
+//						Appointment_Reminder::CANCELLED   => __( 'Appointment Cancelled' ),
 					],
 					'selected' => $this->get_setting( 'action' ),
 				] ),
@@ -121,13 +121,13 @@ class Booking_Calendar extends Benchmark {
 
 		switch ( current_action() ) {
 			case 'groundhogg/calendar/appointment/scheduled':
-				$this->add_data( 'action', Email_Reminder::SCHEDULED );
+//				$this->add_data( 'action', Appointment_Reminder::SCHEDULED );
 				break;
 			case 'groundhogg/calendar/appointment/rescheduled':
-				$this->add_data( 'action', Email_Reminder::RESCHEDULED );
+//				$this->add_data( 'action', Appointment_Reminder::RESCHEDULED );
 				break;
 			case 'groundhogg/calendar/appointment/cancelled':
-				$this->add_data( 'action', Email_Reminder::CANCELLED );
+//				$this->add_data( 'action', Appointment_Reminder::CANCELLED );
 				break;
 		}
 

@@ -3,44 +3,30 @@
 namespace GroundhoggBookingCalendar;
 
 
-use Groundhogg\Base_Object;
-use Groundhogg\Contact;
 use Groundhogg\Email;
 use Groundhogg\Event;
 use Groundhogg\Plugin;
 use GroundhoggBookingCalendar\Classes\Calendar;
-use GroundhoggBookingCalendar\Classes\SMS_Reminder;
+use GroundhoggBookingCalendar\Classes\Google_Connection;
 use GroundhoggBookingCalendar\Classes\Synced_Event;
 use GroundhoggBookingCalendar\Connections\Zoom;
 use GroundhoggSMS\Classes\SMS;
 use GroundhoggSMS\SMS_Services;
-use mysql_xdevapi\Exception;
-use function Groundhogg\admin_page_url;
 use function Groundhogg\array_map_keys;
 use function Groundhogg\array_map_to_class;
 use function Groundhogg\do_replacements;
+use function Groundhogg\email_kses;
 use function Groundhogg\emergency_init_dbs;
 use function Groundhogg\get_array_var;
 use GroundhoggBookingCalendar\Classes\Appointment;
-use GroundhoggBookingCalendar\Classes\Email_Reminder;
-use function Groundhogg\get_contactdata;
-use function Groundhogg\get_date_time_format;
+use GroundhoggBookingCalendar\Classes\Appointment_Reminder;
 use function Groundhogg\get_db;
 use function Groundhogg\get_default_from_email;
 use function Groundhogg\get_default_from_name;
-use function Groundhogg\get_email_templates;
-use function Groundhogg\get_form_list;
 use function Groundhogg\get_object_ids;
 use function Groundhogg\get_request_query;
-use function Groundhogg\get_request_var;
 use function Groundhogg\get_url_var;
-use function Groundhogg\groundhogg_url;
-use function Groundhogg\is_option_enabled;
 use function Groundhogg\isset_not_empty;
-use function Groundhogg\key_to_words;
-use function Groundhogg\words_to_key;
-use function GroundhoggSMS\send_sms;
-use function GroundhoggSMS\validate_mobile_number;
 
 /**
  * Zoom stuff!
@@ -77,33 +63,24 @@ function install_tables() {
 }
 
 /**
- * @return Google_Calendar
+ * Either set or get the current appointment
+ *
+ * @param Appointment $appointment
+ *
+ * @return false|Appointment|mixed
  */
-function google_calendar() {
-	_doing_it_wrong( 'google_calendar', 'Dont use this function', '2.2' );
+function current_appointment( $appointment = false ) {
+	static $_appointment;
 
-	return null;
-}
-
-function convert_to_client_timezone( $time, $timezone = '' ) {
-	if ( ! $timezone ) {
-		return $time;
+	if ( is_a( $appointment, Appointment::class ) ) {
+		$_appointment = $appointment;
 	}
 
-	if ( current_user_can( 'edit_calendar' ) ) {
-		$local_time = \Groundhogg\Plugin::$instance->utils->date_time->convert_to_local_time( $time );
-
-		return $local_time;
+	if ( $appointment === null ) {
+		$_appointment = false;
 	}
 
-	try {
-		$local_time = \Groundhogg\Plugin::$instance->utils->date_time->convert_to_foreign_time( $time, $timezone );
-	} catch ( \Exception $e ) {
-		// Use site time anyway.
-		$local_time = \Groundhogg\Plugin::$instance->utils->date_time->convert_to_local_time( $time );
-	}
-
-	return $local_time;
+	return $_appointment;
 }
 
 /**
@@ -153,83 +130,6 @@ function days_of_week( $day = '' ) {
 	return get_array_var( $days, $day, 'monday' );
 }
 
-/**
- * Adjust shades of colour for front end calendar
- *
- * @param $hex
- * @param $steps
- *
- * @return string
- */
-function adjust_brightness( $hex, $steps ) {
-
-	// Steps should be between -255 and 255. Negative = darker, positive = lighter
-	$steps = max( - 255, min( 255, $steps ) );
-
-	// Normalize into a six character long hex string
-	$hex = str_replace( '#', '', $hex );
-	if ( strlen( $hex ) == 3 ) {
-		$hex = str_repeat( substr( $hex, 0, 1 ), 2 ) . str_repeat( substr( $hex, 1, 1 ), 2 ) . str_repeat( substr( $hex, 2, 1 ), 2 );
-	}
-
-	// Split into three parts: R, G and B
-	$color_parts = str_split( $hex, 2 );
-	$return      = '#';
-
-	foreach ( $color_parts as $color ) {
-		$color  = hexdec( $color ); // Convert to decimal
-		$color  = max( 0, min( 255, $color + $steps ) ); // Adjust color
-		$return .= str_pad( dechex( $color ), 2, '0', STR_PAD_LEFT ); // Make two char hex code
-	}
-
-	return $return;
-}
-
-/**
- * Schedule a 1 off reminder notification
- *
- * @param     $email_id       int the ID of the email to send
- * @param     $appointment_id int|string the ID of the appointment being referenced
- * @param int $time           time time to send at, defaults to time()
- *
- * @return bool whether the scheduling was successful.
- */
-function send_email_reminder_notification( $email_id = 0, $appointment_id = 0, $time = 0 ) {
-
-	if ( ! $email_id || ! $appointment_id ) {
-		return false;
-	}
-
-	$appointment = is_int( $appointment_id ) ? new Appointment( $appointment_id ) : $appointment_id;
-	$email       = is_int( $email_id ) ? new Email( $email_id ) : $email_id;
-
-	if ( ! $appointment->exists() || ! $email->exists() ) {
-		return false;
-	}
-
-	if ( ! $time ) {
-		$time = time();
-	}
-
-	$event = new Event( [
-		'time'       => $time,
-		'funnel_id'  => $appointment->get_id(),
-		'step_id'    => $email->get_id(),
-		'contact_id' => $appointment->get_contact_id(),
-		'event_type' => Email_Reminder::NOTIFICATION_TYPE,
-		'status'     => 'waiting',
-	], 'event_queue' );
-
-	if ( ! $event->exists() ) {
-		return false;
-	}
-
-	do_action( 'groundhogg/calendar/reminder_scheduled', $event );
-
-	return true;
-
-}
-
 
 /**
  * Setup the step for an event as the Reminder notification type
@@ -237,105 +137,29 @@ function send_email_reminder_notification( $email_id = 0, $appointment_id = 0, $
  * @param $event Event
  */
 function setup_reminder_notification_object( $event ) {
-
-    // Only if SMS is enabled, otherwise use email notification
-	if ( $event->get_event_type() === SMS_Reminder::NOTIFICATION_TYPE && is_sms_plugin_active() ) {
-
-		// Step ID will be the ID of the email
-		// Funnel ID will be the ID of the appointment
-		$event->step = new SMS_Reminder( $event->get_funnel_id(), $event->get_step_id() );
-        return;
-	}
-
-	// Step ID will be the ID of the email
-	// Funnel ID will be the ID of the appointment
-	$event->step = new Email_Reminder( $event->get_funnel_id(), $event->get_step_id() );
-
+    switch ( $event->get_event_type() ){
+        case Appointment_Reminder::NOTIFICATION_TYPE;
+	        $event->step = new Appointment_Reminder( $event );
+	        break;
+    }
 }
 
 add_action( 'groundhogg/event/post_setup', __NAMESPACE__ . '\setup_reminder_notification_object' );
 
 /**
- * Schedule a 1 off reminder notification
+ * Whether the sms plugin is active
  *
- * @param     $sms_id         int the ID of the email to send
- * @param     $appointment_id int|string the ID of the appointment being referenced
- * @param int $time           time time to send at, defaults to time()
- *
- * @return bool whether the scheduling was successful.
+ * @return bool
  */
-function send_sms_reminder_notification( $sms_id = 0, $appointment_id = 0, $time = 0 ) {
-
-	if ( ! $sms_id || ! $appointment_id || ! is_sms_plugin_active() ) {
-		return false;
-	}
-
-	$appointment = is_int( $appointment_id ) ? new Appointment( absint( $appointment_id ) ) : $appointment_id;
-	$sms         = is_int( $sms_id ) ? new SMS( absint( $sms_id ) ) : $sms_id;
-
-	if ( ! $appointment->exists() || ! $sms->exists() ) {
-		return false;
-	}
-
-	if ( ! $time ) {
-		$time = time();
-	}
-
-	$event = new Event( [
-		'time'       => $time,
-		'funnel_id'  => $appointment->get_id(),
-		'step_id'    => $sms->get_id(),
-		'contact_id' => $appointment->get_contact_id(),
-		'event_type' => SMS_Reminder::NOTIFICATION_TYPE,
-		'status'     => 'waiting',
-	], 'event_queue' );
-
-	if ( ! $event->exists() ) {
-		return false;
-	}
-
-	return true;
-
-}
-
-
 function is_sms_plugin_active() {
 	return \Groundhogg\is_sms_plugin_active();
 }
 
-
-function add_booking_appointment() {
-	?>
-    <table class="form-table">
-        <tr>
-            <th><?php _ex( 'Book Appointment', 'contact_record', 'groundhogg-calendar' ); ?></th>
-            <td>
-                <div style="max-width: 400px;">
-					<?php
-					$calendars = get_calendar_list();
-					echo Plugin::$instance->utils->html->select2( [
-						'name'        => 'appointment_booking_from_contact',
-						'id'          => 'appointment_booking_from_contact',
-						'class'       => 'appointment_booking_from_contact gh-select2',
-						'data'        => $calendars,
-						'multiple'    => false,
-						'placeholder' => __( 'Please select a calendar', 'groundhogg-calendar' ),
-					] );
-					?>
-                    <div class="row-actions">
-                        <button type="submit" name="appointment_book" value="appointment_book"
-                                class="button"><?php _e( 'Book Appointment', 'groundhogg-calendar' ); ?></button>
-                    </div>
-                </div>
-            </td>
-        </tr>
-    </table>
-	<?php
-}
-
-add_action( 'groundhogg/admin/contact/record/tab/actions', __NAMESPACE__ . '\add_booking_appointment', 12 );
-
-
+/**
+ * List of all calendars
+ *
+ * @return array
+ */
 function get_calendar_list() {
 
 	$calendars = Plugin::$instance->dbs->get_db( 'calendars' )->query();
@@ -353,45 +177,34 @@ function get_calendar_list() {
 }
 
 /**
- * Action for adding an appointment via the contact screen
- *
- * @param $contact_id
- * @param $contact
- */
-function display_calendar_contact( $contact_id, $contact ) {
-	if ( get_request_var( 'appointment_book' ) ) {
-		wp_safe_redirect( admin_page_url( 'gh_calendar', [
-			'action'   => 'edit',
-			'contact'  => $contact_id,
-			'calendar' => absint( get_request_var( 'appointment_booking_from_contact' ) ),
-		] ) );
-	}
-}
-
-add_action( 'groundhogg/admin/contact/save', __NAMESPACE__ . '\display_calendar_contact', 10, 2 );
-
-/**
  * Replace anything not in alpha numeric with a blank.
  *
  * @return array|string|string[]|null
  */
-function generate_uuid() {
-	return preg_replace( "/[^A-z0-9]/", "", wp_generate_uuid4() );
+function generate_google_uuid() {
+	return sanitize_google_uuid( wp_generate_uuid4() );
 }
 
-function sanitize_google_uuid( $uuid ){
+/**
+ * Remove "-" from UUID
+ *
+ * @param $uuid
+ *
+ * @return array|string|string[]|null
+ */
+function sanitize_google_uuid( $uuid ) {
 	return preg_replace( "/[^A-z0-9]/", "", $uuid );
 }
 
 /**
- * Convert a duration to human readable format.
+ * Convert a duration to human-readable format.
  *
  * @since 5.1.0
  *
  * @param string $duration Duration will be in string format (HH:ii:ss) OR (ii:ss),
  *                         with a possible prepended negative sign (-).
  *
- * @return string|false A human readable duration string, false on failure.
+ * @return string|false A human-readable duration string, false on failure.
  */
 function better_human_readable_duration( $duration = '' ) {
 	if ( ( empty( $duration ) || ! is_string( $duration ) ) ) {
@@ -454,7 +267,6 @@ function better_human_readable_duration( $duration = '' ) {
 	return implode( ', ', $human_readable_duration );
 }
 
-
 /**
  * Wrapper function to get the date format.
  *
@@ -512,45 +324,7 @@ function get_tz_db_name() {
 }
 
 /**
- * @param $appointment Appointment
- * @param $status      string
- *
- * @return bool
- */
-function send_appointment_admin_notifications( $appointment, $status ) {
-
-	\GroundhoggBookingCalendar\Plugin::$instance->replacements->set_appointment( $appointment );
-
-	$content = $appointment->get_calendar()->get_meta( 'notification' );
-
-	$content = sanitize_textarea_field( do_replacements( $content, $appointment->get_contact_id() ) );
-
-	$content .= "\n" . sprintf( __( "Status: %s", 'groundhogg-calendar' ), key_to_words( $status ) );
-
-	$subject = $appointment->get_calendar()->get_meta( 'subject' );
-	$subject = sanitize_text_field( do_replacements( $subject, $appointment->get_contact_id() ) );
-	$subject = sprintf( "%s: %s", words_to_key( $status ), $subject );
-
-	$headers = [
-		sprintf( 'From: %s <%s>', get_default_from_name(), get_default_from_email() )
-	];
-
-	$email_recipients = do_replacements( $appointment->get_calendar()->get_meta( 'admin_notification_email_recipients' ) ?: '{calendar_owner_email}', $appointment->get_contact() );
-	$sent             = \Groundhogg_Email_Services::send_transactional( $email_recipients, $subject, $content, $headers );
-
-	// If the SMS plugin is active and sms notifications are enabled let's also send this as an SMS
-	if ( is_sms_plugin_active() && $appointment->get_calendar()->is_admin_notification_enabled( 'sms' ) ) {
-		$sms_recipients = do_replacements( $appointment->get_calendar()->get_meta( 'admin_notification_sms_recipients' ) ?: '{calendar_owner_phone}', $appointment->get_contact() );
-		$sent           = SMS_Services::send_transactional( $sms_recipients, $content ) && $sent;
-	}
-
-	\GroundhoggBookingCalendar\Plugin::$instance->replacements->clear();
-
-	return $sent;
-}
-
-/**
- * Get's the maximum booking period of all the calendars
+ * Gets the maximum booking period of all the calendars
  *
  * @throws \Exception
  * @return int|mixed
@@ -568,6 +342,11 @@ function get_max_booking_period() {
 	return max( $period, MONTH_IN_SECONDS );
 }
 
+/**
+ * Create array of typical 9:00 AM to 5:00 PM Monday - Friday working hours
+ *
+ * @return array
+ */
 function get_default_availability() {
 	$rules = [];
 
@@ -632,9 +411,9 @@ function set_calendar_default_settings( $calendar, $hours = 1, $minutes = 0 ) {
 
 	// Configure the email notifications
 	$calendar->update_meta( 'email_notifications', [
-		Email_Reminder::SCHEDULED   => $emails['scheduled']->get_id(),
-		Email_Reminder::RESCHEDULED => $emails['rescheduled']->get_id(),
-		Email_Reminder::CANCELLED   => $emails['cancelled']->get_id(),
+//		Appointment_Reminder::SCHEDULED   => $emails['scheduled']->get_id(),
+//		Appointment_Reminder::RESCHEDULED => $emails['rescheduled']->get_id(),
+//		Appointment_Reminder::CANCELLED   => $emails['cancelled']->get_id(),
 	] );
 
 	// set one hour before reminder by default
@@ -664,9 +443,9 @@ function set_calendar_default_settings( $calendar, $hours = 1, $minutes = 0 ) {
 		}
 
 		$calendar->update_meta( 'sms_notifications', [
-			SMS_Reminder::SCHEDULED   => $sms['scheduled']->get_id(),
-			SMS_Reminder::RESCHEDULED => $sms['rescheduled']->get_id(),
-			SMS_Reminder::CANCELLED   => $sms['cancelled']->get_id(),
+//			SMS_Reminder::SCHEDULED   => $sms['scheduled']->get_id(),
+//			SMS_Reminder::RESCHEDULED => $sms['rescheduled']->get_id(),
+//			SMS_Reminder::CANCELLED   => $sms['cancelled']->get_id(),
 		] );
 
 		// set one hour before reminder by default
@@ -682,10 +461,10 @@ function set_calendar_default_settings( $calendar, $hours = 1, $minutes = 0 ) {
 	}
 
 	$admin_notifications = [
-		'sms'                       => is_sms_plugin_active(),
-		Email_Reminder::SCHEDULED   => true,
-		Email_Reminder::RESCHEDULED => true,
-		Email_Reminder::CANCELLED   => true,
+		'sms'                             => is_sms_plugin_active(),
+//		Appointment_Reminder::SCHEDULED   => true,
+//		Appointment_Reminder::RESCHEDULED => true,
+//		Appointment_Reminder::CANCELLED   => true,
 	];
 
 	// Simplify code
@@ -776,4 +555,154 @@ function validate_calendar_slug( $slug, $id = false ) {
 	}
 
 	return $slug;
+}
+
+/**
+ * Get the account ID of a users connected google account
+ *
+ * @param $user_id
+ *
+ * @return mixed
+ */
+function get_user_google_account_id( $user_id = false ) {
+
+	if ( empty( $user_id ) ) {
+		$user_id = get_current_user_id();
+	}
+
+	return get_user_meta( $user_id, 'gh_google_account_id', true );
+}
+
+/**
+ * Get the Google Connection of a user
+ *
+ * @param $user_id
+ *
+ * @return false|Google_Connection
+ */
+function get_user_google_connection( $user_id = false ) {
+
+	$account_id = get_user_google_account_id( $user_id );
+
+	if ( ! $account_id ) {
+		return false;
+	}
+
+	$connection = new Google_Connection( $account_id, 'account_id' );
+
+	if ( ! $connection->exists() ) {
+		return false;
+	}
+
+	return $connection;
+}
+
+/**
+ * Get a user's zoom account id
+ *
+ * @param $user_id
+ *
+ * @return mixed
+ */
+function get_user_zoom_account_id( $user_id = false ) {
+	if ( empty( $user_id ) ) {
+		$user_id = get_current_user_id();
+	}
+
+	return get_user_meta( $user_id, 'gh_zoom_account_id', true );
+}
+
+/**
+ * Send and email notification to the contact
+ *
+ * @param $appointment Appointment
+ * @param $template string|array|int
+ *
+ * @return bool
+ */
+function send_contact_email_notification( $appointment, $template ) {
+
+    current_appointment( $appointment );
+
+    if ( ! is_array( $template ) ){
+        $template = $appointment->get_calendar()->get_contact_email_notification_template( $template );
+    }
+
+	// No content or subject defined
+	if ( empty( $template['content'] ) || empty( $template['subject'] ) ){
+		return false;
+	}
+
+	// set for replacements
+	$content  = do_replacements( $template['content'], $appointment->get_contact() );
+	$content  .= wpautop( get_option( 'gh_custom_email_footer_text' ) );
+	$content  = email_kses( $content );
+
+	$subject = sanitize_text_field( do_replacements( $template['subject'], $appointment->get_contact() ) );
+
+	$headers = [
+		'Content-Type: text/html',
+		sprintf( 'From: %s <%s>', get_default_from_name(), get_default_from_email() ),
+		// Reply to the contact
+		sprintf( 'Reply-To: %s', $appointment->get_owner()->user_email )
+	];
+
+	$recipients = [ $appointment->get_contact()->get_email() ];
+
+	/**
+	 * Filter the admin notification recipients
+	 *
+	 * @param array       $recipients
+	 * @param Appointment $appointment
+	 * @param string      $status
+	 */
+	$recipients = apply_filters( 'groundhogg/calendar/send_contact_email_notification/recipients', $recipients, $appointment );
+
+	return \Groundhogg_Email_Services::send_transactional( $recipients, $subject, $content, $headers );
+}
+
+/**
+ * Send an email notification to the admin for appointment details
+ *
+ * @param $appointment Appointment
+ * @param $template string|array|int
+ *
+ * @return bool
+ */
+function send_admin_email_notification( $appointment, $template ) {
+
+	current_appointment( $appointment );
+
+	if ( ! is_array( $template ) ){
+		$template = $appointment->get_calendar()->get_admin_email_notification_template( $template );
+	}
+
+	// No content or subject defined
+	if ( empty( $template['content'] ) || empty( $template['subject'] ) ){
+		return false;
+	}
+
+	$content  = do_replacements( $template['content'], $appointment->get_contact() );
+	$content  = email_kses( $content );
+	$subject  = sanitize_text_field( do_replacements( $template['subject'], $appointment->get_contact() ) );
+
+	$headers = [
+		'Content-Type: text/html',
+		sprintf( 'From: %s <%s>', get_default_from_name(), get_default_from_email() ),
+		// Reply to the contact
+		sprintf( 'Reply-To: %s', $appointment->get_contact()->get_email() )
+	];
+
+	$recipients = [ $appointment->get_owner()->user_email ];
+
+	/**
+	 * Filter the admin notification recipients
+	 *
+	 * @param array       $recipients
+	 * @param Appointment $appointment
+	 * @param string      $status
+	 */
+	$recipients = apply_filters( 'groundhogg/calendar/send_admin_email_notification/recipients', $recipients, $appointment );
+
+	return \Groundhogg_Email_Services::send_transactional( $recipients, $subject, $content, $headers );
 }

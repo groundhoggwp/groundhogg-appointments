@@ -178,14 +178,13 @@ if ( $appointment ){
 		], __( 'Edit Calendar', 'groundhogg' ) );
 	}
 
-	if ( current_user_can( 'edit_appointment' ) && $appointment ) {
+	if ( $appointment && current_user_can( 'edit_appointment', $appointment ) ) {
 		$links[] = html()->e( 'a', [
 			'href' => admin_page_url( 'gh_appointments', [
 				'appointment' => $appointment->get_id()
 			] )
 		], __( 'Edit Appointment', 'groundhogg' ) );
 	}
-
 
 	$html = implode( ' | ', $links );
 

@@ -1,0 +1,23 @@
+{
+  "name": "groundhogg/groundhogg-appointments",
+  "description": "Allow contacts to scheudle appointments",
+  "minimum-stability": "stable",
+  "license": "proprietary",
+  "authors": [
+    {
+      "name": "Adrian",
+      "email": "adrian@groundhogg.io"
+    }
+  ],
+  "require": {
+    "google/apiclient": "^2.12.1"
+  },
+  "scripts": {
+    "pre-autoload-dump": "Google\\Task\\Composer::cleanup"
+  },
+  "extra": {
+    "google/apiclient-services": [
+      "Calendar"
+    ]
+  }
+}

@@ -289,7 +289,7 @@
                   </button>
               </div>
           </div>
-          <div class="display-flex gap-20" style="margin-top: 40px">
+          <div class="display-flex gap-20">
               <div id="details">
                   <h3><b>${ __('Contact') }</b></h3>
                   <div class="display-flex">
