@@ -5,6 +5,7 @@ namespace GroundhoggBookingCalendar\Classes;
 use Groundhogg\Contact;
 use Groundhogg\Email;
 use Groundhogg\Event_Process;
+use GroundhoggBookingCalendar\Plugin;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -47,8 +48,8 @@ class Email_Reminder implements Event_Process {
 	 * @param int $appointment_id
 	 */
 	public function __construct( $appointment_id, $email_id ) {
-		$this->email       = new Email( $email_id );
 		$this->appointment = new Appointment( $appointment_id );
+		$this->email       = new Email( $email_id );
 	}
 
 	public function get_funnel_title() {
@@ -60,9 +61,16 @@ class Email_Reminder implements Event_Process {
 	}
 
 	public function run( $contact, $event ) {
+
+		Plugin::$instance->replacements->set_appointment( $this->appointment );
+
 		do_action( 'groundhogg/calendar/reminder/run/before', $this, $contact, $event );
+
 		$result = $this->email->send( $contact, $event );
+
 		do_action( 'groundhogg/calendar/reminder/run/after', $this, $contact, $event );
+
+		Plugin::$instance->replacements->clear();
 
 		return $result;
 	}

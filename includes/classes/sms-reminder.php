@@ -5,6 +5,7 @@ namespace GroundhoggBookingCalendar\Classes;
 use Groundhogg\Contact;
 use Groundhogg\Email;
 use Groundhogg\Event_Process;
+use GroundhoggBookingCalendar\Plugin;
 use GroundhoggSMS\Classes\SMS;
 use function GroundhoggBookingCalendar\is_sms_plugin_active;
 
@@ -77,9 +78,13 @@ class SMS_Reminder implements Event_Process {
 			return new \WP_Error( 'sms_inactive', 'SMS addon is not active' );
 		}
 
+		Plugin::$instance->replacements->set_appointment( $this->appointment );
+
 		do_action( 'groundhogg/calendar/sms_reminder/run/before', $this, $contact, $event );
 		$result = $this->sms->send( $contact, $event );
 		do_action( 'groundhogg/calendar/sms_reminder/run/after', $this, $contact, $event );
+
+		Plugin::$instance->replacements->clear();
 
 		return $result;
 	}
