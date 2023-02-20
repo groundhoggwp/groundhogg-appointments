@@ -2,17 +2,20 @@
 
 namespace GroundhoggBookingCalendar\Steps;
 
-use Groundhogg\Contact;
-use function Groundhogg\get_contactdata;
-use function Groundhogg\get_db;
-use function Groundhogg\get_posts_for_select;
-use function Groundhogg\html;
-use Groundhogg\Step;
 use Groundhogg\Steps\Benchmarks\Benchmark;
 use GroundhoggBookingCalendar\Classes\Appointment;
+use GroundhoggBookingCalendar\Classes\Calendar;
 use GroundhoggBookingCalendar\Classes\Email_Reminder;
+use function Groundhogg\bold_it;
+use function Groundhogg\get_contactdata;
+use function Groundhogg\get_db;
+use function Groundhogg\html;
 
 class Booking_Calendar extends Benchmark {
+
+	public function get_sub_group() {
+		return 'forms';
+	}
 
 	public function get_name() {
 		return __( 'Booking Calendar', 'groundhogg-calendar' );
@@ -66,6 +69,25 @@ class Booking_Calendar extends Benchmark {
 		);
 		html()->end_row();
 		html()->end_form_table();
+	}
+
+	public function generate_step_title( $step ) {
+
+		$actions = [
+			Email_Reminder::SCHEDULED   => __( 'Scheduled' ),
+			Email_Reminder::RESCHEDULED => __( 'Rescheduled' ),
+			Email_Reminder::CANCELLED   => __( 'Cancelled' ),
+		];
+
+		$calendar = new Calendar( $this->get_setting( 'calendar' ) );
+		$action   = $this->get_setting( 'action' );
+
+		if ( $action === Email_Reminder::SCHEDULED ){
+			return sprintf( '%s an appointment for %s', bold_it( $actions[$action] ), bold_it( $calendar->get_name() ) );
+		}
+
+		return sprintf( '%s their %s appointment', bold_it( $actions[$action] ), bold_it( $calendar->get_name() ) );
+
 	}
 
 	public function dropdown_calendar( $args ) {
