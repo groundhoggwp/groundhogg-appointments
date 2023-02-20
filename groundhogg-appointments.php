@@ -3,7 +3,7 @@
  * Plugin Name: Groundhogg - Booking Calendar
  * Plugin URI:  https://www.groundhogg.io/downloads/booking-calendar/?utm_source=wp-plugins&utm_campaign=plugin-uri&utm_medium=wp-dash
  * Description: Create calendars and appointments.
- * Version: 2.5.10
+ * Version: 2.5.11
  * Author: Groundhogg Inc.
  * Author URI: https://www.groundhogg.io/?utm_source=wp-plugins&utm_campaign=author-uri&utm_medium=wp-dash
  * Text Domain: groundhogg-calendar
@@ -23,8 +23,8 @@ namespace GroundhoggBookingCalendar;
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-define( 'GROUNDHOGG_BOOKING_CALENDAR_VERSION', '2.5.10' );
-define( 'GROUNDHOGG_BOOKING_CALENDAR_PREVIOUS_STABLE_VERSION', '2.5.9' );
+define( 'GROUNDHOGG_BOOKING_CALENDAR_VERSION', '2.5.11' );
+define( 'GROUNDHOGG_BOOKING_CALENDAR_PREVIOUS_STABLE_VERSION', '2.5.10' );
 define( 'GROUNDHOGG_BOOKING_CALENDAR_NAME', 'Booking Calendar' );
 
 define( 'GROUNDHOGG_BOOKING_CALENDAR__FILE__', __FILE__ );
@@ -37,9 +37,9 @@ define( 'GROUNDHOGG_BOOKING_CALENDAR_ASSETS_PATH', GROUNDHOGG_BOOKING_CALENDAR_P
 define( 'GROUNDHOGG_BOOKING_CALENDAR_ASSETS_URL', GROUNDHOGG_BOOKING_CALENDAR_URL . 'assets/' );
 define( 'GROUNDHOGG_BOOKING_CALENDAR_ZOOM_BASE_URL','https://api.zoom.us/v2/' );
 
-define( 'GROUNDHOGG_BOOKING_CALENDAR_REQUIRED_WP_VERSION', '4.9' );
+define( 'GROUNDHOGG_BOOKING_CALENDAR_REQUIRED_WP_VERSION', '6.0' );
 define( 'GROUNDHOGG_BOOKING_CALENDAR_REQUIRED_PHP_VERSION', '7.4' );
-define( 'GROUNDHOGG_BOOKING_CALENDAR_REQUIRED_CORE_VERSION', '2.4.6' );
+define( 'GROUNDHOGG_BOOKING_CALENDAR_REQUIRED_CORE_VERSION', '2.7' );
 
 add_action( 'plugins_loaded', function (){
     load_plugin_textdomain( GROUNDHOGG_BOOKING_CALENDAR_TEXT_DOMAIN, false, basename( __DIR__ ) . '/languages' );

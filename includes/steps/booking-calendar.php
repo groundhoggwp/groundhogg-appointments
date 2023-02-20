@@ -6,10 +6,14 @@ use Groundhogg\Steps\Benchmarks\Benchmark;
 use GroundhoggBookingCalendar\Classes\Appointment;
 use GroundhoggBookingCalendar\Classes\Calendar;
 use GroundhoggBookingCalendar\Classes\Email_Reminder;
+use function Groundhogg\array_bold;
+use function Groundhogg\array_map_to_class;
+use function Groundhogg\array_map_to_method;
 use function Groundhogg\bold_it;
 use function Groundhogg\get_contactdata;
 use function Groundhogg\get_db;
 use function Groundhogg\html;
+use function Groundhogg\orList;
 
 class Booking_Calendar extends Benchmark {
 
@@ -42,33 +46,26 @@ class Booking_Calendar extends Benchmark {
 	}
 
 	public function settings( $step ) {
-		html()->start_form_table();
-		html()->start_row();
-		html()->th( __( 'Run when appointment status changed for this calendar:', 'groundhogg-calendar' ) );
-		html()->td(
-			[
-				$this->dropdown_calendar( [ 'selected' => $this->get_setting( 'calendar' ) ] ),
-			]
-		);
-		html()->end_row();
-		html()->start_row();
-		html()->th( __( 'For which status should this run:', 'groundhogg-calendar' ) );
-		html()->td(
-			[
-				html()->dropdown( [
-					'id'       => $this->setting_id_prefix( 'action' ),
-					'name'     => $this->setting_name_prefix( 'action' ),
-					'options'  => [
-						Email_Reminder::SCHEDULED   => __( 'Appointment Scheduled' ),
-						Email_Reminder::RESCHEDULED => __( 'Appointment Rescheduled' ),
-						Email_Reminder::CANCELLED   => __( 'Appointment Cancelled' ),
-					],
-					'selected' => $this->get_setting( 'action' ),
-				] ),
-			]
-		);
-		html()->end_row();
-		html()->end_form_table();
+
+		echo html()->e( 'p', [], __( 'Run when an appointment is...', 'groundhogg-calendar' ) );
+
+		echo html()->select2( [
+			'id'       => $this->setting_id_prefix( 'action' ),
+			'name'     => $this->setting_name_prefix( 'action' ) . '[]',
+			'options'  => [
+				Email_Reminder::SCHEDULED   => __( 'Scheduled' ),
+				Email_Reminder::RESCHEDULED => __( 'Rescheduled' ),
+				Email_Reminder::CANCELLED   => __( 'Cancelled' ),
+			],
+			'selected' => $this->get_setting( 'action', [] ),
+			'multiple' => true,
+		] );
+
+		echo html()->e( 'p', [], __( 'For any of the following calendars...', 'groundhogg-calendar' ) );
+
+		echo $this->dropdown_calendar( [ 'selected' => $this->get_setting( 'calendar', [] ) ] );
+
+		?><p></p><?php
 	}
 
 	public function generate_step_title( $step ) {
@@ -79,25 +76,33 @@ class Booking_Calendar extends Benchmark {
 			Email_Reminder::CANCELLED   => __( 'Cancelled' ),
 		];
 
-		$calendar = new Calendar( $this->get_setting( 'calendar' ) );
-		$action   = $this->get_setting( 'action' );
+		$calendar_ids = wp_parse_id_list( $this->get_setting( 'calendar', [] ) );
+		$calendars    = array_map_to_method( array_map_to_class( $calendar_ids, Calendar::class ), 'get_name' );
+		$actions      = array_map( function ( $action ) use ( $actions ) {
+			return $actions[ $action ];
+		}, wp_parse_list( $this->get_setting( 'action', [] ) ) );
 
-		if ( $action === Email_Reminder::SCHEDULED ){
-			return sprintf( '%s an appointment for %s', bold_it( $actions[$action] ), bold_it( $calendar->get_name() ) );
+		if ( empty( $actions ) ) {
+			return 'Calendar event';
 		}
 
-		return sprintf( '%s their %s appointment', bold_it( $actions[$action] ), bold_it( $calendar->get_name() ) );
+        $calendars = orList( array_bold( $calendars ) );
 
+		if ( empty( $calendars ) ) {
+			$calendars = bold_it( 'any calendar' );
+		}
+
+		return sprintf( '%s an appointment for %s', orList( array_bold( $actions ) ), $calendars );
 	}
 
 	public function dropdown_calendar( $args ) {
 		$a         = wp_parse_args( $args, array(
-			'name'        => $this->setting_name_prefix( 'calendar' ),
 			'id'          => $this->setting_id_prefix( 'calendar' ),
+			'name'        => $this->setting_name_prefix( 'calendar' ) . '[]',
 			'selected'    => 0,
 			'class'       => 'gh_calendar-picker gh-select2',
-			'multiple'    => false,
-			'placeholder' => __( 'Please Select a calendar', 'groundhogg-calendar' ),
+			'multiple'    => true,
+			'placeholder' => __( 'Select a calendar', 'groundhogg-calendar' ),
 			'tags'        => false,
 		) );
 		$calendars = get_db( 'calendars' )->query();
@@ -109,8 +114,8 @@ class Booking_Calendar extends Benchmark {
 	}
 
 	public function save( $step ) {
-		$this->save_setting( 'calendar', absint( $this->get_posted_data( 'calendar' ) ) );
-		$this->save_setting( 'action', $this->get_posted_data( 'action' ) );
+		$this->save_setting( 'calendar', wp_parse_id_list( $this->get_posted_data( 'calendar', [] ) ) );
+		$this->save_setting( 'action', array_map( 'sanitize_text_field', $this->get_posted_data( 'action', [] ) ) );
 	}
 
 
@@ -124,8 +129,11 @@ class Booking_Calendar extends Benchmark {
 	}
 
 	protected function can_complete_step() {
-		return absint( $this->get_data( 'calendar_id' ) ) === absint( $this->get_setting( 'calendar' ) )
-		       && $this->get_data( 'action' ) === $this->get_setting( 'action' );
+
+		$actions   = wp_parse_list( $this->get_setting( 'action', [] ) );
+		$calendars = wp_parse_id_list( $this->get_setting( 'calendar', [] ) );
+
+		return in_array( $this->get_data( 'action' ), $actions ) && ( empty( $calendars ) || in_array( $this->get_data( 'calendar' ), $calendars ) );
 	}
 
 
