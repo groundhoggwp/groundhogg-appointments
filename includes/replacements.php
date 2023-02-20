@@ -209,8 +209,12 @@ class Replacements {
 	public function set_appointment( Appointment $appointment ) {
 		$this->appointment = $appointment;
 
-		// expire replacements cache so that new appt info is shown
-		cache_set_last_changed( 'replacements' );
+		if ( function_exists( '\Groundhogg\cache_set_last_changed' ) ){
+			// expire replacements cache so that new appt info is shown
+			cache_set_last_changed( 'replacements' );
+		} else {
+			wp_cache_set( 'last_changed', microtime(), 'replacements' );
+		}
 	}
 
 	public function time_to_appointment() {
