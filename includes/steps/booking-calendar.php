@@ -63,7 +63,7 @@ class Booking_Calendar extends Benchmark {
 
 		echo html()->e( 'p', [], __( 'For any of the following calendars...', 'groundhogg-calendar' ) );
 
-		echo $this->dropdown_calendar( [ 'selected' => $this->get_setting( 'calendar', [] ) ] );
+		echo $this->dropdown_calendar( [ 'selected' => wp_parse_id_list( $this->get_setting( 'calendar', [] ) ) ] );
 
 		?><p></p><?php
 	}
@@ -120,12 +120,7 @@ class Booking_Calendar extends Benchmark {
 
 
 	protected function get_the_contact() {
-		$contact = get_contactdata( $this->get_data( 'contact_id' ) );
-		if ( ! $contact->exists() ) {
-			return false;
-		}
-
-		return $contact;
+		return $this->get_data( 'contact' );
 	}
 
 	protected function can_complete_step() {
@@ -144,10 +139,10 @@ class Booking_Calendar extends Benchmark {
 	 */
 	public function setup( $appointment ) {
 
-		$appointment = is_int( $appointment ) ? new Appointment( $appointment ) : $appointment;
+		$appointment = is_a( $appointment, Appointment::class ) ? $appointment : new Appointment( $appointment );
 
-		$this->add_data( 'calendar_id', $appointment->get_calendar_id() );
-		$this->add_data( 'contact_id', $appointment->get_contact_id() );
+		$this->add_data( 'calendar', $appointment->get_calendar_id() );
+		$this->add_data( 'contact', $appointment->get_contact() );
 
 		switch ( current_action() ) {
 			case 'groundhogg/calendar/appointment/scheduled':
