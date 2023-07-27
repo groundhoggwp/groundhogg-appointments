@@ -14,6 +14,7 @@ use function Groundhogg\get_date_time_format;
 use function Groundhogg\get_db;
 use function Groundhogg\html;
 use function Groundhogg\managed_page_url;
+use function Groundhogg\replacements;
 
 /**
  * Created by PhpStorm.
@@ -419,15 +420,9 @@ class Replacements {
 			return false;
 		}
 
-		$owner_id = $this->get_appointment()->get_owner_id();
+		$owner = $this->get_appointment()->get_owner();
 
-		$user = get_user_by( 'ID', $owner_id );
-		if ( ! $user ) {
-			//return admin details
-			$user = get_user_by( 'email', get_bloginfo( 'admin_email' ) );
-		}
-
-		return $user->first_name;
+		return $owner->first_name;
 	}
 
 	/**
@@ -442,15 +437,9 @@ class Replacements {
 			return false;
 		}
 
-		$owner_id = $this->get_appointment()->get_owner_id();
+		$owner = $this->get_appointment()->get_owner();
 
-		$user = get_user_by( 'ID', $owner_id );
-		if ( ! $user ) {
-			//return admin details
-			$user = get_user_by( 'email', get_bloginfo( 'admin_email' ) );
-		}
-
-		return $user->last_name;
+		return $owner->last_name;
 	}
 
 	/**
@@ -465,15 +454,9 @@ class Replacements {
 			return false;
 		}
 
-		$owner_id = $this->get_appointment()->get_owner_id();
+		$owner = $this->get_appointment()->get_owner();
 
-		$user = get_user_by( 'ID', $owner_id );
-		if ( ! $user ) {
-			//return admin details
-			$user = get_user_by( 'email', get_bloginfo( 'admin_email' ) );
-		}
-
-		return $user->user_email;
+		return $owner->user_email;
 	}
 
 	/**
@@ -488,15 +471,9 @@ class Replacements {
 			return false;
 		}
 
-		$owner_id = $this->get_appointment()->get_owner_id();
+		$owner = $this->get_appointment()->get_owner();
 
-		$user = get_user_by( 'ID', $owner_id );
-		if ( ! $user || ! $user->phone ) {
-			//return admin details
-			return \Groundhogg\Plugin::instance()->replacements->replacement_business_phone();
-		}
-
-		return $user->phone;
+		return $owner || replacements()->replacement_business_phone() ;
 	}
 
 	/**
@@ -509,16 +486,9 @@ class Replacements {
 			return false;
 		}
 
-		$owner_id = $this->get_appointment()->get_owner_id();
+		$owner = $this->get_appointment()->get_owner();
 
-		$user = get_user_by( 'ID', $owner_id );
-
-		if ( ! $user ) {
-			//return admin details
-			return \Groundhogg\Plugin::instance()->replacements->replacement_owner_signature();
-		}
-
-		return $user->signature;
+		return $owner->signature;
 	}
 
 	/**

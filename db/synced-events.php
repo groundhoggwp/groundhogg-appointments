@@ -136,16 +136,8 @@ class Synced_Events extends DB {
 
 	}
 
-	/**
-	 * Create the table
-	 *
-	 * @access  public
-	 * @since   2.0
-	 */
-	public function create_table() {
-		global $wpdb;
-		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-		$sql = "CREATE TABLE " . $this->table_name . " (
+	public function create_table_sql_command() {
+		return "CREATE TABLE " . $this->table_name . " (
         event_id varchar({$this->get_max_index_length()}) NOT NULL,
         summary mediumtext NOT NULL,
         google_calendar_id varchar({$this->get_max_index_length()}) NOT NULL,
@@ -161,8 +153,6 @@ class Synced_Events extends DB {
         KEY start_time (start_time),
         KEY end_time (end_time)
 		) {$this->get_charset_collate()};";
-		dbDelta( $sql );
-		update_option( $this->table_name . '_db_version', $this->version );
 	}
 
 }
