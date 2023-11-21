@@ -202,7 +202,6 @@ class Plugin extends Extension {
 	 */
 	protected function register_autoloader() {
 		require __DIR__ . '/autoloader.php';
-		require __DIR__ . '/lib/google/vendor/autoload.php';
 		Autoloader::run();
 	}
 
