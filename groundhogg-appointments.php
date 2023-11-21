@@ -23,6 +23,8 @@ namespace GroundhoggBookingCalendar;
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
+require __DIR__ . '/vendor/autoload.php';
+
 define( 'GROUNDHOGG_BOOKING_CALENDAR_VERSION', '2.5.13' );
 define( 'GROUNDHOGG_BOOKING_CALENDAR_PREVIOUS_STABLE_VERSION', '2.5.12' );
 define( 'GROUNDHOGG_BOOKING_CALENDAR_NAME', 'Booking Calendar' );

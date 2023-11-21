@@ -1,0 +1,33 @@
+{
+    "name": "groundhoggwp/groundhogg-appointments",
+    "description": "Create calendars and appointments.",
+    "type": "wordpress-plugin",
+    "license": "GPL-3.0+-or-later",
+    "authors": [
+        {
+            "name": "Groundhogg Inc."
+        }
+    ],
+    "config": {
+        "platform": {
+            "php": "7.0"
+        },
+        "sort-packages": true
+    },
+    "require": {
+        "google/apiclient": "^2.12.1"
+    },
+    "extra": {
+        "google/apiclient-services": [
+            "Calendar"
+        ]
+    },
+    "scripts": {
+        "pre-autoload-dump": [
+            "@delete-unused-google-apis"
+        ],
+        "delete-unused-google-apis": [
+            "Google\\Task\\Composer::cleanup"
+        ]
+    }
+}
