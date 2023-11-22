@@ -37,6 +37,11 @@
             "classmap_prefix": "GroundhoggBookingCalendar_"
         }
     },
+    "scripts-descriptions": {
+        "delete-unused-google-apis": "Deletes non-Calendar Google API files.",
+        "prefix-namespaces": "Updates the namespaces of the plugin files with the `GroundhoggBookingCalendar` prefix.",
+        "create-plugin-archive": "Gernerates `groundhogg-calendar.1.2.3.zip` in the `dist-archive` directory. See the `.distignore` file for configuraiton."
+    },
     "scripts": {
         "post-install-cmd": [
             "@delete-unused-google-apis",
@@ -50,7 +55,12 @@
             "Google\\Task\\Composer::cleanup"
         ],
         "prefix-namespaces": [
+            "curl -o strauss.phar -L -C - https://github.com/BrianHenryIE/strauss/releases/latest/download/strauss.phar",
             "@php strauss.phar"
+        ],
+        "create-plugin-archive": [
+            "wp i18n make-pot . languages/groundhogg-calendar.pot --domain=groundhogg-calendar",
+            "wp dist-archive . ./dist-archive --plugin-dirname=groundhogg-appointments --create-target-dir"
         ]
     }
 }
