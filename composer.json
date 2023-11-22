@@ -8,6 +8,16 @@
             "name": "Groundhogg Inc."
         }
     ],
+    "autoload": {
+        "classmap": [
+            "admin",
+            "api",
+            "assets",
+            "db",
+            "includes",
+            "templates"
+        ]
+    },
     "config": {
         "platform": {
             "php": "7.0"
@@ -15,19 +25,32 @@
         "sort-packages": true
     },
     "require": {
-        "google/apiclient": "^2.12.1"
+        "google/apiclient": "^2.12"
     },
     "extra": {
         "google/apiclient-services": [
             "Calendar"
-        ]
+        ],
+        "strauss": {
+            "target_directory": "vendor",
+            "namespace_prefix": "GroundhoggBookingCalendar\\",
+            "classmap_prefix": "GroundhoggBookingCalendar_"
+        }
     },
     "scripts": {
-        "pre-autoload-dump": [
-            "@delete-unused-google-apis"
+        "post-install-cmd": [
+            "@delete-unused-google-apis",
+            "@prefix-namespaces"
+        ],
+        "post-update-cmd": [
+            "@delete-unused-google-apis",
+            "@prefix-namespaces"
         ],
         "delete-unused-google-apis": [
             "Google\\Task\\Composer::cleanup"
+        ],
+        "prefix-namespaces": [
+            "@php strauss.phar"
         ]
     }
 }
