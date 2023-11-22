@@ -4,11 +4,11 @@ namespace GroundhoggBookingCalendar\Classes;
 
 
 use \Exception;
-use Google\Model;
+use GroundhoggBookingCalendar\Google\Model;
 use Groundhogg\Contact;
 use Groundhogg\Plugin;
-use \Google_Service_Calendar;
-use \Google_Service_Calendar_Event;
+use \GroundhoggBookingCalendar_Google_Service_Calendar;
+use \GroundhoggBookingCalendar_Google_Service_Calendar_Event;
 use Groundhogg\Base_Object_With_Meta;
 use function Groundhogg\admin_page_url;
 use function Groundhogg\convert_to_local_time;
@@ -671,7 +671,7 @@ class Appointment extends Base_Object_With_Meta {
 			if ( $event_created->hangoutLink ) {
 				$this->add_meta( 'google_meet_url', $event_created->hangoutLink );
 			}
-		} catch ( \Google\Service\Exception $e ) {
+		} catch ( \GroundhoggBookingCalendar\Google\Service\Exception $e ) {
 
 			return false;
 		}
@@ -701,7 +701,7 @@ class Appointment extends Base_Object_With_Meta {
 
 		try {
 			$updatedEvent = $service->events->update( $this->get_calendar()->get_remote_google_calendar_id(), $this->uuid, $event, [] );
-		} catch ( \Google\Service\Exception $exception ) {
+		} catch ( \GroundhoggBookingCalendar\Google\Service\Exception $exception ) {
 
 			if ( $exception->getCode() === 404 ) {
 				return $this->add_in_google();

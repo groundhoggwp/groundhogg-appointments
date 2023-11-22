@@ -2,7 +2,7 @@
 
 namespace GroundhoggBookingCalendar\Classes;
 
-use Google\Service\Exception;
+use GroundhoggBookingCalendar\Google\Service\Exception;
 use Google_Service_Calendar;
 use Groundhogg\Base_Object;
 use Groundhogg\DB\DB;

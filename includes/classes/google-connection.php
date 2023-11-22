@@ -2,8 +2,8 @@
 
 namespace GroundhoggBookingCalendar\Classes;
 
-use Google\Service\Exception;
-use Google_Client;
+use GroundhoggBookingCalendar\Google\Service\Exception;
+use GroundhoggBookingCalendar_Google_Client as Google_Client;
 use Google_Service_Calendar;
 use Google_Service_Oauth2;
 use Groundhogg\Base_Object;
@@ -118,7 +118,7 @@ class Google_Connection extends Base_Object {
 
 			$client = new Google_Client();
 
-			$guzzleClient = new \GuzzleHttp\Client( array( 'curl' => array( CURLOPT_SSL_VERIFYPEER => false ) ) );
+			$guzzleClient = new \GroundhoggBookingCalendar\GuzzleHttp\Client( array( 'curl' => array( CURLOPT_SSL_VERIFYPEER => false ) ) );
 
 			$client->setHttpClient( $guzzleClient );
 

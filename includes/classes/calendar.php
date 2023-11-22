@@ -68,7 +68,7 @@ class Calendar extends Base_Object_With_Meta {
 	}
 
 	/**
-	 * @return \Google_Client|WP_Error
+	 * @return \GroundhoggBookingCalendar_Google_Client|WP_Error
 	 */
 	public function get_google_client() {
 		return $this->get_google_connection()->get_client();
