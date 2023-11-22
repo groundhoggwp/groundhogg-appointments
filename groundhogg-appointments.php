@@ -1,5 +1,5 @@
 <?php
-/*
+/**
  * Plugin Name: Groundhogg - Booking Calendar
  * Plugin URI:  https://www.groundhogg.io/downloads/booking-calendar/?utm_source=wp-plugins&utm_campaign=plugin-uri&utm_medium=wp-dash
  * Description: Create calendars and appointments.
