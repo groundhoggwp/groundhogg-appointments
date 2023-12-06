@@ -60,7 +60,7 @@
             "Google\\Task\\Composer::cleanup"
         ],
         "prefix-namespaces": [
-            "curl -o strauss.phar -L -C - https://github.com/BrianHenryIE/strauss/releases/latest/download/strauss.phar",
+            "curl --output strauss.phar --location - https://github.com/BrianHenryIE/strauss/releases/latest/download/strauss.phar",
             "@php strauss.phar"
         ],
         "create-plugin-archive": [
