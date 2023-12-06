@@ -34,7 +34,12 @@
         "strauss": {
             "target_directory": "vendor",
             "namespace_prefix": "GroundhoggBookingCalendar\\",
-            "classmap_prefix": "GroundhoggBookingCalendar_"
+            "classmap_prefix": "GroundhoggBookingCalendar_",
+            "exclude_from_prefix": {
+                "file_patterns": [
+                    "/polyfill/"
+                ]
+            }
         }
     },
     "scripts-descriptions": {
