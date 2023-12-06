@@ -69,6 +69,7 @@
         ]
     },
     "provide": {
+        "paragonie/random_compat": "*",
         "symfony/polyfill-php70": "*"
     }
 }
