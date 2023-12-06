@@ -67,5 +67,8 @@
             "wp i18n make-pot . languages/groundhogg-calendar.pot --domain=groundhogg-calendar",
             "wp dist-archive . ./dist-archive --plugin-dirname=groundhogg-appointments --create-target-dir"
         ]
+    },
+    "provide": {
+        "symfony/polyfill-php70": "*"
     }
 }
